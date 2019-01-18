@@ -36,8 +36,9 @@ class Builder
     {
         $report = [];
         $result = [];
+        $start = new \DateTime('+1 day');
         $options = [
-            'start_date' => (new \DateTime('+1 day'))->format('Y-m-d'),
+            'start_date' => $start->format('Y-m-d'),
             'end_date' => (new \DateTime('+2 months'))->format('Y-m-d'),
         ];
         $this->fetchData($options);
@@ -49,7 +50,7 @@ class Builder
             }
 
             $name = $user->getFirstName() . ' ' . $user->getLastName();
-            $activities = $this->getActivity($user, $options['start_date']);
+            $activities = $this->getActivity($user, $start);
 
             if (0 === \count($activities)) {
                 $activitiesAsText = $this->alert->getDefaultActivityName() ?: 'not set';
@@ -99,7 +100,7 @@ class Builder
         return $lookup;
     }
 
-    protected function fetchData($options)
+    private function fetchData($options)
     {
         $users = $this->client->listPeople()->getPeople();
         $users = array_values(array_filter($users, function ($user) {
@@ -119,7 +120,7 @@ class Builder
         $this->users = $users;
     }
 
-    protected function getActivitiesAsText($activities)
+    private function getActivitiesAsText($activities)
     {
         $activities = array_map(function ($activity) {
             if (isset($this->projectOverrides[$activity->getProjectId()])) {
@@ -148,23 +149,29 @@ class Builder
         return $activities[0];
     }
 
-    protected function getActivity($user, $date)
+    private function getActivity($user, \DateTime $date)
     {
+        $workingDays = $this->getWorkingDays($user);
+
+        if (!in_array($date->format('N'), $workingDays)) {
+            return [];
+        }
+
         $activities = $this->getPersonActivities($user);
 
         return array_values(array_filter($activities, function ($activity) use ($date) {
-            return $activity->getStartDate() <= $date && $activity->getEndDate() >= $date;
+            return $activity->getStartDate() <= $date->format('Y-m-d') && $activity->getEndDate() >= $date->format('Y-m-d');
         }));
     }
 
-    protected function getPersonActivities($user)
+    private function getPersonActivities($user)
     {
         return array_values(array_filter($this->assignments, function ($activity) use ($user) {
             return $activity->getPersonId() === $user->getId();
         }));
     }
 
-    protected function getTimeOffEndDate($user)
+    private function getTimeOffEndDate($user)
     {
         $activities = $this->getPersonActivities($user);
         $activities = array_values(array_filter($activities, function ($activity) {
@@ -200,7 +207,23 @@ class Builder
         return $activity->getEndDate();
     }
 
-    protected function isTimeOffActivity($activity)
+    private function getWorkingDays($user)
+    {
+        $workingDays = [];
+        $weeklyDays = $user->getWorkingDays();
+
+        $weeklyDays->getMonday() && $workingDays[] = '1';
+        $weeklyDays->getTuesday() && $workingDays[] = '2';
+        $weeklyDays->getWednesday() && $workingDays[] = '3';
+        $weeklyDays->getThursday() && $workingDays[] = '4';
+        $weeklyDays->getFriday() && $workingDays[] = '5';
+        $weeklyDays->getSaturday() && $workingDays[] = '6';
+        $weeklyDays->getSunday() && $workingDays[] = '7';
+
+        return $workingDays;
+    }
+
+    private function isTimeOffActivity($activity)
     {
         return \in_array($activity->getProjectId(), $this->alert->getTimeOffProjects(), true);
     }
