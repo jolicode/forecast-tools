@@ -63,7 +63,7 @@ class Builder
         return [$days, $weeks, $months];
     }
 
-    public function buildPublicForecast($publicForecast, $days, $assignments, $clients, $projects, $users, $placeholders)
+    private function buildPublicForecast($publicForecast, $days, $assignments, $clients, $projects, $users, $placeholders)
     {
         $allowedProjects = $projects;
         $allowedProjectIds = [];
@@ -173,7 +173,7 @@ class Builder
         return $userAssignments;
     }
 
-    protected function buildAssignmentInterval($assignment, $weeklyDays = null)
+    private function buildAssignmentInterval($assignment, $weeklyDays = null)
     {
         $start = new \DateTime($assignment->getStartDate());
         $end = new \DateTime($assignment->getEndDate());
@@ -205,7 +205,7 @@ class Builder
         return $days;
     }
 
-    protected function buildPrettyDays(\DateTime $start, \DateTime $end): array
+    private function buildPrettyDays(\DateTime $start, \DateTime $end): array
     {
         if ($start >= $end) {
             throw new \DomainException('Please have the end date be after the start date');
@@ -230,7 +230,7 @@ class Builder
         return $dates;
     }
 
-    protected static function makeLookup($struct, $methodName = 'getId')
+    private static function makeLookup($struct, $methodName = 'getId')
     {
         $lookup = [];
 
