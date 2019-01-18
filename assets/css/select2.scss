@@ -1,0 +1,22 @@
+.select2-container {
+  width: calc(100% - 1.5rem) !important;
+}
+
+.select2-container--default .select2-selection--single {
+  border-color: #ced4da;
+  height: 38px;
+  padding: 5px 0;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+  top: 6px;
+}
+
+.select2-container--default .select2-selection--multiple {
+  border-color: #ced4da;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}

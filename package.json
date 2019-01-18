@@ -1,0 +1,23 @@
+{
+    "devDependencies": {
+        "@symfony/webpack-encore": "^0.22.0",
+        "node-sass": "^4.11.0",
+        "sass-loader": "^7.0.1",
+        "webpack-notifier": "^1.6.0"
+    },
+    "license": "MIT",
+    "private": true,
+    "scripts": {
+        "dev-server": "encore dev-server",
+        "dev": "encore dev",
+        "watch": "encore dev --watch",
+        "build": "encore production --progress"
+    },
+    "dependencies": {
+        "bootstrap": "^4.2.1",
+        "chart.js": "^2.7.3",
+        "daterangepicker": "^3.0.3",
+        "jquery": "^3.3.1",
+        "select2": "^4.0.6-rc.1"
+    }
+}

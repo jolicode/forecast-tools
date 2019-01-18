@@ -1,0 +1,68 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Welcome | {{ parent() }}{% endblock %}
+
+{% block body %}
+    <div class="homepage">
+        <h1>Welcome</h1>
+
+        <p>
+            These tools improve the use of ⛅ Forecast.
+        </p>
+
+        <div class="card">
+            {% if is_granted('ROLE_USER') %}
+                <p>
+                    ✅&nbsp;&nbsp;You are authenticated as {{ app.user.username }} (<a href="{{ path('logout' )}}">logout</a>)
+                </p>
+            {% else %}
+                <p>
+                    🔓&nbsp;&nbsp;<a href="{{ path('connect_harvest') }}" class="button">Connect with Forecast</a>
+                </p>
+            {% endif %}
+        </div>
+
+        {% if is_granted('ROLE_USER') %}
+            <div class="card">
+                <h2>Forecast reminders</h2>
+
+                <ul>
+                    {% for forecastAccount in forecastAccounts %}
+                        {% for alert in forecastAccount.alerts %}
+                            <li>
+                                <a href="{{ path('alert_edit', { id: alert.id }) }}" class="button">✏️&nbsp;&nbsp;Edit</a>
+                                <strong>{{ alert.name }}</strong>
+                                ({{ alert.forecastAccount.name }})
+                            </li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+
+                <p>
+                    <a href="{{ path('alert_create') }}" class="button">✨&nbsp;&nbsp;Add a Slack Forecast reminder</a>
+                </p>
+            </div>
+
+            <div class="card">
+                <h2>Public forecasts</h2>
+
+                <ul>
+                    {% for forecastAccount in forecastAccounts %}
+                        {% for publicForecast in forecastAccount.publicForecasts %}
+                            <li>
+                                <a href="{{ url('public_forecast', { token: publicForecast.token }) }}" class="button">🔗 View</a>
+                                <a href="{{ path('public_forecast_edit', { id: publicForecast.id }) }}" class="button">✏️&nbsp;&nbsp;Edit</a>
+                                <strong>{{ publicForecast.name }}</strong>
+                                ({{ publicForecast.forecastAccount.name }})
+                            </li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+
+                <p>
+                    <a href="{{ path('public_forecast_create') }}" class="button">✨&nbsp;&nbsp;Add a public Forecast</a>
+                </p>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
