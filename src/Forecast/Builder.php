@@ -160,6 +160,12 @@ class Builder
             }
         }
 
+        foreach ($userAssignments as $projectId => $projectAssignments) {
+            uasort($userAssignments[$projectId]['users'], function ($a, $b) {
+                return $a['name'] > $b['name'];
+            });
+        }
+
         uasort($userAssignments, function ($a, $b) {
             return $a['firstDay'] > $b['firstDay'];
         });
