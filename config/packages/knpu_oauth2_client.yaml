@@ -1,0 +1,19 @@
+knpu_oauth2_client:
+    clients:
+          # configure your clients as described here: https://github.com/knpuniversity/oauth2-client-bundle#configuration
+        harvest:
+          type: generic
+          provider_class: App\Security\Provider\Harvest
+
+          # optional: a class that extends OAuth2Client
+          # client_class: Some\Custom\Client
+
+          # optional: if your provider has custom constructor options
+          # provider_options: {}
+
+          # now, all the normal options!
+          client_id: '%env(harvest_id_client_id)%'
+          client_secret: '%env(harvest_id_client_secret)%'
+          redirect_route: connect_harvest_check
+          redirect_params: {}
+          use_state: false
