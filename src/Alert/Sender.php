@@ -14,6 +14,7 @@ namespace App\Alert;
 use App\Entity\ForecastAlert;
 use App\Notification\SlackNotifier;
 use App\Repository\ForecastAlertRepository;
+use Cron\CronExpression;
 
 class Sender
 {
@@ -32,14 +33,18 @@ class Sender
         $alertsCount = 0;
 
         foreach ($alerts as $alert) {
-            $this->sendAlert($alert);
-            ++$alertsCount;
+            $cron = CronExpression::factory($alert->getCronExpression());
+
+            if ($cron->isDue()) {
+                $this->sendAlert($alert);
+                ++$alertsCount;
+            }
         }
 
         return $alertsCount;
     }
 
-    protected function sendAlert(ForecastAlert $alert)
+    private function sendAlert(ForecastAlert $alert)
     {
         $builder = new Builder($alert);
         $message = $builder->buildMessage();
