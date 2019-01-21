@@ -89,9 +89,9 @@ class HarvestAuthenticator extends SocialAuthenticator
                 $forecastAccount = new ForecastAccount();
                 $forecastAccount->setName($account['name']);
                 $forecastAccount->setForecastId($account['id']);
-                $forecastAccount->addUser($user);
             }
 
+            $forecastAccount->addUser($user);
             $forecastAccount->setAccessToken($credentials->getToken());
             $forecastAccount->setRefreshToken($credentials->getRefreshToken());
             $forecastAccount->setExpires($credentials->getExpires());
