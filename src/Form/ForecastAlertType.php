@@ -11,8 +11,10 @@
 
 namespace App\Form;
 
+use App\Entity\ForecastAccount;
 use App\Entity\ForecastAlert;
 use App\Repository\ForecastAccountRepository;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
@@ -36,7 +38,16 @@ class ForecastAlertType extends AbstractType
             ->add('name', null, [
                 'help' => 'Give here a name to this alert, it will help you recognize it afterwards.',
             ])
-            ->add('forecastAccount', null, [
+            ->add('forecastAccount', EntityType::class, [
+                'class' => ForecastAccount::class,
+                'query_builder' => function (ForecastAccountRepository $forecastAccountRepository) use ($options) {
+                    return $forecastAccountRepository->createQueryBuilder('a')
+                        ->join('a.users', 'u')
+                        ->where('u.id = :userId')
+                        ->orderBy('a.name', 'ASC')
+                        ->setParameter('userId', $options['currentUser']->getId())
+                    ;
+                },
                 'help' => 'Please choose a Forecast account. If you change of account after you have configured some options, those will be reset.',
             ])
             ->add('cronExpression', null, [
@@ -110,6 +121,9 @@ class ForecastAlertType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => ForecastAlert::class,
+        ]);
+        $resolver->setRequired([
+            'currentUser',
         ]);
     }
 

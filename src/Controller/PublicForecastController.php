@@ -72,7 +72,9 @@ class PublicForecastController extends AbstractController
         $user = $this->getDoctrine()->getManager()->getRepository('App:User')
             ->findOneBy(['email' => $this->getUser()->getUsername()]);
         $publicForecast->setCreatedBy($user);
-        $form = $this->createForm(PublicForecastType::class, $publicForecast);
+        $form = $this->createForm(PublicForecastType::class, $publicForecast, [
+            'currentUser' => $user,
+        ]);
         $form->add('save', SubmitType::class, ['label' => 'Save public forecast', 'attr' => ['class' => 'btn btn-primary']]);
         $form->handleRequest($request);
 
@@ -103,7 +105,9 @@ class PublicForecastController extends AbstractController
             throw new AccessDeniedHttpException();
         }
 
-        $form = $this->createForm(PublicForecastType::class, $publicForecast);
+        $form = $this->createForm(PublicForecastType::class, $publicForecast, [
+            'currentUser' => $user,
+        ]);
         $form->add('save', SubmitType::class, ['label' => 'Save public forecast', 'attr' => ['class' => 'btn btn-primary']]);
         $form->handleRequest($request);
 

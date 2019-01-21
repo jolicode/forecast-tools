@@ -30,7 +30,9 @@ class AlertController extends AbstractController
         $user = $this->getDoctrine()->getManager()->getRepository('App:User')
             ->findOneBy(['email' => $this->getUser()->getUsername()]);
         $alert->setCreatedBy($user);
-        $form = $this->createForm(ForecastAlertType::class, $alert);
+        $form = $this->createForm(ForecastAlertType::class, $alert, [
+            'currentUser' => $user,
+        ]);
         $form->add('save', SubmitType::class, ['label' => 'Save Alert', 'attr' => ['class' => 'btn btn-primary']]);
         $form->handleRequest($request);
 
@@ -61,7 +63,9 @@ class AlertController extends AbstractController
             throw new AccessDeniedHttpException();
         }
 
-        $form = $this->createForm(ForecastAlertType::class, $alert);
+        $form = $this->createForm(ForecastAlertType::class, $alert, [
+            'currentUser' => $user,
+        ]);
         $form->add('save', SubmitType::class, ['label' => 'Save Alert', 'attr' => ['class' => 'btn btn-primary']]);
         $form->handleRequest($request);
 
