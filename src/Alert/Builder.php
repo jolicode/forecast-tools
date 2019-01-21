@@ -153,7 +153,7 @@ class Builder
     {
         $workingDays = $this->getWorkingDays($user);
 
-        if (!in_array($date->format('N'), $workingDays)) {
+        if (!\in_array($date->format('N'), $workingDays, true)) {
             return [];
         }
 
