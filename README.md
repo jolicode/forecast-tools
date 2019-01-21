@@ -22,6 +22,13 @@ $ git clone https://github.com/jolicode/forecast-tools.git
 
 ```sh
 $ composer install
+$ yarn install
+```
+
+ * build assets:
+
+```sh
+$ yarn run build
 ```
 
 ## Run
