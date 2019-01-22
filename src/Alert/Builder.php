@@ -142,7 +142,7 @@ class Builder
             return implode('', [
                 implode(', ', \array_slice($activities, 0, -1)),
                 ' and ',
-                \array_slice($activities, -1),
+                \array_slice($activities, -1)[0],
             ]);
         }
 
