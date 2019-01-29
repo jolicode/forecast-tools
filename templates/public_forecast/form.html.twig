@@ -15,47 +15,46 @@
 
         {{ form_start(form) }}
             {{ form_errors(form) }}
-                {% if publicForecast is defined %}
-                    <div class="form-group">
-                        This public Forecast is available at <a href="{{ url('public_forecast', { token: publicForecast.token }) }}">{{ url('public_forecast', { token: publicForecast.token }) }}</a>.
-                    </div>
-
-                    <div class="form-group">
-                        Created on <strong>{{ publicForecast.createdAt|date('F jS \\a\\t g:ia') }}</strong> by <strong>{{ publicForecast.createdBy }}</strong>
-                    </div>
-                {% endif %}
-
+            {% if publicForecast is defined %}
                 <div class="form-group">
-                    {{ form_label(form.name) }}
-                    {{ form_errors(form.name) }}
-                    {{ form_widget(form.name, { attr: { class: 'form-control' }}) }}
-                    {{ form_help(form.name) }}
+                    This public Forecast is available at <a href="{{ url('public_forecast', { token: publicForecast.token }) }}">{{ url('public_forecast', { token: publicForecast.token }) }}</a>.
                 </div>
 
                 <div class="form-group">
-                    {{ form_label(form.forecastAccount) }}
-                    {{ form_errors(form.forecastAccount) }}
-                    {{ form_widget(form.forecastAccount, { attr: { class: 'form-control' }}) }}
-                    {{ form_help(form.forecastAccount) }}
+                    Created on <strong>{{ publicForecast.createdAt|date('F jS \\a\\t g:ia') }}</strong> by <strong>{{ publicForecast.createdBy }}</strong>
                 </div>
+            {% endif %}
 
-                <div class="form-group">
-                    {{ form_label(form.clients) }}
-                    {{ form_errors(form.clients) }}
-                    <div>
-                        {{ form_widget(form.clients, { attr: { class: 'form-control clients-selector' }}) }}
-                    </div>
-                    {{ form_help(form.clients) }}
-                </div>
+            <div class="form-group">
+                {{ form_label(form.name) }}
+                {{ form_errors(form.name) }}
+                {{ form_widget(form.name, { attr: { class: 'form-control' }}) }}
+                {{ form_help(form.name) }}
+            </div>
 
-                <div class="form-group">
-                    {{ form_label(form.projects) }}
-                    {{ form_errors(form.projects) }}
-                    <div>
-                        {{ form_widget(form.projects, { attr: { class: 'form-control projects-selector' }}) }}
-                    </div>
-                    {{ form_help(form.projects) }}
+            <div class="form-group">
+                {{ form_label(form.forecastAccount) }}
+                {{ form_errors(form.forecastAccount) }}
+                {{ form_widget(form.forecastAccount, { attr: { class: 'form-control' }}) }}
+                {{ form_help(form.forecastAccount) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.clients) }}
+                {{ form_errors(form.clients) }}
+                <div>
+                    {{ form_widget(form.clients, { attr: { class: 'form-control clients-selector' }}) }}
                 </div>
+                {{ form_help(form.clients) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.projects) }}
+                {{ form_errors(form.projects) }}
+                <div>
+                    {{ form_widget(form.projects, { attr: { class: 'form-control projects-selector' }}) }}
+                </div>
+                {{ form_help(form.projects) }}
             </div>
         {{ form_end(form) }}
     </div>
