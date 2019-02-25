@@ -39,11 +39,21 @@ Run the webserver:
 $ ./bin/console server:run
 ```
 
+## Cron jobs
+
 In order to send Slack alerts, add a crontab directive to run every minute the `./bin/console forecast:alert-send` task, eg.
 
 ```
 * * * * * /path/to/install/bin/console forecast:alert-send
 ```
+
+Harvest tokens need to be refreshed once in a while. They have a two-weeks duration, hence we try to refresh them when they will expire in less than 7 days. In order to force tokens to be refreshed once a day, please add this cron job:
+
+```
+0 5 * * * /path/to/install/bin/console forecast:refresh-tokens
+```
+
+This will try to update tokens close to expiration.
 
 ## Troubleshoot
 
