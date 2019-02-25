@@ -28,32 +28,18 @@ class ForecastAccountRepository extends ServiceEntityRepository
         parent::__construct($registry, ForecastAccount::class);
     }
 
-    // /**
-    //  * @return ForecastAccount[] Returns an array of ForecastAccount objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    /**
+     * @param mixed $delay
+     *
+     * @return ForecastAccount[] Returns an array of ForecastAccount objects
+     */
+    public function findExpiringTokens($delay)
     {
         return $this->createQueryBuilder('f')
-            ->andWhere('f.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('f.id', 'ASC')
-            ->setMaxResults(10)
+            ->andWhere('f.expires <= :expires')
+            ->setParameter('expires', time() + $delay)
             ->getQuery()
             ->getResult()
         ;
     }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?ForecastAccount
-    {
-        return $this->createQueryBuilder('f')
-            ->andWhere('f.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }
