@@ -1,0 +1,29 @@
+version: 2
+
+jobs:
+    build:
+        docker:
+          - image: circleci/php:7.2
+        working_directory: ~/forecast.jolicode.com
+        steps:
+            - checkout
+            - run:
+                name: Install PHP packages
+                command: sudo docker-php-ext-install bcmath intl pdo pdo_mysql zip
+            - run:
+                name: Disable xdebug
+                command: |
+                    sudo sed -i 's/^zend_extension/;zend_extension/g' /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+            - run:
+                name: Install Dependencies without scripts
+                command: |
+                    composer install --prefer-dist --no-interaction
+            - run:
+                name: Check coding standards
+                command: |
+                    php ./vendor/bin/php-cs-fixer fix --config=.php_cs --dry-run --diff
+            - run:
+                name: Lints twig and yaml files
+                command: |
+                    php bin/console lint:yaml config
+                    php bin/console lint:twig templates
