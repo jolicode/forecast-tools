@@ -56,7 +56,9 @@ th.project h2 {
 }
 
 th.people,
-th.total {
+th.total,
+td.totalDays,
+th.totalDays {
   padding-right: 1em;
   text-align: right;
   width: 150px !important;
@@ -65,6 +67,25 @@ th.total {
 th.people {
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+td.totalDays,
+th.totalDays {
+  width: 60px !important;
+}
+
+.totalDays {
+  border-bottom: 1px #ddd dotted;
+  border-left: 1px #ccc solid;
+  border-right: 1px #ccc solid;
+}
+
+.month.totalDays {
+  border-bottom: 1px #ddd dotted;
+}
+
+td.monthly.total.totalDays {
+  border-bottom: 1px #ccc solid;
 }
 
 .assignement {
