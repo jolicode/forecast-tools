@@ -95,6 +95,7 @@ class Builder
             $project = $projects[$assignment->getProjectId()];
             $client = $clients[$project->getClientId()]->getName();
             $projectId = $project->getId();
+            $duration = $assignment->getAllocation() / 28800;
 
             if (!isset($userAssignments[$projectId])) {
                 $userAssignments[$projectId] = [
@@ -102,6 +103,7 @@ class Builder
                     'client' => $client,
                     'users' => [],
                     'total' => [],
+                    'total_days' => 0,
                     'weekly_total' => [],
                 ];
             }
@@ -123,6 +125,7 @@ class Builder
                 $userAssignments[$projectId]['users'][$id] = [
                     'name' => $name,
                     'days' => [],
+                    'total' => 0,
                 ];
             }
 
@@ -138,20 +141,22 @@ class Builder
                 $assignmentDay = $assignmentDate->format('Y-m-d');
                 $assignmentWeek = $assignmentDate->format('W');
 
-                if (array_key_exists($assignmentDay, $days)) {
-                    $userAssignments[$projectId]['users'][$id]['days'][$assignmentDay] = $assignment->getAllocation() / 28800;
+                if (\array_key_exists($assignmentDay, $days)) {
+                    $userAssignments[$projectId]['users'][$id]['total'] += $duration;
+                    $userAssignments[$projectId]['total_days'] += $duration;
+                    $userAssignments[$projectId]['users'][$id]['days'][$assignmentDay] = $duration;
 
                     if (!isset($userAssignments[$projectId]['total'][$assignmentDay])) {
                         $userAssignments[$projectId]['total'][$assignmentDay] = 0;
                     }
 
-                    $userAssignments[$projectId]['total'][$assignmentDay] += $assignment->getAllocation() / 28800;
+                    $userAssignments[$projectId]['total'][$assignmentDay] += $duration;
 
                     if (!isset($userAssignments[$projectId]['weekly_total'][$assignmentWeek])) {
                         $userAssignments[$projectId]['weekly_total'][$assignmentWeek] = 0;
                     }
 
-                    $userAssignments[$projectId]['weekly_total'][$assignmentWeek] += $assignment->getAllocation() / 28800;
+                    $userAssignments[$projectId]['weekly_total'][$assignmentWeek] += $duration;
 
                     if (!isset($userAssignments[$projectId]['firstDay']) || $userAssignments[$projectId]['firstDay'] < $assignmentDay) {
                         $userAssignments[$projectId]['firstDay'] = $assignmentDay;
