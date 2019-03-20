@@ -17,13 +17,13 @@
             </div>
 
             <div id="content">
-                <table style="width: {{ 151 + 27 * days|length }}px">
+                <table>
                     {% for project in assignments %}
                         <tr>
                             <th class="people">
                                 &nbsp;
                             </th>
-                            <th class="project" colspan="{{ days|length }}">
+                            <th class="project" colspan="{{ days|length + 1 }}">
                                 <h2>{{ project.client}} | {{ project.project.name}}</h2>
                             </th>
                         </tr>
@@ -37,6 +37,7 @@
                                     {{ month }}
                                 </th>
                             {% endfor %}
+                            <th class="month totalDays" rowspan="2">Total</th>
                         </tr>
 
                         <tr>
@@ -66,6 +67,8 @@
                                         {% endif %}
                                     </td>
                                 {% endfor %}
+
+                                <td class="totalDays">{{ user.total }}</td>
                             </tr>
                         {% endfor %}
 
@@ -87,6 +90,7 @@
                                     {% endif %}
                                 </td>
                             {% endfor %}
+                            <td class="monthly total totalDays" rowspan="2">{{ project.total_days }}</td>
                         </tr>
 
                         <tr>
@@ -106,6 +110,7 @@
                             <td colspan="{{ days|length + 1 }}">
                                 <canvas id="chart-{{ project.project.id }}" style="height: 300px; width: {{ 111 + 27 * days|length }}px" height="300"></canvas>
                             </td>
+                            <td>&nbsp;</td>
                         </tr>
                     {% endfor %}
                 </table>
@@ -143,7 +148,7 @@
                         options: {
                             layout: {
                                 padding: {
-                                    left: 124,
+                                    left: 120,
                                     right: 0,
                                     top: 0,
                                     bottom: 0
