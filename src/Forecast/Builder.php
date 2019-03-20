@@ -141,7 +141,7 @@ class Builder
                 $assignmentDay = $assignmentDate->format('Y-m-d');
                 $assignmentWeek = $assignmentDate->format('W');
 
-                if (array_key_exists($assignmentDay, $days)) {
+                if (\array_key_exists($assignmentDay, $days)) {
                     $userAssignments[$projectId]['users'][$id]['total'] += $duration;
                     $userAssignments[$projectId]['total_days'] += $duration;
                     $userAssignments[$projectId]['users'][$id]['days'][$assignmentDay] = $duration;
