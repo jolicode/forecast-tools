@@ -50,10 +50,12 @@ class Sender
         $message = $builder->buildMessage();
         $title = $builder->buildTitle();
 
-        $this->slackNotifier->notify(
-            $title,
-            $message,
-            $alert->getSlackWebhook()
-        );
+        foreach ($alert->getSlackWebHooks() as $slackWebHook)
+            $this->slackNotifier->notify(
+                $title,
+                $message,
+                $slackWebHook
+            );
+        }
     }
 }
