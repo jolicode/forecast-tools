@@ -36,6 +36,17 @@
     </div>
 {% endblock %}
 
+{% block _forecast_alert_slackWebHooks_entry_row %}
+    <div class="override">
+        <div class="form-group">
+            {{ form_label(form) }}
+            {{ form_errors(form) }}
+            {{ form_widget(form, { attr: { class: 'form-control' }}) }}
+            {{ form_help(form) }}
+        </div>
+    </div>
+{% endblock %}
+
 {% block javascripts %}
     {{ parent() }}
     {{ encore_entry_script_tags('alert') }}
@@ -91,10 +102,10 @@
                         </div>
 
                         <div class="form-group">
-                            {{ form_label(form.slackWebHook) }}
-                            {{ form_errors(form.slackWebHook) }}
-                            {{ form_widget(form.slackWebHook, { attr: { class: 'form-control' }}) }}
-                            {{ form_help(form.slackWebHook) }}
+                            {{ form_label(form.slackWebHooks) }}
+                            <p id="forecast_alert_slackWebHooks_help" class="help-text">Type here a Slack web hook, in the form <code>TXXXXXXXX/BXXXXXXXXX/PXXXXXXXXXXXXXXXXXXXXXX</code>.</p>
+                            {{ form_errors(form.slackWebHooks) }}
+                            {{ form_widget(form.slackWebHooks, { attr: { class: 'overrides-container' }}) }}
                         </div>
                     </div>
 
