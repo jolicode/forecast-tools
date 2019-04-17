@@ -51,11 +51,6 @@ class ForecastAlert
     private $createdBy;
 
     /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $slackWebHook = 'TXXXXXXXX/BXXXXXXXXX/PXXXXXXXXXXXXXXXXXXXXXX';
-
-    /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
      */
@@ -90,6 +85,11 @@ class ForecastAlert
      * @ORM\Column(type="array", nullable=true)
      */
     private $onlyUsers = [];
+
+    /**
+     * @ORM\Column(type="array", nullable=true)
+     */
+    private $slackWebHooks = [ 'TXXXXXXXX/BXXXXXXXXX/PXXXXXXXXXXXXXXXXXXXXXX' ];
 
     public function __construct()
     {
@@ -151,18 +151,6 @@ class ForecastAlert
     public function setCreatedBy(?User $createdBy): self
     {
         $this->createdBy = $createdBy;
-
-        return $this;
-    }
-
-    public function getSlackWebHook(): ?string
-    {
-        return $this->slackWebHook;
-    }
-
-    public function setSlackWebHook(string $slackWebHook): self
-    {
-        $this->slackWebHook = $slackWebHook;
 
         return $this;
     }
@@ -285,6 +273,18 @@ class ForecastAlert
     public function setOnlyUsers(?array $onlyUsers): self
     {
         $this->onlyUsers = $onlyUsers;
+
+        return $this;
+    }
+
+    public function getSlackWebHooks(): ?array
+    {
+        return $this->slackWebHooks;
+    }
+
+    public function setSlackWebHooks(?array $slackWebHooks): self
+    {
+        $this->slackWebHooks = $slackWebHooks;
 
         return $this;
     }

@@ -18,6 +18,7 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
@@ -53,7 +54,18 @@ class ForecastAlertType extends AbstractType
             ->add('cronExpression', null, [
                 'help' => 'Write here a cron-style execution expression, which will define when the alert must be sent.',
             ])
-            ->add('slackWebHook', null, [
+            ->add('slackWebHooks', CollectionType::class, [
+                'entry_type' => TextType::class,
+                'entry_options' => [
+                    'attr' => [
+                        'class' => 'form-control',
+                        'maxlength' => 255
+                    ],
+                    'label' => false,
+                ],
+                'allow_add' => true,
+                'allow_delete' => true,
+                'prototype' => true,
                 'help' => 'Type here a Slack web hook, in the form <code>TXXXXXXXX/BXXXXXXXXX/PXXXXXXXXXXXXXXXXXXXXXX</code>.',
             ])
             ->add('defaultActivityName', null, [
