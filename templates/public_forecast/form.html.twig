@@ -56,6 +56,9 @@
                 </div>
                 {{ form_help(form.projects) }}
             </div>
+            {% if publicForecast is defined %}
+                <a class="float-right btn btn-danger" href="{{ path('public_forecast_delete', { id: publicForecast.id })}}" role="button">Delete this public forecast</a>
+            {% endif %}
         {{ form_end(form) }}
     </div>
 {% endblock %}
