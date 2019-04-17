@@ -14,11 +14,11 @@ namespace App\Controller;
 use App\Entity\PublicForecast;
 use App\Forecast\Builder;
 use App\Form\PublicForecastType;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Doctrine\ORM\EntityManagerInterface;
 
 class PublicForecastController extends AbstractController
 {
@@ -153,6 +153,7 @@ class PublicForecastController extends AbstractController
                 'success',
                 '👋 This forecast has been deleted!'
             );
+
             return $this->redirectToRoute('homepage');
         }
 
