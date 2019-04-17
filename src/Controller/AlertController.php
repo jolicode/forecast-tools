@@ -13,12 +13,12 @@ namespace App\Controller;
 
 use App\Entity\ForecastAlert;
 use App\Form\ForecastAlertType;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use Doctrine\ORM\EntityManagerInterface;
 
 class AlertController extends AbstractController
 {
@@ -111,6 +111,7 @@ class AlertController extends AbstractController
                 'success',
                 '👋 This alert has been deleted!'
             );
+
             return $this->redirectToRoute('homepage');
         }
 

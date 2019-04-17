@@ -12,15 +12,14 @@
 namespace App\Controller;
 
 use App\Entity\ForecastAccount;
+use App\Repository\ForecastAlertRepository;
+use App\Repository\PublicForecastRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use App\Repository\UserRepository;
-use App\Repository\ForecastAlertRepository;
-use App\Repository\PublicForecastRepository;
 
 class HomeController extends AbstractController
 {
