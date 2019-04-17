@@ -89,7 +89,7 @@ class ForecastAlert
     /**
      * @ORM\Column(type="array", nullable=true)
      */
-    private $slackWebHooks = [ 'TXXXXXXXX/BXXXXXXXXX/PXXXXXXXXXXXXXXXXXXXXXX' ];
+    private $slackWebHooks = ['TXXXXXXXX/BXXXXXXXXX/PXXXXXXXXXXXXXXXXXXXXXX'];
 
     public function __construct()
     {
