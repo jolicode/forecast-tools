@@ -59,7 +59,7 @@ class ForecastAlertType extends AbstractType
                 'entry_options' => [
                     'attr' => [
                         'class' => 'form-control',
-                        'maxlength' => 255
+                        'maxlength' => 255,
                     ],
                     'label' => false,
                 ],
