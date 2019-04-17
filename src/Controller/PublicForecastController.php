@@ -18,6 +18,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 class PublicForecastController extends AbstractController
 {
@@ -124,6 +125,40 @@ class PublicForecastController extends AbstractController
         return $this->render('public_forecast/edit.html.twig', [
             'form' => $form->createView(),
             'publicForecast' => $publicForecast,
+        ]);
+    }
+
+    /**
+     * @Route("/public-forecast/delete/{id}", name="public_forecast_delete")
+     */
+    public function delete(Request $request, PublicForecast $forecast, EntityManagerInterface $em)
+    {
+        $user = $this->getDoctrine()->getManager()->getRepository('App:User')
+            ->findOneBy(['email' => $this->getUser()->getUsername()]);
+
+        if (!$user->hasForecastAccount($forecast->getForecastAccount())) {
+            throw new AccessDeniedHttpException();
+        }
+
+        $form = $this->createFormBuilder(null)
+            ->setAction($this->generateUrl('public_forecast_delete', ['id' => $forecast->getId()]))
+            ->add('submit', SubmitType::class, ['label' => 'Yes, delete this forecast', 'attr' => ['class' => 'btn btn-danger']])
+            ->getForm();
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->remove($forecast);
+            $em->flush();
+            $this->addFlash(
+                'success',
+                '👋 This forecast has been deleted!'
+            );
+            return $this->redirectToRoute('homepage');
+        }
+
+        return $this->render('public_forecast/delete.html.twig', [
+            'form' => $form->createView(),
+            'forecast' => $forecast,
         ]);
     }
 }

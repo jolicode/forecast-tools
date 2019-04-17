@@ -14,6 +14,7 @@ namespace App\Repository;
 use App\Entity\ForecastAlert;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @method ForecastAlert|null find($id, $lockMode = null, $lockVersion = null)
@@ -26,6 +27,20 @@ class ForecastAlertRepository extends ServiceEntityRepository
     public function __construct(RegistryInterface $registry)
     {
         parent::__construct($registry, ForecastAlert::class);
+    }
+
+    public function findForUser(UserInterface $user)
+    {
+        return $this->createQueryBuilder('f')
+            ->select('f', 'a')
+            ->leftJoin('f.forecastAccount', 'a')
+            ->leftJoin('a.users', 'u')
+            ->andWhere('u.email = :email')
+            ->setParameter('email', $user->getUsername())
+            ->orderBy('f.name', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     // /**

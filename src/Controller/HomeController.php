@@ -18,25 +18,29 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use App\Repository\UserRepository;
+use App\Repository\ForecastAlertRepository;
+use App\Repository\PublicForecastRepository;
 
 class HomeController extends AbstractController
 {
     /**
      * @Route("/", name="homepage")
      */
-    public function index(AuthorizationCheckerInterface $authChecker)
+    public function index(AuthorizationCheckerInterface $authChecker, ForecastAlertRepository $alertRepository, PublicForecastRepository $forecastRepository)
     {
-        $forecastAccounts = [];
+        $alerts = [];
+        $forecasts = [];
 
         if (true === $authChecker->isGranted('ROLE_USER')) {
             $user = $this->getUser();
-            $userObject = $this->getDoctrine()->getManager()->getRepository('App:User')
-                ->findOneBy(['email' => $user->getUsername()]);
-            $forecastAccounts = $userObject->getForecastAccounts();
+            $alerts = $alertRepository->findForUser($user);
+            $forecasts = $forecastRepository->findForUser($user);
         }
 
         return $this->render('home/index.html.twig', [
-            'forecastAccounts' => $forecastAccounts,
+            'alerts' => $alerts,
+            'forecasts' => $forecasts,
         ]);
     }
 

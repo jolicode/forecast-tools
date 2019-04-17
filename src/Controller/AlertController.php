@@ -18,6 +18,7 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 class AlertController extends AbstractController
 {
@@ -80,6 +81,40 @@ class AlertController extends AbstractController
         }
 
         return $this->render('alert/edit.html.twig', [
+            'form' => $form->createView(),
+            'alert' => $alert,
+        ]);
+    }
+
+    /**
+     * @Route("/alert/delete/{id}", name="alert_delete")
+     */
+    public function delete(Request $request, ForecastAlert $alert, EntityManagerInterface $em)
+    {
+        $user = $this->getDoctrine()->getManager()->getRepository('App:User')
+            ->findOneBy(['email' => $this->getUser()->getUsername()]);
+
+        if (!$user->hasForecastAccount($alert->getForecastAccount())) {
+            throw new AccessDeniedHttpException();
+        }
+
+        $form = $this->createFormBuilder(null)
+            ->setAction($this->generateUrl('alert_delete', ['id' => $alert->getId()]))
+            ->add('submit', SubmitType::class, ['label' => 'Yes, delete this alert', 'attr' => ['class' => 'btn btn-danger']])
+            ->getForm();
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->remove($alert);
+            $em->flush();
+            $this->addFlash(
+                'success',
+                '👋 This alert has been deleted!'
+            );
+            return $this->redirectToRoute('homepage');
+        }
+
+        return $this->render('alert/delete.html.twig', [
             'form' => $form->createView(),
             'alert' => $alert,
         ]);
