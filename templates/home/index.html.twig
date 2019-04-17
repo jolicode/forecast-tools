@@ -23,18 +23,22 @@
         </div>
 
         {% if is_granted('ROLE_USER') %}
+            {% for message in app.flashes('success') %}
+                <div class="flash-notice">
+                    {{ message }}
+                </div>
+            {% endfor %}
+
             <div class="card">
                 <h2>Forecast reminders</h2>
 
                 <ul>
-                    {% for forecastAccount in forecastAccounts %}
-                        {% for alert in forecastAccount.alerts %}
-                            <li>
-                                <a href="{{ path('alert_edit', { id: alert.id }) }}" class="button">✏️&nbsp;&nbsp;Edit</a>
-                                <strong>{{ alert.name }}</strong>
-                                ({{ alert.forecastAccount.name }})
-                            </li>
-                        {% endfor %}
+                    {% for alert in alerts %}
+                        <li>
+                            <a href="{{ path('alert_edit', { id: alert.id }) }}" class="button">✏️&nbsp;&nbsp;Edit</a>
+                            <strong>{{ alert.name }}</strong>
+                            ({{ alert.forecastAccount.name }})
+                        </li>
                     {% endfor %}
                 </ul>
 
@@ -47,15 +51,13 @@
                 <h2>Public forecasts</h2>
 
                 <ul>
-                    {% for forecastAccount in forecastAccounts %}
-                        {% for publicForecast in forecastAccount.publicForecasts %}
-                            <li>
-                                <a href="{{ url('public_forecast', { token: publicForecast.token }) }}" class="button">🔗 View</a>
-                                <a href="{{ path('public_forecast_edit', { id: publicForecast.id }) }}" class="button">✏️&nbsp;&nbsp;Edit</a>
-                                <strong>{{ publicForecast.name }}</strong>
-                                ({{ publicForecast.forecastAccount.name }})
-                            </li>
-                        {% endfor %}
+                    {% for publicForecast in forecasts %}
+                        <li>
+                            <a href="{{ url('public_forecast', { token: publicForecast.token }) }}" class="button">🔗 View</a>
+                            <a href="{{ path('public_forecast_edit', { id: publicForecast.id }) }}" class="button">✏️&nbsp;&nbsp;Edit</a>
+                            <strong>{{ publicForecast.name }}</strong>
+                            ({{ publicForecast.forecastAccount.name }})
+                        </li>
                     {% endfor %}
                 </ul>
 

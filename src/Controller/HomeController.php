@@ -12,6 +12,8 @@
 namespace App\Controller;
 
 use App\Entity\ForecastAccount;
+use App\Repository\ForecastAlertRepository;
+use App\Repository\PublicForecastRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,19 +26,20 @@ class HomeController extends AbstractController
     /**
      * @Route("/", name="homepage")
      */
-    public function index(AuthorizationCheckerInterface $authChecker)
+    public function index(AuthorizationCheckerInterface $authChecker, ForecastAlertRepository $alertRepository, PublicForecastRepository $forecastRepository)
     {
-        $forecastAccounts = [];
+        $alerts = [];
+        $forecasts = [];
 
         if (true === $authChecker->isGranted('ROLE_USER')) {
             $user = $this->getUser();
-            $userObject = $this->getDoctrine()->getManager()->getRepository('App:User')
-                ->findOneBy(['email' => $user->getUsername()]);
-            $forecastAccounts = $userObject->getForecastAccounts();
+            $alerts = $alertRepository->findForUser($user);
+            $forecasts = $forecastRepository->findForUser($user);
         }
 
         return $this->render('home/index.html.twig', [
-            'forecastAccounts' => $forecastAccounts,
+            'alerts' => $alerts,
+            'forecasts' => $forecasts,
         ]);
     }
 
