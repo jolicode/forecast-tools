@@ -20,6 +20,7 @@ use KnpU\OAuth2ClientBundle\Security\Authenticator\SocialAuthenticator;
 use KnpU\OAuth2ClientBundle\Security\User\OAuthUser;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
@@ -40,12 +41,17 @@ class HarvestAuthenticator extends SocialAuthenticator
 
     public function start(Request $request, AuthenticationException $authException = null)
     {
-        return new RedirectResponse($this->urlGenerator->generate('connect_harvest'));
+        return new RedirectResponse(
+            $this->urlGenerator->generate('connect_harvest'),
+            Response::HTTP_TEMPORARY_REDIRECT
+        );
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
-        return new RedirectResponse($this->urlGenerator->generate('homepage'));
+        $message = strtr($exception->getMessageKey(), $exception->getMessageData());
+
+        return new Response($message, Response::HTTP_FORBIDDEN);
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
@@ -68,7 +74,7 @@ class HarvestAuthenticator extends SocialAuthenticator
         $harvestUser = $this->getHarvestClient()->fetchUserFromToken($credentials);
         $userData = $harvestUser->toArray();
         $email = $harvestUser->getEmail();
-        $user = $this->em->getRepository('App:User')->findOneBy(['email' => $email]);
+        $user = $this->em->getRepository(User::class)->findOneBy(['email' => $email]);
 
         if (!$user) {
             $user = new User();
@@ -100,7 +106,7 @@ class HarvestAuthenticator extends SocialAuthenticator
 
         $this->em->flush();
 
-        return new OAuthUser($email, ['ROLE_USER']);
+        return new OAuthUser($email, ['ROLE_USER', 'ROLE_OAUTH_USER']);
     }
 
     private function getHarvestClient(): OAuth2Client
