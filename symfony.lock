@@ -146,6 +146,12 @@
             "ref": "80acc9223a205cbf5d9828fd616c82a374d281dd"
         }
     },
+    "laminas/laminas-code": {
+        "version": "3.4.1"
+    },
+    "laminas/laminas-eventmanager": {
+        "version": "3.2.1"
+    },
     "laminas/laminas-zendframework-bridge": {
         "version": "1.0.0"
     },
@@ -190,6 +196,9 @@
             "version": "1.0",
             "ref": "67ea0f5db9d5393911b2f380cf234f111750c49c"
         }
+    },
+    "ocramius/package-versions": {
+        "version": "1.5.1"
     },
     "ocramius/proxy-manager": {
         "version": "2.1.1"
