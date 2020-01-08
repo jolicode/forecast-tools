@@ -1,0 +1,12 @@
+---
+
+- name: Finish | Symlink current release to be the current version
+  file:
+    state: link
+    path: "{{ deploy_directories_current }}"
+    src: "{{ deploy_directories_dest }}"
+    force: yes
+
+- name: Finish | Clean up releases
+  shell: ls -1dt {{ deploy_directories_releases }}/* | tail -n +{{ deploy_keep_releases | int + 1 }} | xargs rm -rf
+  when: deploy_keep_releases > 0

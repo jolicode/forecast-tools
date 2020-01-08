@@ -1,0 +1,17 @@
+[webservers]
+167.114.243.99
+
+[webservers:vars]
+ansible_user=debian
+ansible_python_interpreter=/usr/bin/python3
+
+deploy_env_name=prod
+deploy_directories_target=/home/{{ ansible_user }}/htdocs/forecast.jolicode.com/{{ deploy_env_name }}
+deploy_branch=feature/symfony-5
+
+deploy_database_user=forecast_prod
+deploy_database_password={{ database_forecast_prod_password }}
+deploy_database_name=forecast_prod
+
+app_env_harvest_id_client_id={{ app_env_harvest_id_client_id_prod }}
+app_env_harvest_id_client_secret={{ app_env_harvest_id_client_secret_prod }}

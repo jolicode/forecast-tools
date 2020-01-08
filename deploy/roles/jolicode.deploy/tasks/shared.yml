@@ -1,0 +1,37 @@
+---
+
+- name: Ensure the shared paths exist and are writable
+  file:
+    path: "{{ deploy_directories_shared }}/{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0755
+    recurse: yes
+  become: yes
+  become_method: sudo
+  with_items:
+    - "{{ deploy_shared_paths }}"
+
+# Retrieved from https://github.com/ansistrano/deploy/blob/master/tasks/symlink-shared.yml
+# Ensure symlinks target paths is absent
+# This was removed in 1.7.3 to improve speed but it introduced regressions in cases where
+# there are .gitkeep files in such folders (common practice in some PHP frameworks)
+- name: Ensure shared paths targets are absent
+  file:
+    state: absent
+    path: "{{ deploy_directories_dest }}/{{ item }}"
+  with_flattened:
+    - "{{ deploy_shared_paths }}"
+    - "{{ deploy_shared_files }}"
+
+# Symlinks shared paths and files
+- name: Create softlinks for shared paths and files
+  file:
+    state: link
+    path: "{{ deploy_directories_dest }}/{{ item }}"
+    src: "{{ deploy_directories_shared }}/{{ item }}"
+    force: yes
+  with_flattened:
+    - "{{ deploy_shared_paths }}"
+    - "{{ deploy_shared_files }}"
