@@ -1,0 +1,17 @@
+---
+
+deploy_repository: "ssh://git@github.com/jolicode/forecast-tools.git"
+
+deploy_directories_current: "{{ deploy_directories_target }}/current"
+deploy_directories_shared: "{{ deploy_directories_target }}/shared"
+deploy_directories_releases: "{{ deploy_directories_target }}/releases"
+
+deploy_shared_files:
+    - .env.local
+
+deploy_shared_paths:
+    - vendor
+    - node_modules
+    - var/log
+
+deploy_keep_releases: 2

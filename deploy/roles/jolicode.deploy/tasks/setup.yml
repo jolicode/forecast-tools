@@ -1,0 +1,27 @@
+---
+
+- name: Setup | Get release version
+  set_fact:
+    deploy_release_version: "{{ lookup('pipe', 'date -u +%Y%m%d%H%M%SZ') }}"
+  run_once: true
+  when: deploy_release_version is not defined
+  delegate_to: 127.0.0.1
+
+- name: Setup | Ensure releases folder exists
+  file:
+    state: directory
+    path: "{{ deploy_directories_releases }}"
+
+- name: Setup | Ensure shared folder exists
+  file:
+    state: directory
+    path: "{{ deploy_directories_shared }}"
+
+- set_fact:
+    deploy_directories_dest: "{{ deploy_directories_releases }}/{{ deploy_release_version }}"
+
+- name: Setup | Ensure deploy destination exists
+  file:
+    state: directory
+    path: "{{ deploy_directories_dest }}"
+    mode: 0755

@@ -1,0 +1,99 @@
+---
+
+- set_fact:
+    started_at: "{{ lookup('pipe','date +%s') }}"
+
+- name: Notify start in Slack
+  slack:
+    attachments:
+      - text:  "Starting deployment"
+        color: warning
+        fields:
+          - title: host
+            value: "{{ ansible_host }}"
+            short: True
+          - title: branch
+            value: "{{ deploy_branch }}"
+            short: True
+          - title: environment
+            value: "{{ deploy_env_name }}"
+            short: True
+    channel: "{{ slack_integration_channel }}"
+    token: "{{ slack_integration_token }}"
+    username: "Ansible deploy"
+
+- name: Setup deployment
+  include_tasks: setup.yml
+
+- name: Clone the projects
+  git: repo={{ deploy_repository }} dest={{ deploy_directories_dest }} accept_hostkey=yes version={{ deploy_branch }} depth=1 force=yes
+
+- name: Remove .git directory
+  file:
+    state: absent
+    path: "{{ deploy_directories_dest }}/.git/"
+
+- name: Ensure some dir are writeable
+  file: path={{ item }} state=directory owner={{ ansible_user }} group={{ ansible_user }} mode=0777 recurse=yes
+  become: yes
+  become_method: sudo
+  with_items:
+    - "{{ deploy_directories_dest }}/var"
+    - "{{ deploy_directories_dest }}/var/cache"
+
+- name: Set up shared paths and files
+  include_tasks: shared.yml
+
+- name: Set up correct ACLs
+  include_tasks: acl.yml
+
+- name: Copy the symfony .env.local file
+  template: src=.env.local.j2 dest={{ deploy_directories_dest }}/.env.local
+
+- name: Run composer install
+  composer: command=install working_dir={{ deploy_directories_dest }} no_dev=no prefer_dist=True optimize_autoloader=True
+
+- name: Copy release version into REVISION file
+  shell: echo {{ deploy_release_version }} > {{ deploy_directories_dest }}/var/REVISION
+
+- name: Warmup Symfony caches
+  shell: "cd {{ deploy_directories_dest }} && rm -rf var/cache/* && php bin/console cache:warmup"
+
+- name: Run yarn install
+  shell: "cd {{ deploy_directories_dest }} && yarn install --force"
+
+# - name: Update database
+#   shell: "cd {{ deploy_directories_dest }} && php bin/console doctrine:migrations:migrate -n"
+
+- name: Run yarn build task
+  shell: "cd {{ deploy_directories_dest }} && yarn run build"
+
+- name: Finish deployment
+  include_tasks: finish.yml
+
+- set_fact:
+    completed_at: "{{ lookup('pipe','date +%s') }}"
+
+- name: Notify end in Slack
+  slack:
+    attachments:
+      - text:  "Successful deployment :sunglasses:"
+        color: good
+        fields:
+          - title: host
+            value: "{{ ansible_host }}"
+            short: True
+          - title: branch
+            value: "{{ deploy_branch }}"
+            short: True
+          - title: environment
+            value: "{{ deploy_env_name }}"
+            short: True
+          - title: duration
+            value: "{{ completed_at|int - started_at|int }}s."
+            short: True
+          - title: release
+            value: "{{ deploy_directories_dest }}"
+    channel: "{{ slack_integration_channel }}"
+    token: "{{ slack_integration_token }}"
+    username: "Ansible deploy"

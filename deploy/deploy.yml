@@ -1,0 +1,29 @@
+- hosts: webservers
+  vars_files:
+    - vars/secrets.yml
+  tasks:
+    - name: Go go go deploy
+      block:
+        - import_role:
+            name: jolicode.deploy
+      rescue:
+        - name: Notify fail in Slack
+          slack:
+            attachments:
+              - text:  "Failed deployment :sob:"
+                color: danger
+                fields:
+                  - title: host
+                    value: "{{ ansible_host }}"
+                    short: True
+                  - title: branch
+                    value: "{{ deploy_branch }}"
+                    short: True
+                  - title: environment
+                    value: "{{ deploy_env_name }}"
+                    short: True
+                  - title: release
+                    value: "{{ deploy_directories_dest }}"
+            channel: "{{ slack_integration_channel }}"
+            token: "{{ slack_integration_token }}"
+            username: "Ansible deploy"

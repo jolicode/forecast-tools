@@ -1,0 +1,38 @@
+---
+
+- name: Add acls for users www-data & ansible_user
+  acl:
+    name: "{{ item[0] }}"
+    entity: "{{ item[1] }}"
+    etype: user
+    permissions: rwx
+    recursive: yes
+    follow: yes
+    state: present
+  with_nested:
+    -
+      - "{{ deploy_directories_dest }}/var"
+      - "{{ deploy_directories_dest }}/var/cache"
+      - "{{ deploy_directories_shared }}/var/log"
+    -
+      - "{{ ansible_user }}"
+      - "www-data"
+
+- name: Add acls for users www-data & ansible_user
+  acl:
+    name: "{{ item[0] }}"
+    entity: "{{ item[1] }}"
+    default: yes
+    etype: user
+    permissions: rwx
+    recursive: yes
+    follow: yes
+    state: present
+  with_nested:
+    -
+      - "{{ deploy_directories_dest }}/var"
+      - "{{ deploy_directories_dest }}/var/cache"
+      - "{{ deploy_directories_shared }}/var/log"
+    -
+      - "{{ ansible_user }}"
+      - "www-data"
