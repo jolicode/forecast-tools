@@ -65,3 +65,17 @@ and share it with us.
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE.md)
 file for details.
+
+## Deploy
+
+Install the Ansible deps:
+
+```sh
+$ pipenv install
+```
+
+Then for running the Ansible command, you can:
+- either enter into a pipenv shell with `pipenv shell`;
+- or prepend every Ansible command by `pipenv run`.
+
+Go ahead with the [deploy explanations](./deploy/README.md).
