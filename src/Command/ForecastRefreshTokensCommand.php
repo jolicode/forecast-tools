@@ -43,5 +43,7 @@ class ForecastRefreshTokensCommand extends Command
         $refreshed = $this->refresher->refresh();
 
         $io->success(sprintf('Refreshed %s tokens. %s errors occurred.', $refreshed[0], $refreshed[1]));
+
+        return 0;
     }
 }

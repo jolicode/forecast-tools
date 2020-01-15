@@ -43,5 +43,7 @@ class ForecastAlertSendCommand extends Command
         $count = $this->alertSender->send();
 
         $io->success(sprintf('Sent %s alerts', $count));
+
+        return 0;
     }
 }
