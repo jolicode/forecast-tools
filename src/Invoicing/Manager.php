@@ -14,7 +14,6 @@ namespace App\Invoicing;
 use App\Entity\InvoicingProcess;
 use App\Invoicing\DataSelector\ForecastDataSelector;
 use App\Invoicing\DataSelector\HarvestDataSelector;
-use JoliCode\Harvest\Api\Model\User;
 
 class Manager
 {
@@ -231,6 +230,7 @@ class Manager
      * @param $forecastEntries \JoliCode\Forecast\Api\Model\Assignment[]
      * @param $projects \JoliCode\Forecast\Api\Model\Project[]
      * @param $clients \JoliCode\Forecast\Api\Model\Client[]
+     * @param mixed $isWeekend
      */
     private function computeViolations($harvestEntries, $forecastEntries, $projects, $clients, $isWeekend): array
     {
@@ -242,11 +242,11 @@ class Manager
             'isWeekend' => $isWeekend,
         ];
 
-        if (!$isWeekend && count($forecastEntries) === 0) {
+        if (!$isWeekend && 0 === \count($forecastEntries)) {
             $result['violations']->add('No Forecast entry for this day. U no say what to do?');
         }
 
-        if (count($harvestEntries) != count($forecastEntries)) {
+        if (\count($harvestEntries) !== \count($forecastEntries)) {
             $result['violations']->add('Not the same number of projects in Harvest and Forecast for this day.');
         }
 
@@ -272,7 +272,7 @@ class Manager
 
                 if (null === $entry['harvestEntry']) {
                     $entry['violations']->add('Could not find a matching Harvest project.');
-                } elseif ((float)$entry['harvestEntry']->getHours() !== (float)$entry['forecastEntry']->getAllocation() / 3600) {
+                } elseif ((float) $entry['harvestEntry']->getHours() !== (float) $entry['forecastEntry']->getAllocation() / 3600) {
                     $entry['violations']->add('The assignments do not have the same duration in Harvest and in Forecast.');
                 }
             }
@@ -280,7 +280,7 @@ class Manager
             $result['forecastEntries'][] = $entry;
         }
 
-        if (count($harvestEntries)) {
+        if (\count($harvestEntries)) {
             $result['extraHarvestEntries'] = $harvestEntries;
             $result['violations']->add('Some assignments have been declared in Harvest but not in Forecast.');
         }
@@ -320,7 +320,7 @@ class Manager
         return false;
     }
 
-    private function  skipErrorsForUser(InvoicingProcess $invoicingProcess, int $userId): bool
+    private function skipErrorsForUser(InvoicingProcess $invoicingProcess, int $userId): bool
     {
         return \in_array(
             $userId,
