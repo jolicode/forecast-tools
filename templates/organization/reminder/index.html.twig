@@ -1,0 +1,289 @@
+{% extends 'organization/base.html.twig' %}
+
+{% block title %}Reminder | {{ parent() }}{% endblock %}
+
+{% form_theme form _self %}
+
+{% block _forecast_reminder_projectOverrides_entry_row %}
+    <div class="d-flex flex-wrap flex-row">
+        <div class="col-md-6 p-0">
+            {{ form_label(form.projectId, null, { label_attr: { class: 'd-md-none' }}) }}
+            {{ form_errors(form.projectId) }}
+            {{ form_widget(form.projectId, { attr: { class: 'form-control' }}) }}
+            {{ form_help(form.projectId) }}
+        </div>
+        <div class="col-md-5 p-0">
+            {{ form_label(form.name, null, { label_attr: { class: 'd-md-none' }}) }}
+            {{ form_errors(form.name) }}
+            {{ form_widget(form.name, { attr: { class: 'form-control' }}) }}
+            {{ form_help(form.name) }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block _forecast_reminder_clientOverrides_entry_row %}
+    <div class="d-flex flex-wrap flex-row">
+        <div class="col-md-6 p-0">
+            {{ form_label(form.clientId, null, { label_attr: { class: 'd-md-none' }}) }}
+            {{ form_errors(form.clientId) }}
+            {{ form_widget(form.clientId, { attr: { class: 'form-control' }}) }}
+            {{ form_help(form.clientId) }}
+        </div>
+        <div class="col-md-5 p-0">
+            {{ form_label(form.name, null, { label_attr: { class: 'd-md-none' }}) }}
+            {{ form_errors(form.name) }}
+            {{ form_widget(form.name, { attr: { class: 'form-control' }}) }}
+            {{ form_help(form.name) }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('reminder') }}
+{% endblock %}
+
+{% block content %}
+    {% set saveButton = form_widget(form.save) %}
+    {% for message in app.flashes('success') %}
+        <div class="flash-notice">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    {% if forecastAccount.slackChannels|length == 0 %}
+        {% set disabled = ' disabled' %}
+    {% else %}
+        {% set disabled = '' %}
+    {% endif %}
+
+    <nav>
+        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <a class="nav-item nav-link active" id="workspaces-tab" data-toggle="tab" href="#nav-workspaces" role="tab" aria-controls="nav-workspaces" aria-selected="true">Slack</a>
+            <a class="nav-item nav-link{{ disabled }}" id="timing-tab" data-toggle="tab" href="#nav-timing" role="tab" aria-controls="nav-timing" aria-selected="true">Timing</a>
+            <a class="nav-item nav-link{{ disabled }}" id="labels-tab" data-toggle="tab" href="#nav-labels" role="tab" aria-controls="nav-labels" aria-selected="false">Labels</a>
+            <a class="nav-item nav-link{{ disabled }}" id="users-tab" data-toggle="tab" href="#nav-users" role="tab" aria-controls="nav-users" aria-selected="false">Users</a>
+            <a class="nav-item nav-link{{ disabled }}" id="project-overrides-tab" data-toggle="tab" href="#nav-project-overrides" role="tab" aria-controls="nav-project-overrides" aria-selected="false">Project overrides</a>
+            <a class="nav-item nav-link{{ disabled }}" id="client-overrides-tab" data-toggle="tab" href="#nav-client-overrides" role="tab" aria-controls="nav-client-overrides" aria-selected="false">Client overrides</a>
+        </div>
+    </nav>
+
+    <div class="card border-top-0">
+        {{ form_start(form) }}
+            <div class="tab-content" id="nav-tabContent">
+                <div class="tab-pane show active" id="nav-workspaces" role="tabpanel" aria-labelledby="workspaces-tab">
+                    <div class="card-body">
+                        {{ form_errors(form) }}
+
+                        {% if forecastAccount.slackChannels|length == 0 %}
+                            <div class="alert alert-danger mb-0 d-flex" role="alert">
+                                <div class="flex-grow-1 py-1">This reminder cannot be executed, as no Slack workspace has been added.</div>
+                            </div>
+                        {% else %}
+                            {% if forecastAccount.forecastReminder is null or not forecastAccount.forecastReminder.isEnabled %}
+                                <div class="alert alert-danger mb-0 d-flex" role="alert">
+                                    <div class="flex-grow-1 py-1">This reminder is muted.</div>
+                                    <button type="button" onclick="$('#timing-tab').tab('show')" class="btn btn-primary btn-sm">enable</button>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-success mb-0 d-flex" role="alert">
+                                    <div class="flex-grow-1 py-1">This reminder is enabled.</div>
+                                    <button type="button" onclick="$('#timing-tab').tab('show')" class="btn btn-primary btn-sm">disable</button>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+
+                        <div class="d-flex flex-wrap flex-row">
+                            {% for slackChannel in forecastAccount.slackChannels %}
+                                <div class="card card-body col-md-4 col-xl-3 mt-3 mr-3">
+                                    <a data-href="{{ organization_path('settings_slack_delete', {slackChanneId: slackChannel.id})}}" class="close position-absolute" aria-label="Close" style="top: 1rem; right: 1rem"  data-toggle="modal" data-target="#confirm-delete">
+                                        <span aria-hidden="true">&times;</span>
+                                    </a>
+                                    <h5 class="card-title">{{ slackChannel.teamName }}</h5>
+                                    <p class="card-text">
+                                        Posts in <code>{{ slackChannel.webhookChannel }}</code><br />
+                                        Added by <code>{{ slackChannel.updatedBy.name }}</code><br />
+                                        Added on <code>{{ slackChannel.updatedAt|date('F jS, Y, G:i')  }}</code>
+                                    </p>
+                                    <p>
+                                        <a href="{{ slackChannel.webhookConfigurationUrl }}" class="btn btn-primary">✏️&nbsp;&nbsp;Manage on Slack</a>
+                                    </p>
+                                </div>
+                            {% endfor %}
+
+                            <div class="card card-body col-md-4 col-xl-3 mt-3 mr-3">
+                                <h5 class="card-title">Add a Slack workspace</h5>
+                                <p class="card-text">
+                                    <a href="{{ organization_path('settings_slack') }}">Add a Slack workspace</a> to receive the reminder in this workspace.
+                                </p>
+                                <p class="card-text">
+                                    If you add several workspaces, the reminder will be sent to all of these workspaces.
+                                </p>
+                                <p>
+                                    <a href="{{ organization_path('settings_slack_install') }}"><img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x"></a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="nav-timing" role="tabpanel" aria-labelledby="timing-tab">
+                    <div class="card-body">
+                        <div class="custom-control custom-switch">
+                            {{ form_widget(form.isEnabled, { attr: { class: 'custom-control-input' }}) }}
+                            {{ form_label(form.isEnabled, null, { label_attr: { class: 'custom-control-label' }}) }}
+                            {{ form_errors(form.isEnabled) }}
+                            {{ form_help(form.isEnabled) }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.cronExpression) }}
+                            {{ form_errors(form.cronExpression) }}
+                            {{ form_widget(form.cronExpression, { attr: { class: 'form-control' }}) }}
+                            {{ form_help(form.cronExpression) }}
+                        </div>
+                    </div>
+                    <div class="card-footer text-right">
+                        {% if forecastAccount.forecastReminder %}
+                            <small class="float-left mt-2">
+                                last updated by <code>{{ forecastAccount.forecastReminder.updatedBy.name }}</code>
+                                on <code>{{ forecastAccount.forecastReminder.updatedAt|date('F jS, Y, G:i')  }}</code>
+                            </small>
+                        {% endif %}
+                        {{ saveButton|raw }}
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="nav-labels" role="tabpanel" aria-labelledby="labels-tab">
+                    <div class="card-body">
+                        <div class="form-group">
+                            {{ form_label(form.defaultActivityName) }}
+                            {{ form_errors(form.defaultActivityName) }}
+                            {{ form_widget(form.defaultActivityName, { attr: { class: 'form-control' }}) }}
+                            {{ form_help(form.defaultActivityName) }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.timeOffProjects) }}
+                            {{ form_errors(form.timeOffProjects) }}
+                            {{ form_widget(form.timeOffProjects, { attr: { class: 'select2 multiple' }}) }}
+                            {{ form_help(form.timeOffProjects) }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.timeOffActivityName) }}
+                            {{ form_errors(form.timeOffActivityName) }}
+                            {{ form_widget(form.timeOffActivityName, { attr: { class: 'form-control' }}) }}
+                            {{ form_help(form.timeOffActivityName) }}
+                        </div>
+                    </div>
+                    <div class="card-footer text-right">
+                        {% if forecastAccount.forecastReminder %}
+                            <small class="float-left mt-2">
+                                last updated by <code>{{ forecastAccount.forecastReminder.updatedBy.name }}</code>
+                                on <code>{{ forecastAccount.forecastReminder.updatedAt|date('F jS, Y, G:i')  }}</code>
+                            </small>
+                        {% endif %}
+                        {{ saveButton|raw }}
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="nav-users" role="tabpanel" aria-labelledby="users-tab">
+                    <div class="card-body">
+                        <div class="form-group">
+                            {{ form_label(form.onlyUsers) }}
+                            {{ form_errors(form.onlyUsers) }}
+                            {{ form_widget(form.onlyUsers, { attr: { class: 'select2 multiple' }}) }}
+                            {{ form_help(form.onlyUsers) }}
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(form.exceptUsers) }}
+                            {{ form_errors(form.exceptUsers) }}
+                            {{ form_widget(form.exceptUsers, { attr: { class: 'select2 multiple' }}) }}
+                            {{ form_help(form.exceptUsers) }}
+                        </div>
+                    </div>
+                    <div class="card-footer text-right">
+                        {% if forecastAccount.forecastReminder %}
+                            <small class="float-left mt-2">
+                                last updated by <code>{{ forecastAccount.forecastReminder.updatedBy.name }}</code>
+                                on <code>{{ forecastAccount.forecastReminder.updatedAt|date('F jS, Y, G:i')  }}</code>
+                            </small>
+                        {% endif %}
+                        {{ saveButton|raw }}
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="nav-project-overrides" role="tabpanel" aria-labelledby="project-overrides-tab">
+                    <div class="card-body">
+                        <div class="form-group">
+                            {{ form_label(form.projectOverrides, null, { label_attr: { class: 'd-md-none' }}) }}
+                            {{ form_help(form.projectOverrides, { help_attr: { class: 'text-normal' }}) }}
+                            {{ form_errors(form.projectOverrides) }}
+                            <div>
+                                {{ form_widget(form.projectOverrides, { attr: { class: 'overrides-container' }}) }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-right">
+                        {% if forecastAccount.forecastReminder %}
+                            <small class="float-left mt-2">
+                                last updated by <code>{{ forecastAccount.forecastReminder.updatedBy.name }}</code>
+                                on <code>{{ forecastAccount.forecastReminder.updatedAt|date('F jS, Y, G:i')  }}</code>
+                            </small>
+                        {% endif %}
+                        {{ saveButton|raw }}
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="nav-client-overrides" role="tabpanel" aria-labelledby="client-overrides-tab">
+                    <div class="card-body">
+                        <div class="form-group">
+                            {{ form_label(form.clientOverrides, null, { label_attr: { class: 'd-md-none' }}) }}
+                            {{ form_help(form.clientOverrides, { help_attr: { class: 'text-normal' }}) }}
+                            {{ form_errors(form.clientOverrides) }}
+                            <div>
+                                {{ form_widget(form.clientOverrides, { attr: { class: 'overrides-container' }}) }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-right">
+                        {% if forecastAccount.forecastReminder %}
+                            <small class="float-left mt-2">
+                                last updated by <code>{{ forecastAccount.forecastReminder.updatedBy.name }}</code>
+                                on <code>{{ forecastAccount.forecastReminder.updatedAt|date('F jS, Y, G:i')  }}</code>
+                            </small>
+                        {% endif %}
+                        {{ saveButton|raw }}
+                    </div>
+                </div>
+            </div>
+        {{ form_end(form) }}
+    </div>
+
+    <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    Delete this Slack workspace?
+                </div>
+                <div class="modal-body">
+                    Do you really want to delete this Slack workspace? If you confirm, the reminder
+                    will not be sent to this workspace anymore.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <a class="btn btn-danger btn-ok">Yes, delete</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function(event) {
+        jQuery('#confirm-delete').on('show.bs.modal', function(e) {
+            jQuery(this).find('.btn-ok').attr('href', jQuery(e.relatedTarget).data('href'));
+        });
+    });
+    </script>
+{% endblock %}

@@ -11,13 +11,14 @@
 
 namespace App\Controller;
 
-use App\Entity\ForecastAccount;
-use App\Repository\ForecastAlertRepository;
-use App\Repository\PublicForecastRepository;
+use App\Entity\PublicForecast;
+use App\Forecast\Builder;
+use App\Repository\ForecastAccountRepository;
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
@@ -26,60 +27,71 @@ class HomeController extends AbstractController
     /**
      * @Route("/", name="homepage")
      */
-    public function index(AuthorizationCheckerInterface $authChecker, ForecastAlertRepository $alertRepository, PublicForecastRepository $forecastRepository)
+    public function index(AuthorizationCheckerInterface $authChecker, ForecastAccountRepository $forecastAccountRepository, UserRepository $userRepository)
     {
-        $alerts = [];
-        $forecasts = [];
-
         if (true === $authChecker->isGranted('ROLE_USER')) {
-            $user = $this->getUser();
-            $alerts = $alertRepository->findForUser($user);
-            $forecasts = $forecastRepository->findForUser($user);
+            $user = $userRepository->findOneBy(['email' => $this->getUser()->getUsername()]);
+            $forecastAccounts = $forecastAccountRepository->findForecastAccountsForUser($user);
+
+            return new RedirectResponse(
+                $this->generateUrl('organization_homepage', [
+                    'slug' => $forecastAccounts[0]->getSlug(),
+                ]),
+                Response::HTTP_TEMPORARY_REDIRECT
+            );
         }
 
-        return $this->render('home/index.html.twig', [
-            'alerts' => $alerts,
-            'forecasts' => $forecasts,
-        ]);
+        return $this->render('home/index.html.twig');
     }
 
     /**
-     * @Route("/data/{id}", name="data")
+     * @Route("/forecast/{token}", name="public_forecast")
+     * @Route("/forecast/{token}/{start}/{end}", name="public_forecast_start_end")
+     *
+     * @param mixed|null $start
+     * @param mixed|null $end
      */
-    public function data(Request $request, ForecastAccount $account)
+    public function forecast(Builder $forecastBuilder, PublicForecast $publicForecast, $start = null, $end = null)
     {
-        $user = $this->getDoctrine()->getManager()->getRepository('App:User')
-            ->findOneBy(['email' => $this->getUser()->getUsername()]);
-
-        if (!$user->hasForecastAccount($account)) {
-            throw new AccessDeniedHttpException();
+        if (null === $start) {
+            $start = new \DateTime('first day of this month');
+        } else {
+            $start = new \DateTime($start);
         }
 
-        $client = \JoliCode\Forecast\ClientFactory::create(
-            $account->getAccessToken(),
-            $account->getForecastId()
-        );
+        if (null === $end) {
+            $end = new \DateTime('last day of this month');
+        } else {
+            $end = new \DateTime($end);
+        }
 
-        $mapper = function ($item) {
-            return [
-                'id' => $item->getId(),
-                'text' => $item->getName(),
-            ];
-        };
+        if ($start >= $end) {
+            throw new \DomainException('Please have the end date be after the start date.');
+        }
 
-        $clients = array_map($mapper, $client->listClients()->getClients());
-        $projects = array_map($mapper, $client->listProjects()->getProjects());
-        $users = array_map(function ($item) {
-            return [
-                'id' => $item->getId(),
-                'text' => $item->getFirstname() . ' ' . $item->getLastname(),
-            ];
-        }, $client->listPeople()->getPeople());
+        $assignments = $forecastBuilder->buildAssignments($publicForecast, $start, $end);
+        list($days, $weeks, $months) = $forecastBuilder->buildDays($start, $end);
 
-        return new JsonResponse([
-            'clients' => $clients,
-            'projects' => $projects,
-            'users' => $users,
+        return $this->render('home/public-forecast.html.twig', [
+            'assignments' => $assignments,
+            'days' => $days,
+            'months' => $months,
+            'weeks' => $weeks,
+            'start' => $start,
+            'end' => $end,
+            'today' => (new \DateTime())->format('Y-m-d'),
+            'publicForecast' => $publicForecast,
+        ]);
+    }
+
+    public function loginInfo(ForecastAccountRepository $forecastAccountRepository, RequestStack $requestStack)
+    {
+        $forecastAccounts = $forecastAccountRepository->findForecastAccountsForEmail($this->getUser()->getUsername());
+        $request = $requestStack->getMasterRequest();
+
+        return $this->render('home/loginInfo.html.twig', [
+            'forecastAccounts' => $forecastAccounts,
+            'currentAccount' => $request->attributes->get('forecastAccount'),
         ]);
     }
 }

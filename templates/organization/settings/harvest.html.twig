@@ -1,0 +1,32 @@
+{% extends 'organization/base.html.twig' %}
+
+{% block title %}Harvest settings | {{ parent() }}{% endblock %}
+
+{% block content %}
+    {{ include('organization/settings/_menu.html.twig', {menu: 'harvest'}) }}
+    <div class="card border-top-0">
+        {{ form_start(form) }}
+            <div class="card-body">
+                <div class="form-group">
+                    {{ form_label(form.doNotCheckTimesheetsFor) }}
+                    {{ form_errors(form.doNotCheckTimesheetsFor) }}
+                    <div>
+                        {{ form_widget(form.doNotCheckTimesheetsFor, { attr: { class: 'form-control select2 multiple' }}) }}
+                    </div>
+                    {{ form_help(form.doNotCheckTimesheetsFor) }}
+                </div>
+                <div class="custom-control custom-switch">
+                    {{ form_widget(form.hideSkippedUsers, { attr: { class: 'custom-control-input' }}) }}
+                    {{ form_label(form.hideSkippedUsers, null, { label_attr: { class: 'custom-control-label' }}) }}
+                    {{ form_errors(form.hideSkippedUsers) }}
+                    {{ form_help(form.hideSkippedUsers) }}
+                </div>
+
+                {{ form_errors(form) }}
+            </div>
+            <div class="card-footer text-right">
+                {{ form_widget(form.save) }}
+            </div>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

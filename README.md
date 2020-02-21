@@ -1,43 +1,111 @@
 # Forecast tools
 
-Forecast tools improves the overall experience with Harvest Forecast, and adds some features:
+Forecast tools improves the overall experience with Harvest & Harvest Forecast, and adds some features:
 
- * send Slack notification with tomorrow's schedule ;
- * share a Client's or Project's forecast with a client.
+ * share publicly a Client's or Project's forecast
+ * have Slack notifications for the team's schedule
+ * a Slack command for letting team members know the schedule
+ * mass-insert entries in Harvest timesheets or Forecast schedules
+ * Harvest timesheets and Forecast schedules comparison
+ * Invoicing workflow for a stronger validation
 
-## Install
+## Requirements
 
- * clone the project
+A Docker environment is provided and requires you to have these tools available:
+
+ * Docker
+ * pipenv
+
+Install and run `pipenv` to install the required tools:
+
+```bash
+pipenv install
+```
+
+You can configure your current shell to be able to use fabric commands directly
+(without having to prefix everything by `pipenv run`)
+
+```bash
+pipenv shell
+```
+
+## Starting up
+
+### Clone the project
 
 ```sh
 $ git clone https://github.com/jolicode/forecast-tools.git
 ```
- * create an Harvest application at https://id.getharvest.com/developers
-   * Name: choose whatever name you want
-   * Redirect URL: use your deployment domain, or `http://127.0.0.1:8000` if testing locally
-   * Multi Account: choose "I can work with multiple accounts"
-   * Products: choose "I want access to Forecast"
- * copy `.env` to `.env.local`, edit its values accordingly
- * install dependencies:
+
+### Get a Harvest developer key
+
+Create an Harvest application at https://id.getharvest.com/developers
+  * Name: choose whatever name you want
+  * Redirect URL: use your deployment domain, or `http://127.0.0.1:8000` if testing locally
+  * Multi Account: choose "I can work with multiple accounts"
+  * Products: choose "I want access to Forecast"
+
+Then, copy `.env` file to `.env.local`, and edit its values accordingly.
+
+### Domain configuration (first time only)
+
+Before running the application for the first time, ensure your domain names
+point the IP of your Docker daemon by editing your `/etc/hosts` file.
+
+This IP is probably `127.0.0.1` unless you run Docker in a special VM (docker-machine, dinghy, etc).
+
+Note: The router binds port 80 and 443, that's why it will work with `127.0.0.1`
 
 ```sh
-$ composer install
-$ yarn install
+$ echo '127.0.0.1 local.forecast.jolicode.com' | sudo tee -a /etc/hosts
 ```
 
- * build assets:
+Using dinghy? Run `dinghy ip` to get the IP of the VM.
+
+### Starting the stack
+
+Launch the stack by running this command:
 
 ```sh
-$ yarn run build
+$ fab start
 ```
 
-## Run
+> Note: the first start of the stack should take a few minutes.
 
-Run the webserver:
+The site is now accessible at the hostnames your have configured over HTTPS
+(you may need to accept self-signed SSL certificate).
+
+### Assets watcher
+
+Watch for changes:
 
 ```sh
-$ ./bin/console server:run
+$ fab watch
 ```
+
+### CS fix
+
+```sh
+$ fab cs
+```
+
+### Builder
+
+Having some composer, yarn or another modifications to make on the project?
+Start the builder which will give you access to a container with all these
+tools available:
+
+```sh
+$ fab builder
+```
+
+Note: You can add as many fabric command as you want. But the command should be
+ran by the builder, don't forget to add `@with_builder` annotation to the
+function.
+
+### Other tasks
+
+Checkout `fab -l` to have the list of available fabric tasks.
 
 ## Cron jobs
 
@@ -67,15 +135,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE.md)
 file for details.
 
 ## Deploy
-
-Install the Ansible deps:
-
-```sh
-$ pipenv install
-```
-
-Then for running the Ansible command, you can:
-- either enter into a pipenv shell with `pipenv shell`;
-- or prepend every Ansible command by `pipenv run`.
 
 Go ahead with the [deploy explanations](./deploy/README.md).

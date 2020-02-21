@@ -1,0 +1,36 @@
+<div class="btn-group stepsbar d-flex mb-3" role="group" aria-label="Basic example">
+	<span class="btn btn-primary">Create</span>
+	{%
+	set placeToLabel = {
+		created: 'Collect',
+		timesheets_collected: 'Reconcile',
+		forecast_reconciliated: 'Approve',
+		timesheets_approved: 'Check',
+		all_hours_invoiced: 'Pending validation',
+		submitted: 'Completed',
+	}
+	%}
+	{% if invoicingProcess and invoicingProcess.id %}
+		{% set status = '' %}
+		{%
+		set placeToRoute = {
+			created: 'collect',
+			timesheets_collected: 'reconcile',
+			forecast_reconciliated: 'approve',
+			timesheets_approved: 'check',
+			all_hours_invoiced: 'validate',
+			submitted: 'completed',
+		}
+		%}
+		{% for place, route in placeToRoute %}
+			<a class="btn btn-primary{{ status }}" href="{{ organization_path('invoicing_transition', { transition: route, invoicingId: invoicingProcess.id }) }}">{{ placeToLabel[place] }}</a>
+			{% set status = (transition == route) ? ' available' : status %}
+			{% set status = (invoicingProcess.currentPlace == place) ? ' disabled' : status %}
+		{% endfor %}
+	{% else %}
+		{% for label in placeToLabel %}
+			<span class="btn btn-primary disabled">{{ label }}</span>
+		{% endfor %}
+	{% endif %}
+</div>
+

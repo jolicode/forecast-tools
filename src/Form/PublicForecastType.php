@@ -13,75 +13,36 @@ namespace App\Form;
 
 use App\Entity\ForecastAccount;
 use App\Entity\PublicForecast;
-use App\Repository\ForecastAccountRepository;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormEvent;
-use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class PublicForecastType extends AbstractType
 {
-    private $forecastAccountRepository;
-
-    public function __construct(ForecastAccountRepository $forecastAccountRepository)
-    {
-        $this->forecastAccountRepository = $forecastAccountRepository;
-    }
+    private $clients = [];
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+        $clients = $this->buildClients($options['forecastAccount']);
+
         $builder
             ->add('name', null, [
                 'help' => 'Give here a name to this public forecast, it will help you recognize it afterwards.',
             ])
-            ->add('forecastAccount', EntityType::class, [
-                'class' => ForecastAccount::class,
-                'query_builder' => function (ForecastAccountRepository $forecastAccountRepository) use ($options) {
-                    return $forecastAccountRepository->createQueryBuilder('a')
-                        ->join('a.users', 'u')
-                        ->where('u.id = :userId')
-                        ->orderBy('a.name', 'ASC')
-                        ->setParameter('userId', $options['currentUser']->getId())
-                    ;
-                },
-                'help' => 'Please choose a Forecast account. If you change of account after you have configured some options below, those will be reset.',
-            ])
             ->add('clients', ChoiceType::class, [
-                'choices' => [],
+                'choices' => $clients,
                 'required' => false,
                 'multiple' => true,
                 'help' => 'Please choose here the clients to display in the forecast.',
             ])
             ->add('projects', ChoiceType::class, [
-                'choices' => [],
+                'choices' => $this->buildProjects($options['forecastAccount']),
                 'required' => false,
                 'multiple' => true,
                 'help' => 'Please select here the projects to be displayed in the forecast. If you have also selected clients in the field above, please note that only projects matching these clients will be displayed.',
             ])
         ;
-
-        $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
-            if ($event->getData()) {
-                $account = $event->getData()->getForecastAccount();
-
-                if ($account) {
-                    $this->updateAccount($event->getForm(), $account);
-                }
-            }
-        });
-
-        $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
-            if ($event->getData()) {
-                $account = $this->forecastAccountRepository->findOneById($event->getData()['forecastAccount']);
-
-                if ($account) {
-                    $this->updateAccount($event->getForm(), $account);
-                }
-            }
-        });
     }
 
     public function configureOptions(OptionsResolver $resolver)
@@ -90,58 +51,54 @@ class PublicForecastType extends AbstractType
             'data_class' => PublicForecast::class,
         ]);
         $resolver->setRequired([
-            'currentUser',
+            'forecastAccount',
         ]);
     }
 
-    protected function updateAccount($form, $account)
-    {
-        $projects = $this->buildProjects($account);
-        $clients = $this->buildClients($account);
-
-        $form->add('clients', ChoiceType::class, [
-            'choices' => $clients,
-            'required' => false,
-            'multiple' => true,
-            'help' => 'Please choose here the clients to display in the forecast.',
-        ]);
-
-        $form->add('projects', ChoiceType::class, [
-            'choices' => $projects,
-            'required' => false,
-            'multiple' => true,
-            'help' => 'Please select here the projects to be displayed in the forecast. If you have also selected clients in the field above, please note that only projects matching these clients will be displayed.',
-        ]);
-    }
-
-    protected function buildClients($account): array
+    protected function buildClients(ForecastAccount $forecastAccount): array
     {
         $choices = [];
         $client = \JoliCode\Forecast\ClientFactory::create(
-            $account->getAccessToken(),
-            $account->getForecastId()
+            $forecastAccount->getAccessToken(),
+            $forecastAccount->getForecastId()
         );
         $clients = $client->listClients()->getClients();
 
         foreach ($clients as $clientObject) {
-            $choices[$clientObject->getName()] = $clientObject->getId();
+            if (!$clientObject->getArchived()) {
+                $choices[$clientObject->getName()] = $clientObject->getId();
+            }
+
+            $this->clients[$clientObject->getId()] = $clientObject;
         }
+
+        ksort($choices);
 
         return $choices;
     }
 
-    protected function buildProjects($account): array
+    protected function buildProjects(ForecastAccount $forecastAccount): array
     {
         $choices = [];
         $client = \JoliCode\Forecast\ClientFactory::create(
-            $account->getAccessToken(),
-            $account->getForecastId()
+            $forecastAccount->getAccessToken(),
+            $forecastAccount->getForecastId()
         );
         $projects = $client->listProjects()->getProjects();
 
         foreach ($projects as $project) {
-            $choices[$project->getName()] = $project->getId();
+            if (!$project->getArchived()) {
+                if (isset($this->clients[$project->getClientId()])) {
+                    $key = sprintf('%s - %s', $this->clients[$project->getClientId()]->getName(), $project->getName());
+                } else {
+                    $key = $project->getName();
+                }
+
+                $choices[$key] = $project->getId();
+            }
         }
+
+        ksort($choices);
 
         return $choices;
     }

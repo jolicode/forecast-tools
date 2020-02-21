@@ -1,0 +1,41 @@
+{% extends 'organization/base.html.twig' %}
+
+{% block content %}
+    {{ include('organization/invoicing/_progress.html.twig', {step: 'create'}) }}
+    {{ form_start(form) }}
+        <div class="card">
+            <div class="card-body">
+                <p>
+                    Start by creating a new "invoicing process", which will help you to bill hours of completed work for a
+                    given uninvoiced period. An "invoicing process" will guide you through different steps, to avoid
+                    common mistakes and ensure that no completed work remains uninvoiced.
+                </p>
+
+                <p>
+                    First, define the period for which you want to create invoices. It must not overlap with other billing
+                    processes periods.
+                </p>
+
+                <div class="form-group">
+                    {{ form_label(form.billingPeriodStart) }}
+                    {{ form_errors(form.billingPeriodStart) }}
+                    {{ form_widget(form.billingPeriodStart, { attr: { class: 'form-control' }}) }}
+                    {{ form_help(form.billingPeriodStart) }}
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(form.billingPeriodEnd) }}
+                    {{ form_errors(form.billingPeriodEnd) }}
+                    {{ form_widget(form.billingPeriodEnd, { attr: { class: 'form-control' }}) }}
+                    {{ form_help(form.billingPeriodEnd) }}
+                </div>
+
+                {{ form_errors(form) }}
+            </div>
+
+            <div class="card-footer text-right">
+                {{ form_widget(form.save) }}
+            </div>
+        </div>
+    {{ form_end(form) }}
+{% endblock %}
