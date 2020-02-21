@@ -59,6 +59,7 @@ class ForecastClient extends AbstractClient
 
         // The callable will only be executed on a cache miss.
         $this->__addKey($cacheKey);
+
         return $this->pool->get($cacheKey, function (ItemInterface $item) use ($name, $arguments, $nodeName) {
             return $this->call($name, $arguments, $nodeName);
         });

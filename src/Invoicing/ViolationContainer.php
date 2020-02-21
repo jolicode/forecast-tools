@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of JoliCode's Forecast Tools project.
+ *
+ * (c) JoliCode <coucou@jolicode.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace App\Invoicing;
 
 class ViolationContainer
@@ -19,7 +28,7 @@ class ViolationContainer
         $this->violations[] = $value;
     }
 
-    public function addDesc(ViolationContainer $desc): void
+    public function addDesc(self $desc): void
     {
         $this->descViolationContainers[] = $desc;
     }
@@ -31,7 +40,7 @@ class ViolationContainer
 
     public function count(bool $withDesc = true): int
     {
-        $count = count($this->violations);
+        $count = \count($this->violations);
 
         if ($withDesc) {
             foreach ($this->descViolationContainers as $desc) {
@@ -44,6 +53,6 @@ class ViolationContainer
 
     public function hasViolations(bool $withDesc = true): bool
     {
-        return ($this->count($withDesc) > 0);
+        return $this->count($withDesc) > 0;
     }
 }

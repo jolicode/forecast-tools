@@ -34,7 +34,7 @@ class ForecastDataSelector
         return $this->client->listAssignments([
             'start_date' => $from->format('Y-m-d'),
             'end_date' => $to->format('Y-m-d'),
-            'state' => 'active'
+            'state' => 'active',
         ], 'assignments')->getAssignments();
     }
 
@@ -53,7 +53,7 @@ class ForecastDataSelector
     {
         $people = $this->client->listPeople('people')->getPeople();
 
-        return array_filter($people, function(Person $item) {
+        return array_filter($people, function (Person $item) {
             return !$item->getArchived();
         });
     }
