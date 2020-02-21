@@ -53,22 +53,6 @@ h2 {
   margin: 1rem 0;
 }
 
-input.form-control {
-  width: calc(100% - 1.5rem);
-}
-
-.homepage p {
-  padding: 5px 0;
-}
-
-.homepage li {
-  list-style-type: none;
-}
-
-.homepage ul {
-  padding: 0;
-}
-
 a.button {
   background-color: #f8f8f8;
   border: 1px #00b7ff solid;

@@ -1,4 +1,9 @@
-.select2-container {
+.select2-container--open {
+  max-width: calc(100% - 1.5rem) !important;
+  width: auto !important;
+}
+
+form .select2-container {
   width: calc(100% - 1.5rem) !important;
 }
 

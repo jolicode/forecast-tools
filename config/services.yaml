@@ -27,6 +27,15 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
+    App\Controller\Organization\SettingsController:
+        arguments:
+            $slackClientId: '%env(SLACK_CLIENT_ID)%'
+            $slackClientSecret: '%env(SLACK_CLIENT_SECRET)%'
+
+    App\Controller\Organization\InvoicingController:
+        arguments:
+            $invoicingStateMachine: '@state_machine.invoicing'
+
     Http\Client\HttpClient:
         alias: Http\Client\Curl\Client
 
@@ -36,3 +45,18 @@ services:
         alias: Nyholm\Psr7\Factory\HttplugFactory
 
     Nyholm\Psr7\Factory\HttplugFactory: ~
+
+    app.harvest_redis_provider:
+        class: \Redis
+        factory: ['Symfony\Component\Cache\Adapter\RedisAdapter', 'createConnection']
+        arguments:
+            - '%env(resolve:REDIS_URL)%'
+            - { retry_interval: 2, timeout: 10 }
+
+    App\Client\ForecastClient:
+        arguments:
+            $pool: '@forecast_pool'
+
+    App\Client\HarvestClient:
+        arguments:
+            $pool: '@harvest_pool'

@@ -1,0 +1,56 @@
+{% extends 'organization/base.html.twig' %}
+
+{% block title %}Invoicing |
+	{{ parent() }}
+{% endblock %}
+
+{% block content %}
+	<div class="card card-body mb-3">
+		<h2 class="card-title">Start a new invoicing process</h2>
+
+		<p>
+			You may start by creating a new "invoicing process", which will help you to bill hours of completed work for a
+            given uninvoiced period. An "invoicing process" will guide you through different steps, to avoid
+            common mistakes and ensure that no completed work remains uninvoiced.
+		</p>
+
+		<p class="text-right">
+			<a href="{{ organization_path('invoicing_create') }}" class="btn btn-primary">🤑&nbsp;&nbsp;Start a new invoicing process</a>
+		</p>
+	</div>
+
+    {% if invoicingProcesses|length > 0 %}
+        <div class="card card-body">
+            <h2 class="card-title">Invoicing processes</h2>
+
+            <table class="table border-bottom">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Created at</th>
+                        <th scope="col">Current Status</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for invoicingProcess in invoicingProcesses %}
+                        <tr>
+                            <td class="align-middle">
+                                {{ invoicingProcess.billingPeriodStart|date('F jS, Y') }}
+                                ⟶
+                                {{ invoicingProcess.billingPeriodEnd|date('F jS, Y') }}
+                            </td>
+                            <td class="align-middle">
+                                <code>{{ invoicingProcess.createdAt|date('F jS, Y, G:i')  }}</code>
+                            </td>
+                            <td class="align-middle">{{ invoicingProcess.currentPlace|join(', ', ' and ')}}</td>
+                            <td class="align-middle">
+                                <a href="{{ organization_path('invoicing_resume', { invoicingId: invoicingProcess.id }) }}" class="btn btn-primary btn-sm">resume</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+{% endblock %}

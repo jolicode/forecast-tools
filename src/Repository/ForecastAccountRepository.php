@@ -42,4 +42,22 @@ class ForecastAccountRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
+
+    public function findForecastAccountsForEmail(string $email)
+    {
+        return $this->createQueryBuilder('f')
+            ->select('f')
+            ->leftJoin('f.userForecastAccounts', 'ufa')
+            ->leftJoin('ufa.user', 'u')
+            ->andWhere('u.email = :email')
+            ->setParameter('email', $email)
+            ->orderBy('f.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findForecastAccountsForUser($user)
+    {
+        return $this->findForecastAccountsForEmail($user->getEmail());
+    }
 }

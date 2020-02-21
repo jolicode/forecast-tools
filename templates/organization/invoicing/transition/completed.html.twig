@@ -1,0 +1,16 @@
+{% extends 'organization/base.html.twig' %}
+
+{% block content %}
+    {{ include('organization/invoicing/_progress.html.twig', {invoicingProcess: invoicingProcess, transition: transition}) }}
+    <div class="card">
+        <div class="card-body">
+            <p>
+                Ok, completed.
+            </p>
+        </div>
+
+        <div class="card-footer text-right">
+            You know nothing, Jon.
+        </div>
+    </div>
+{% endblock %}

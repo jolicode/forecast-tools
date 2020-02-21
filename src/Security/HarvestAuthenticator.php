@@ -12,8 +12,18 @@
 namespace App\Security;
 
 use App\Entity\ForecastAccount;
+use App\Entity\HarvestAccount;
 use App\Entity\User;
+use App\Entity\UserForecastAccount;
+use App\Entity\UserHarvestAccount;
+use App\Repository\ForecastAccountRepository;
+use App\Repository\HarvestAccountRepository;
+use App\Repository\UserForecastAccountRepository;
+use App\Repository\UserHarvestAccountRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use JoliCode\Forecast\ClientFactory as ForecastClientFactory;
+use JoliCode\Harvest\ClientFactory as HarvestClientFactory;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 use KnpU\OAuth2ClientBundle\Client\OAuth2Client;
 use KnpU\OAuth2ClientBundle\Security\Authenticator\SocialAuthenticator;
@@ -30,13 +40,32 @@ class HarvestAuthenticator extends SocialAuthenticator
 {
     private $clientRegistry;
     private $em;
+    private $forecastAccountRepository;
+    private $harvestAccountRepository;
     private $urlGenerator;
+    private $userForecastAccountRepository;
+    private $userHarvestAccountRepository;
+    private $userRepository;
+    private $harvestIdToForecastAccountRelationships = [];
 
-    public function __construct(EntityManagerInterface $em, ClientRegistry $clientRegistry, UrlGeneratorInterface $urlGenerator)
-    {
+    public function __construct(
+        EntityManagerInterface $em,
+        ClientRegistry $clientRegistry,
+        UrlGeneratorInterface $urlGenerator,
+        UserRepository $userRepository,
+        ForecastAccountRepository $forecastAccountRepository,
+        UserForecastAccountRepository $userForecastAccountRepository,
+        HarvestAccountRepository $harvestAccountRepository,
+        UserHarvestAccountRepository $userHarvestAccountRepository
+    ) {
         $this->clientRegistry = $clientRegistry;
         $this->em = $em;
+        $this->forecastAccountRepository = $forecastAccountRepository;
+        $this->harvestAccountRepository = $harvestAccountRepository;
         $this->urlGenerator = $urlGenerator;
+        $this->userRepository = $userRepository;
+        $this->userForecastAccountRepository = $userForecastAccountRepository;
+        $this->userHarvestAccountRepository = $userHarvestAccountRepository;
     }
 
     public function start(Request $request, AuthenticationException $authException = null)
@@ -74,7 +103,7 @@ class HarvestAuthenticator extends SocialAuthenticator
         $harvestUser = $this->getHarvestClient()->fetchUserFromToken($credentials);
         $userData = $harvestUser->toArray();
         $email = $harvestUser->getEmail();
-        $user = $this->em->getRepository(User::class)->findOneBy(['email' => $email]);
+        $user = $this->userRepository->findOneBy(['email' => $email]);
 
         if (!$user) {
             $user = new User();
@@ -88,25 +117,109 @@ class HarvestAuthenticator extends SocialAuthenticator
         $user->setName($harvestUser->getName());
         $this->em->persist($user);
 
+        usort($userData['accounts'], function ($a, $b) {
+            return $a['product'] > $b['product'];
+        });
+
         foreach ($userData['accounts'] as $account) {
-            $forecastAccount = $this->em->getRepository('App:ForecastAccount')->findOneBy(['forecastId' => $account['id']]);
-
-            if (!$forecastAccount) {
-                $forecastAccount = new ForecastAccount();
-                $forecastAccount->setName($account['name']);
-                $forecastAccount->setForecastId($account['id']);
+            if ('forecast' === $account['product']) {
+                $this->addForecastAccount($user, $account);
+            } elseif ('harvest' === $account['product']) {
+                $this->addHarvestAccount($user, $account);
             }
-
-            $forecastAccount->addUser($user);
-            $forecastAccount->setAccessToken($credentials->getToken());
-            $forecastAccount->setRefreshToken($credentials->getRefreshToken());
-            $forecastAccount->setExpires($credentials->getExpires());
-            $this->em->persist($forecastAccount);
         }
 
         $this->em->flush();
 
         return new OAuthUser($email, ['ROLE_USER', 'ROLE_OAUTH_USER']);
+    }
+
+    private function addForecastAccount(User $user, array $account)
+    {
+        $forecastAccount = $this->forecastAccountRepository->findOneBy(['forecastId' => $account['id']]);
+
+        if (!$forecastAccount) {
+            $forecastAccount = new ForecastAccount();
+            $forecastAccount->setName($account['name']);
+            $forecastAccount->setForecastId($account['id']);
+        }
+
+        $client = ForecastClientFactory::create(
+            $user->getAccessToken(),
+            $account['id']
+        );
+        $currentUser = $client->whoAmI()->getCurrentUser();
+        $forecastUser = $client->getPerson($currentUser->getId())->getPerson();
+        $userForecastAccount = $this->userForecastAccountRepository->findOneBy([
+            'forecastId' => $currentUser->getId(),
+        ]);
+
+        if (!$userForecastAccount) {
+            $userForecastAccount = new UserForecastAccount();
+            $userForecastAccount->setForecastId($currentUser->getId());
+            $userForecastAccount->setForecastAccount($forecastAccount);
+            $userForecastAccount->setUser($user);
+        }
+
+        if ($forecastUser->getHarvestUserId()) {
+            $this->harvestIdToForecastAccountRelationships[$forecastUser->getHarvestUserId()] = $forecastAccount;
+        }
+
+        $userForecastAccount->setIsAdmin($forecastUser->getAdmin());
+        $userForecastAccount->setIsEnabled(
+            'enabled' === $forecastUser->getLogin()
+                && !$forecastUser->getArchived()
+                && $forecastUser->getSubscribed()
+        );
+        $forecastAccount->setAccessToken($user->getAccessToken());
+        $forecastAccount->setRefreshToken($user->getRefreshToken());
+        $forecastAccount->setExpires($user->getExpires());
+        $this->em->persist($forecastAccount);
+        $this->em->persist($userForecastAccount);
+    }
+
+    private function addHarvestAccount(User $user, array $account)
+    {
+        $client = HarvestClientFactory::create(
+            $user->getAccessToken(),
+            $account['id']
+        );
+        $harvestUser = $client->retrieveTheCurrentlyAuthenticatedUser();
+        $company = $client->retrieveCompany();
+        $harvestAccount = $this->harvestAccountRepository->findOneBy(['harvestId' => $account['id']]);
+
+        if (!$harvestAccount) {
+            $harvestAccount = new HarvestAccount();
+            $harvestAccount->setHarvestId($account['id']);
+        }
+
+        $harvestAccount->setName($account['name']);
+        $harvestAccount->setBaseUri($company->getBaseUri());
+        $userHarvestAccount = $this->userHarvestAccountRepository->findOneBy([
+            'harvestId' => $harvestUser->getId(),
+        ]);
+
+        if (!$userHarvestAccount) {
+            $userHarvestAccount = new UserHarvestAccount();
+            $userHarvestAccount->setHarvestId($harvestUser->getId());
+            $userHarvestAccount->setHarvestAccount($harvestAccount);
+            $userHarvestAccount->setUser($user);
+        }
+
+        $userHarvestAccount->setIsAdmin($harvestUser->getIsAdmin());
+        $userHarvestAccount->setIsEnabled($harvestUser->getIsActive());
+        $harvestAccount->setAccessToken($user->getAccessToken());
+        $harvestAccount->setRefreshToken($user->getRefreshToken());
+        $harvestAccount->setExpires($user->getExpires());
+
+        if (isset($this->harvestIdToForecastAccountRelationships[$harvestUser->getId()])) {
+            $harvestAccount->setForecastAccount(
+                $this->harvestIdToForecastAccountRelationships[$harvestUser->getId()]
+            );
+        }
+
+        $this->em->persist($harvestAccount);
+        $this->em->persist($userHarvestAccount);
     }
 
     private function getHarvestClient(): OAuth2Client

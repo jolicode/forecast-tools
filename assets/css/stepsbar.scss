@@ -1,0 +1,75 @@
+.stepsbar.btn-group {
+    overflow-x: auto;
+
+    > .btn {
+        transition: none;
+
+        &:not(:first-child) {
+            padding-left: 1.5rem;
+        }
+
+        &:not(:last-child) {
+            padding-right: 0;
+            &:after {
+                content: " ";
+                display: block;
+                width: 0;
+                height: 0;
+                border-top: 19px solid transparent;
+                border-bottom: 19px solid transparent;
+                border-left: 19px solid #007bff;
+                position: absolute;
+                top: 50%;
+                margin-top: -19px;
+                left: 100%;
+                z-index: 3;
+            }
+            &:hover:after {
+                border-left: 19px solid #0069d9;
+            }
+            &:before {
+                content: " ";
+                display: block;
+                width: 0;
+                height: 0;
+                border-top: 19px solid transparent;
+                border-bottom: 19px solid transparent;
+                border-left: 19px solid #fff;
+                position: absolute;
+                top: 50%;
+                margin-top: -19px;
+                margin-left: 3px;
+                left: 100%;
+                z-index: 3;
+            }
+            &:hover:before {
+                border-left: 19px solid #fff;
+            }
+        }
+
+        &.available:not(:hover) {
+            border-color: #90c6ff;
+            background-color: #90c6ff;
+            color: rgb(34, 34, 34);
+            &:before {
+                border-left: 19px solid #fff;
+            }
+            &:not(:last-child):after {
+                border-left: 19px solid #90c6ff;
+            }
+        }
+
+        &.disabled {
+            background-color: #eee;
+            border: none;
+            color: #aaa;
+            opacity: 1;
+            &:before {
+                border-left: 19px solid rgba(0, 0, 0, 0.125);
+            }
+            &:not(:last-child):after {
+                border-left: 19px solid #eee;
+            }
+        }
+    }
+}
