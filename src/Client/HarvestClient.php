@@ -11,30 +11,44 @@
 
 namespace App\Client;
 
+use App\Repository\UserRepository;
 use JoliCode\Harvest\ClientFactory;
 use Symfony\Component\Cache\Adapter\TraceableAdapter;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Component\Security\Core\Security;
 
 class HarvestClient extends AbstractClient
 {
     private $client = null;
     private $namespace = '';
     private $requestStack;
+    private $security;
+    private $userRepository;
 
-    public function __construct(RequestStack $requestStack, TraceableAdapter $pool)
+    public function __construct(RequestStack $requestStack, TraceableAdapter $pool, Security $security, UserRepository $userRepository)
     {
         $this->requestStack = $requestStack;
         $this->pool = $pool;
+        $this->security = $security;
+        $this->userRepository = $userRepository;
     }
 
     protected function __client()
     {
         if (null === $this->client) {
+            $email = $this->security->getUser()->getUsername();
+            $user = $this->userRepository->findOneBy(['email' => $email]);
             $forecastAccount = $this->requestStack->getCurrentRequest()->attributes->get('forecastAccount');
 
+            if ($user) {
+                $accessToken = $user->getAccessToken();
+            } else {
+                $accessToken = $forecastAccount->getAccessToken();
+            }
+
             $this->client = ClientFactory::create(
-                $forecastAccount->getAccessToken(),
+                $accessToken,
                 $forecastAccount->getHarvestAccount()->getHarvestId()
             );
         }
