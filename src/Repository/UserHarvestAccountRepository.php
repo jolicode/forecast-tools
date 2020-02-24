@@ -11,6 +11,7 @@
 
 namespace App\Repository;
 
+use App\Entity\HarvestAccount;
 use App\Entity\UserHarvestAccount;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -28,32 +29,15 @@ class UserHarvestAccountRepository extends ServiceEntityRepository
         parent::__construct($registry, UserHarvestAccount::class);
     }
 
-    // /**
-    //  * @return UserHarvestAccount[] Returns an array of UserHarvestAccount objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    public function findOneByEmailAndForecastAccount(string $email, HarvestAccount $harvestAccount): ?UserHarvestAccount
     {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('u.id', 'ASC')
-            ->setMaxResults(10)
+        return $this->createQueryBuilder('uh')
+            ->leftJoin('uh.user', 'u')
+            ->andWhere('uh.harvestAccount = :harvestAccount')
+            ->andWhere('u.email = :email')
+            ->setParameter('harvestAccount', $harvestAccount)
+            ->setParameter('email', $email)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getOneOrNullResult();
     }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?UserHarvestAccount
-    {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }

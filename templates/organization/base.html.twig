@@ -21,15 +21,19 @@
                 <li class="nav-item{% if currentMenu == 'reminder' %} active{% endif %}">
                     <a class="nav-link" href="{{ organization_path('reminder_index') }}">📅 Reminder</a>
                 </li>
-                <li class="nav-item{% if currentMenu == 'invoicing' %} active{% endif %}">
-                    <a class="nav-link" href="{{ organization_path('invoicing_index') }}">💰 Invoicing</a>
-                </li>
+                {% if is_granted('admin', forecastAccount) and is_granted('harvest_admin', forecastAccount) %}
+                    <li class="nav-item{% if currentMenu == 'invoicing' %} active{% endif %}">
+                        <a class="nav-link" href="{{ organization_path('invoicing_index') }}">💰 Invoicing</a>
+                    </li>
+                {% endif %}
             </ul>
-            <ul class="navbar-nav">
-                <li class="nav-item{% if currentMenu == 'settings' %} active{% endif %}">
-                    <a class="nav-link" href="{{ organization_path('settings_slack') }}">⚙️ Settings</a>
-                </li>
-            </ul>
+            {% if is_granted('admin', forecastAccount) %}
+                <ul class="navbar-nav">
+                    <li class="nav-item{% if currentMenu == 'settings' %} active{% endif %}">
+                        <a class="nav-link" href="{{ organization_path('settings_slack') }}">⚙️ Settings</a>
+                    </li>
+                </ul>
+            {% endif %}
         </div>
     </nav>
 

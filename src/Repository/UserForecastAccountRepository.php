@@ -11,6 +11,7 @@
 
 namespace App\Repository;
 
+use App\Entity\ForecastAccount;
 use App\Entity\UserForecastAccount;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -28,32 +29,16 @@ class UserForecastAccountRepository extends ServiceEntityRepository
         parent::__construct($registry, UserForecastAccount::class);
     }
 
-    // /**
-    //  * @return UserForecastAccount[] Returns an array of UserForecastAccount objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    public function findOneByEmailAndForecastAccount(string $email, ForecastAccount $forecastAccount): ?UserForecastAccount
     {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('u.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?UserForecastAccount
-    {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
-            ->setParameter('val', $value)
+        return $this->createQueryBuilder('uf')
+            ->leftJoin('uf.user', 'u')
+            ->andWhere('uf.forecastAccount = :forecastAccount')
+            ->andWhere('u.email = :email')
+            ->setParameter('forecastAccount', $forecastAccount)
+            ->setParameter('email', $email)
             ->getQuery()
             ->getOneOrNullResult()
         ;
     }
-    */
 }

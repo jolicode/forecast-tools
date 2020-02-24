@@ -18,6 +18,7 @@ use App\Form\HarvestSettingsType;
 use App\Repository\SlackChannelRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -28,6 +29,7 @@ use Symfony\Component\Routing\RouterInterface;
 
 /**
  * @Route("/{slug}/settings", name="organization_settings_", defaults={"menu": "settings"})
+ * @IsGranted("admin", subject="forecastAccount")
  */
 class SettingsController extends AbstractController
 {

@@ -17,6 +17,7 @@ use App\Form\PublicForecastType;
 use App\Repository\PublicForecastRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
@@ -42,6 +43,7 @@ class PublicForecastController extends AbstractController
 
     /**
      * @Route("/create", name="create")
+     * @IsGranted("admin", subject="forecastAccount")
      */
     public function create(Request $request, ForecastAccount $forecastAccount, UserRepository $userRepository, EntityManagerInterface $em)
     {
@@ -65,12 +67,14 @@ class PublicForecastController extends AbstractController
         }
 
         return $this->render('organization/public_forecast/create.html.twig', [
+            'forecastAccount' => $forecastAccount,
             'form' => $form->createView(),
         ]);
     }
 
     /**
      * @Route("/edit/{publicForecastId}", name="edit")
+     * @IsGranted("admin", subject="forecastAccount")
      */
     public function edit(Request $request, ForecastAccount $forecastAccount, PublicForecast $publicForecast, EntityManagerInterface $em)
     {
@@ -89,6 +93,7 @@ class PublicForecastController extends AbstractController
         }
 
         return $this->render('organization/public_forecast/edit.html.twig', [
+            'forecastAccount' => $forecastAccount,
             'form' => $form->createView(),
             'publicForecast' => $publicForecast,
         ]);
@@ -96,6 +101,7 @@ class PublicForecastController extends AbstractController
 
     /**
      * @Route("/delete/{publicForecastId}", name="delete")
+     * @IsGranted("admin", subject="forecastAccount")
      */
     public function delete(Request $request, ForecastAccount $forecastAccount, PublicForecast $publicForecast, EntityManagerInterface $em)
     {
@@ -117,6 +123,7 @@ class PublicForecastController extends AbstractController
         }
 
         return $this->render('organization/public_forecast/delete.html.twig', [
+            'forecastAccount' => $forecastAccount,
             'form' => $form->createView(),
             'publicForecast' => $publicForecast,
         ]);
