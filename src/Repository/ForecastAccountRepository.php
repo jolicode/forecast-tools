@@ -33,7 +33,7 @@ class ForecastAccountRepository extends ServiceEntityRepository
      *
      * @return ForecastAccount[] Returns an array of ForecastAccount objects
      */
-    public function findExpiringTokens($delay)
+    public function findExpiringTokens(int $delay)
     {
         return $this->createQueryBuilder('f')
             ->andWhere('f.expires <= :expires')
