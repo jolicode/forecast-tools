@@ -21,6 +21,7 @@ use App\Invoicing\Manager;
 use App\Repository\InvoicingProcessRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,6 +30,8 @@ use Symfony\Component\Workflow\StateMachine;
 
 /**
  * @Route("/{slug}/invoicing", name="organization_invoicing_", defaults={"menu": "invoicing"})
+ * @IsGranted("admin", subject="forecastAccount")
+ * @IsGranted("harvest_admin", subject="forecastAccount")
  */
 class InvoicingController extends AbstractController
 {
@@ -59,6 +62,7 @@ class InvoicingController extends AbstractController
         ]);
 
         return $this->render('organization/invoicing/index.html.twig', [
+            'forecastAccount' => $forecastAccount,
             'invoicingProcesses' => $invoicingProcesses,
         ]);
     }
@@ -88,6 +92,7 @@ class InvoicingController extends AbstractController
         }
 
         return $this->render('organization/invoicing/create.html.twig', [
+            'forecastAccount' => $forecastAccount,
             'form' => $form->createView(),
             'invoicingProcess' => $invoicingProcess,
         ]);
@@ -112,6 +117,7 @@ class InvoicingController extends AbstractController
     public function resume(ForecastAccount $forecastAccount, InvoicingProcess $invoicingProcess)
     {
         return $this->redirectToRoute('organization_invoicing_transition', [
+            'forecastAccount' => $forecastAccount,
             'invoicingId' => $invoicingProcess->getId(),
             'slug' => $forecastAccount->getSlug(),
             'transition' => $this->getNextNaturalTransitionName($invoicingProcess),

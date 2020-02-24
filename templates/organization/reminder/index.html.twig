@@ -44,7 +44,14 @@
 {% endblock %}
 
 {% block content %}
-    {% set saveButton = form_widget(form.save) %}
+    {% set saveButton %}
+        {% if not is_granted('admin', forecastAccount) %}
+            {{ form_widget(form.save) }}
+        {% else %}
+            You must be a Forecast admin to configure the Slack reminder.
+            {{ form_widget(form.save, { 'disabled': true }) }}
+        {% endif %}
+    {% endset %}
     {% for message in app.flashes('success') %}
         <div class="flash-notice">
             {{ message }}
@@ -113,15 +120,21 @@
 
                             <div class="card card-body col-md-4 col-xl-3 mt-3 mr-3">
                                 <h5 class="card-title">Add a Slack workspace</h5>
-                                <p class="card-text">
-                                    <a href="{{ organization_path('settings_slack') }}">Add a Slack workspace</a> to receive the reminder in this workspace.
-                                </p>
-                                <p class="card-text">
-                                    If you add several workspaces, the reminder will be sent to all of these workspaces.
-                                </p>
-                                <p>
-                                    <a href="{{ organization_path('settings_slack_install') }}"><img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x"></a>
-                                </p>
+                                {% if is_granted('admin', forecastAccount) %}
+                                    <p class="card-text">
+                                        <a href="{{ organization_path('settings_slack') }}">Add a Slack workspace</a> to receive the reminder in this workspace.
+                                    </p>
+                                    <p class="card-text">
+                                        If you add several workspaces, the reminder will be sent to all of these workspaces.
+                                    </p>
+                                    <p>
+                                        <a href="{{ organization_path('settings_slack_install') }}"><img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x"></a>
+                                    </p>
+                                {% else %}
+                                    <p class="card-text">
+                                        Only your Forecast admins are allowed to setup and configure Slack reminders. To enable Slack reminders for your Forecast Account, ask a Forecast admin to add a Slack workspace to your organization.
+                                    </p>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

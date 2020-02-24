@@ -32,7 +32,7 @@
                     {% for entry in userDiff.entries %}
                         <td class="entry{{ entry.isWeekend ? ' weekend' }}{{ entry.violations.hasViolations() ? ' bug'}}{{ userDiff.skipErrors and entry.violations.count() <= 1 ? ' skip' }}{{ (loop.length - loop.index) <= 3 ? ' right-column' }}">
                             {% if not entry.isWeekend %}
-                                <a href="{{ forecastAccount.harvestAccount.baseUri }}/time/week/{{ entry.date|date('Y/m/d') }}/{{ userDiff.user.id }}">
+                                <a href="{{ forecastAccount.harvestAccount.baseUri }}/time/week/{{ entry.date|date('Y/m/d') }}/{{ userDiff.user.harvestUserId }}">
                                     &nbsp;
                                     <div class="tooltiptext tooltip-bottom">
                                         {% for forecastEntry in entry.forecastEntries %}

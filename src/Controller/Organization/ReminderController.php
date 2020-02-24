@@ -45,6 +45,7 @@ class ReminderController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $this->denyAccessUnlessGranted('admin', $forecastAccount);
             $forecastReminder = $form->getData();
             $user = $userRepository->findOneBy(['email' => $this->getUser()->getUsername()]);
             $forecastReminder->setUpdatedBy($user);
