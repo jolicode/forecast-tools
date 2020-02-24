@@ -177,7 +177,6 @@ class Manager
                     'date' => $date,
                 ], $violations);
             }
-            dump($totalViolations);
 
             $diff[$user->getId()] = [
                 'entries' => $entries,
@@ -203,7 +202,57 @@ class Manager
 
     public function approve(InvoicingProcess $invoicingProcess)
     {
-        return [];
+        $period = $this->buildDatesRange($invoicingProcess);
+        $rawTimeEntries = $this->harvestDataSelector->getTimeEntries(
+            $invoicingProcess->getBillingPeriodStart(),
+            $invoicingProcess->getBillingPeriodEnd()
+        );
+        $timeEntries = [];
+        $errorsCount = 0;
+
+        foreach ($rawTimeEntries as $userTimeEntries) {
+            $skipErrors = $this->skipErrorsForUser($invoicingProcess, $userTimeEntries['user']->getId());
+            $hide = $skipErrors && $invoicingProcess->getHarvestAccount()->getHideSkippedUsers();
+
+            if ($hide) {
+                continue;
+            }
+
+            $timeEntry = [
+                'user' => $userTimeEntries['user'],
+                'entries' => [],
+            ];
+            $userId = $userTimeEntries['user']->getId();
+
+            foreach ($period as $date) {
+                $key = $date->format('Y-m-d');
+                $isWeekend = ($date->format('N') >= 6);
+
+                if (isset($userTimeEntries['entries'][$key])) {
+                    $isClosed = true;
+
+                    foreach ($userTimeEntries['entries'][$key] as $entry) {
+                        $isClosed = $isClosed && $entry->getIsClosed();
+                    }
+                }
+
+                $timeEntry['entries'][$key] = [
+                    'date' => $date,
+                    'isClosed' => $isClosed,
+                    'skipErrors' => $skipErrors,
+                    'isWeekend' => $isWeekend,
+                ];
+                $errorsCount += !$isWeekend && !$isClosed && !$skipErrors ? 1 : 0;
+            }
+
+            $timeEntries[$userId] = $timeEntry;
+        }
+
+        return [
+            'days' => $period,
+            'errorsCount' => $errorsCount,
+            'timeEntries' => $timeEntries,
+        ];
     }
 
     public function check(InvoicingProcess $invoicingProcess)
