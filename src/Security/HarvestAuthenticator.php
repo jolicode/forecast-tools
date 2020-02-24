@@ -100,6 +100,7 @@ class HarvestAuthenticator extends SocialAuthenticator
 
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
+        /** @var Nilesuan\OAuth2\Client\Provider\HarvestResourceOwner $harvestUser */
         $harvestUser = $this->getHarvestClient()->fetchUserFromToken($credentials);
         $userData = $harvestUser->toArray();
         $email = $harvestUser->getEmail();

@@ -45,7 +45,7 @@
 {% block footerLeft %}
     <small class="float-left text-left">
         {% if errorsCount > 0 %}
-            There are some problems (<code>counting for {{ errorsCount }} days</code>) on this step, which should prevent you from continuing for the moment. Please take care.
+            There are <code>{{ errorsCount }} problems</code> on this step, which should prevent you from continuing for the moment. Please take care.
         {% else %}
             <code>Everything seems fine, you can continue.</code>
         {% endif %}<br />

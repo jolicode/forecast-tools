@@ -82,7 +82,7 @@
 {% block footerLeft %}
     <small class="float-left text-left">
         {% if totalViolations > 0 %}
-            There are problems on this step (<code>{{ totalViolations }} problems found</code>), which should prevent you from continuing for the moment. Please take care.
+            There are <code>{{ totalViolations }} problems</code> on this step, which should prevent you from continuing for the moment. Please take care.
         {% else %}
             <code>Everything seems fine, you can continue.</code>
         {% endif %}<br />
