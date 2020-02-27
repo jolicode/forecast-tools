@@ -176,7 +176,7 @@ class Builder
         $activities = $this->getPersonActivities($user);
 
         return array_values(array_filter($activities, function ($activity) use ($date) {
-            return $activity->getStartDate() <= $date && $activity->getEndDate() >= $date;
+            return $activity->getStartDate()->format('Y-m-d') <= $date->format('Y-m-d') && $activity->getEndDate()->format('Y-m-d') >= $date->format('Y-m-d');
         }));
     }
 
