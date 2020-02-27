@@ -11,7 +11,7 @@
 
 namespace App\Validator\Constraints;
 
-use App\Invoicing\DataSelector\HarvestDataSelector;
+use App\DataSelector\HarvestDataSelector;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;

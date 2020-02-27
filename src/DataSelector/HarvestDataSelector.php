@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace App\Invoicing\DataSelector;
+namespace App\DataSelector;
 
 use App\Client\HarvestClient;
 use JoliCode\Harvest\Api\Model\Client;
