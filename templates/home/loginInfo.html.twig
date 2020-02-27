@@ -1,0 +1,29 @@
+<nav class="navbar navbar-expand-lg navbar-light">
+    <a class="navbar-brand" href="{{ path('homepage') }}">⛅&nbsp;Forecast&nbsp;tools</a>
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse flex-row-reverse text-right" id="navbarNavDropdown">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="#">{{ app.user.username }}</a>
+            </li>
+            <li class="nav-item dropdown">
+                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    {{ currentAccount.name }}
+                </button>
+                <div class="dropdown-menu dropdown-menu-right text-right" aria-labelledby="dropdownMenuButton">
+                    {% for forecastAccount in forecastAccounts %}
+                        {% if forecastAccount.forecastId != currentAccount.forecastId %}
+                            <a class="dropdown-item" href="{{ path('organization_homepage', {slug: forecastAccount.slug}) }}">{{ forecastAccount.name }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="{{ path('logout') }}">logout</a>
+                </div>
+            </li>
+        </ul>
+    </div>
+</nav>

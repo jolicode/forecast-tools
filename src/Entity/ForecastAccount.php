@@ -15,9 +15,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\ForecastAccountRepository")
+ * @UniqueEntity("slug")
  */
 class ForecastAccount
 {
@@ -54,16 +56,6 @@ class ForecastAccount
     private $expires;
 
     /**
-     * @ORM\ManyToMany(targetEntity="App\Entity\User", inversedBy="forecastAccounts")
-     */
-    private $users;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\ForecastAlert", mappedBy="forecastAccount", orphanRemoval=true)
-     */
-    private $alerts;
-
-    /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
      */
@@ -74,11 +66,43 @@ class ForecastAccount
      */
     private $publicForecasts;
 
+    /**
+     * @Gedmo\Slug(fields={"name"})
+     * @ORM\Column(type="string", length=255, unique=true)
+     */
+    private $slug;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\UserForecastAccount", mappedBy="forecastAccount", orphanRemoval=true)
+     */
+    private $userForecastAccounts;
+
+    /**
+     * @ORM\OneToOne(targetEntity="App\Entity\ForecastReminder", mappedBy="forecastAccount", cascade={"persist", "remove"})
+     */
+    private $forecastReminder;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\SlackChannel", mappedBy="forecastAccount", orphanRemoval=true)
+     */
+    private $slackChannels;
+
+    /**
+     * @ORM\OneToOne(targetEntity="App\Entity\HarvestAccount", mappedBy="forecastAccount", cascade={"persist", "remove"})
+     */
+    private $harvestAccount;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\InvoicingProcess", mappedBy="forecastAccount", orphanRemoval=true)
+     */
+    private $invoicingProcesses;
+
     public function __construct()
     {
-        $this->users = new ArrayCollection();
-        $this->alerts = new ArrayCollection();
         $this->publicForecasts = new ArrayCollection();
+        $this->userHarvestAccounts = new ArrayCollection();
+        $this->slackChannels = new ArrayCollection();
+        $this->invoicingProcesses = new ArrayCollection();
     }
 
     public function __toString()
@@ -151,63 +175,6 @@ class ForecastAccount
         return $this;
     }
 
-    /**
-     * @return Collection|User[]
-     */
-    public function getUsers(): Collection
-    {
-        return $this->users;
-    }
-
-    public function addUser(User $user): self
-    {
-        if (!$this->users->contains($user)) {
-            $this->users[] = $user;
-        }
-
-        return $this;
-    }
-
-    public function removeUser(User $user): self
-    {
-        if ($this->users->contains($user)) {
-            $this->users->removeElement($user);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|ForecastAlert[]
-     */
-    public function getAlerts(): Collection
-    {
-        return $this->alerts;
-    }
-
-    public function addAlert(ForecastAlert $alert): self
-    {
-        if (!$this->alerts->contains($alert)) {
-            $this->alerts[] = $alert;
-            $alert->setForecastAccount($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAlert(ForecastAlert $alert): self
-    {
-        if ($this->alerts->contains($alert)) {
-            $this->alerts->removeElement($alert);
-            // set the owning side to null (unless already changed)
-            if ($alert->getForecastAccount() === $this) {
-                $alert->setForecastAccount(null);
-            }
-        }
-
-        return $this;
-    }
-
     public function getCreatedAt(): ?\DateTimeInterface
     {
         return $this->createdAt;
@@ -245,6 +212,146 @@ class ForecastAccount
             // set the owning side to null (unless already changed)
             if ($publicForecast->getForecastAccount() === $this) {
                 $publicForecast->setForecastAccount(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(string $slug): self
+    {
+        $this->slug = $slug;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|UserForecastAccount[]
+     */
+    public function getUserForecastAccounts(): Collection
+    {
+        return $this->userForecastAccounts;
+    }
+
+    public function addUserForecastAccount(UserForecastAccount $userForecastAccount): self
+    {
+        if (!$this->userForecastAccounts->contains($userForecastAccount)) {
+            $this->userForecastAccounts[] = $userForecastAccount;
+            $userForecastAccount->setForecastAccount($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserForecastAccount(UserForecastAccount $userForecastAccount): self
+    {
+        if ($this->userForecastAccounts->contains($userForecastAccount)) {
+            $this->userForecastAccounts->removeElement($userForecastAccount);
+            // set the owning side to null (unless already changed)
+            if ($userForecastAccount->getForecastAccount() === $this) {
+                $userForecastAccount->setForecastAccount(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getForecastReminder(): ?ForecastReminder
+    {
+        return $this->forecastReminder;
+    }
+
+    public function setForecastReminder(ForecastReminder $forecastReminder): self
+    {
+        $this->forecastReminder = $forecastReminder;
+
+        // set the owning side of the relation if necessary
+        if ($forecastReminder->getForecastAccount() !== $this) {
+            $forecastReminder->setForecastAccount($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|SlackChannel[]
+     */
+    public function getSlackChannels(): Collection
+    {
+        return $this->slackChannels;
+    }
+
+    public function addSlackChannel(SlackChannel $slackChannel): self
+    {
+        if (!$this->slackChannels->contains($slackChannel)) {
+            $this->slackChannels[] = $slackChannel;
+            $slackChannel->setForecastAccount($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSlackChannel(SlackChannel $slackChannel): self
+    {
+        if ($this->slackChannels->contains($slackChannel)) {
+            $this->slackChannels->removeElement($slackChannel);
+            // set the owning side to null (unless already changed)
+            if ($slackChannel->getForecastAccount() === $this) {
+                $slackChannel->setForecastAccount(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getHarvestAccount(): ?HarvestAccount
+    {
+        return $this->harvestAccount;
+    }
+
+    public function setHarvestAccount(?HarvestAccount $harvestAccount): self
+    {
+        $this->harvestAccount = $harvestAccount;
+
+        // set (or unset) the owning side of the relation if necessary
+        $newForecastAccount = null === $harvestAccount ? null : $this;
+        if ($harvestAccount->getForecastAccount() !== $newForecastAccount) {
+            $harvestAccount->setForecastAccount($newForecastAccount);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|InvoicingProcess[]
+     */
+    public function getInvoicingProcesses(): Collection
+    {
+        return $this->invoicingProcesses;
+    }
+
+    public function addInvoicingProcess(InvoicingProcess $invoicingProcess): self
+    {
+        if (!$this->invoicingProcesses->contains($invoicingProcess)) {
+            $this->invoicingProcesses[] = $invoicingProcess;
+            $invoicingProcess->setForecastAccount($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInvoicingProcess(InvoicingProcess $invoicingProcess): self
+    {
+        if ($this->invoicingProcesses->contains($invoicingProcess)) {
+            $this->invoicingProcesses->removeElement($invoicingProcess);
+            // set the owning side to null (unless already changed)
+            if ($invoicingProcess->getForecastAccount() === $this) {
+                $invoicingProcess->setForecastAccount(null);
             }
         }
 

@@ -2,6 +2,7 @@ import Chart from 'chart.js';
 import 'moment/moment.js';
 import jQuery from 'jquery';
 import 'daterangepicker/daterangepicker.js';
+import '../css/forecast.scss';
 
 jQuery(document).ready(function() {
   jQuery(function() {

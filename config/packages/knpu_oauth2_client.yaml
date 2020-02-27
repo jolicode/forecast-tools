@@ -1,19 +1,25 @@
 knpu_oauth2_client:
     clients:
-          # configure your clients as described here: https://github.com/knpuniversity/oauth2-client-bundle#configuration
+        # configure your clients as described here: https://github.com/knpuniversity/oauth2-client-bundle#configuration
         harvest:
-          type: generic
-          provider_class: App\Security\Provider\Harvest
+            type: generic
+            provider_class: App\Security\Provider\Harvest
 
-          # optional: a class that extends OAuth2Client
-          # client_class: Some\Custom\Client
+            # optional: a class that extends OAuth2Client
+            # client_class: Some\Custom\Client
 
-          # optional: if your provider has custom constructor options
-          # provider_options: {}
+            # optional: if your provider has custom constructor options
+            # provider_options: {}
 
-          # now, all the normal options!
-          client_id: '%env(harvest_id_client_id)%'
-          client_secret: '%env(harvest_id_client_secret)%'
-          redirect_route: connect_harvest_check
-          redirect_params: {}
-          use_state: false
+            # now, all the normal options!
+            client_id: '%env(HARVEST_CLIENT_ID)%'
+            client_secret: '%env(HARVEST_CLIENT_SECRET)%'
+            redirect_route: connect_harvest_check
+            redirect_params: {}
+            use_state: false
+        slack:
+            type: slack
+            client_id: '%env(SLACK_CLIENT_ID)%'
+            client_secret: '%env(SLACK_CLIENT_SECRET)%'
+            redirect_route: connect_slack_check
+            redirect_params: {}

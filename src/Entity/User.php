@@ -69,14 +69,9 @@ class User
     private $isEnabled = false;
 
     /**
-     * @ORM\ManyToMany(targetEntity="App\Entity\ForecastAccount", mappedBy="users")
+     * @ORM\OneToMany(targetEntity="App\Entity\ForecastReminder", mappedBy="updatedBy")
      */
-    private $forecastAccounts;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\ForecastAlert", mappedBy="createdBy")
-     */
-    private $alerts;
+    private $forecastReminders;
 
     /**
      * @ORM\Column(type="datetime")
@@ -89,11 +84,22 @@ class User
      */
     private $publicForecasts;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\UserForecastAccount", mappedBy="user", orphanRemoval=true)
+     */
+    private $userForecastAccounts;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\UserHarvestAccount", mappedBy="user", orphanRemoval=true)
+     */
+    private $userHarvestAccounts;
+
     public function __construct()
     {
-        $this->forecastAccounts = new ArrayCollection();
-        $this->alerts = new ArrayCollection();
+        $this->forecastReminders = new ArrayCollection();
         $this->publicForecasts = new ArrayCollection();
+        $this->userForecastAccounts = new ArrayCollection();
+        $this->userHarvestAccounts = new ArrayCollection();
     }
 
     public function __toString()
@@ -191,69 +197,30 @@ class User
     }
 
     /**
-     * @return Collection|ForecastAccount[]
+     * @return Collection|ForecastReminder[]
      */
-    public function getForecastAccounts(): Collection
+    public function getForecastReminders(): Collection
     {
-        return $this->forecastAccounts;
+        return $this->forecastReminders;
     }
 
-    public function addForecastAccount(ForecastAccount $forecastAccount): self
+    public function addForecastReminder(ForecastReminder $forecastReminder): self
     {
-        if (!$this->forecastAccounts->contains($forecastAccount)) {
-            $this->forecastAccounts[] = $forecastAccount;
-            $forecastAccount->addUser($this);
+        if (!$this->forecastReminders->contains($forecastReminder)) {
+            $this->forecastReminders[] = $forecastReminder;
+            $forecastReminder->setCreatedBy($this);
         }
 
         return $this;
     }
 
-    public function removeForecastAccount(ForecastAccount $forecastAccount): self
+    public function removeForecastReminder(ForecastReminder $forecastReminder): self
     {
-        if ($this->forecastAccounts->contains($forecastAccount)) {
-            $this->forecastAccounts->removeElement($forecastAccount);
-            $forecastAccount->removeUser($this);
-        }
-
-        return $this;
-    }
-
-    public function hasForecastAccount(ForecastAccount $forecastAccount): bool
-    {
-        foreach ($this->getForecastAccounts() as $account) {
-            if ($account->getForecastId() === $forecastAccount->getForecastId()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @return Collection|ForecastAlert[]
-     */
-    public function getAlerts(): Collection
-    {
-        return $this->alerts;
-    }
-
-    public function addAlert(ForecastAlert $alert): self
-    {
-        if (!$this->alerts->contains($alert)) {
-            $this->alerts[] = $alert;
-            $alert->setCreatedBy($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAlert(ForecastAlert $alert): self
-    {
-        if ($this->alerts->contains($alert)) {
-            $this->alerts->removeElement($alert);
+        if ($this->forecastReminders->contains($forecastReminder)) {
+            $this->forecastReminders->removeElement($forecastReminder);
             // set the owning side to null (unless already changed)
-            if ($alert->getCreatedBy() === $this) {
-                $alert->setCreatedBy(null);
+            if ($forecastReminder->getCreatedBy() === $this) {
+                $forecastReminder->setCreatedBy(null);
             }
         }
 
@@ -297,6 +264,68 @@ class User
             // set the owning side to null (unless already changed)
             if ($publicForecast->getCreatedBy() === $this) {
                 $publicForecast->setCreatedBy(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|UserForecastAccount[]
+     */
+    public function getUserForecastAccounts(): Collection
+    {
+        return $this->userForecastAccounts;
+    }
+
+    public function addUserForecastAccount(UserForecastAccount $userForecastAccount): self
+    {
+        if (!$this->userForecastAccounts->contains($userForecastAccount)) {
+            $this->userForecastAccounts[] = $userForecastAccount;
+            $userForecastAccount->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserForecastAccount(UserForecastAccount $userForecastAccount): self
+    {
+        if ($this->userForecastAccounts->contains($userForecastAccount)) {
+            $this->userForecastAccounts->removeElement($userForecastAccount);
+            // set the owning side to null (unless already changed)
+            if ($userForecastAccount->getUser() === $this) {
+                $userForecastAccount->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|UserHarvestAccount[]
+     */
+    public function getUserHarvestAccounts(): Collection
+    {
+        return $this->userHarvestAccounts;
+    }
+
+    public function addUserHarvestAccount(UserHarvestAccount $userHarvestAccount): self
+    {
+        if (!$this->userHarvestAccounts->contains($userHarvestAccount)) {
+            $this->userHarvestAccounts[] = $userHarvestAccount;
+            $userHarvestAccount->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserHarvestAccount(UserHarvestAccount $userHarvestAccount): self
+    {
+        if ($this->userHarvestAccounts->contains($userHarvestAccount)) {
+            $this->userHarvestAccounts->removeElement($userHarvestAccount);
+            // set the owning side to null (unless already changed)
+            if ($userHarvestAccount->getUser() === $this) {
+                $userHarvestAccount->setUser(null);
             }
         }
 

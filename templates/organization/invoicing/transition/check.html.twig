@@ -1,0 +1,321 @@
+{% extends 'organization/invoicing/transition/base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('invoicing-table') }}
+{% endblock %}
+
+{% block transition %}
+    <h2>Invoices</h2>
+
+    <table class="table border-bottom invoices">
+        <thead>
+            <tr>
+                <th scope="col" class="text-right">Invoice id</th>
+                <th scope="col" class="text-left">Issue date</th>
+                <th scope="col" class="text-left">Due date</th>
+                <th scope="col" class="text-left">Client</th>
+                <th scope="col" class="text-left">Invoice title</th>
+                <th scope="col" class="text-right">Expected total</th>
+                <th scope="col" class="text-right">Invoice total</th>
+                <th scope="col" class="text-left">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for clientInvoice in clientInvoices %}
+                <tr class="{{ clientInvoice.status }}">
+                    <td class="text-right p-1">
+                        {% if clientInvoice.violations is defined and clientInvoice.violations.hasViolations %}
+                            <span class="btn btn-warning btn-sm badge-pill position-relative border-danger">
+                                🚨
+                                <div class="tooltiptext tooltip-right">
+                                    <div class="entryGroup">
+                                        <ul>
+                                            {% for violation in clientInvoice.violations.all %}
+                                                <li>{{ violation }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </span>
+                        {% endif %}
+                        <code>{{ clientInvoice.invoice.number }}</code>
+                    </td>
+                    <td class="text-left p-1">
+                        {% if clientInvoice.invoice.issueDate is defined %}
+                            {{ clientInvoice.invoice.issueDate|date('F jS, Y') }}
+                        {% endif %}
+                    </td>
+                    <td class="text-left p-1">
+                        {% if clientInvoice.invoice.dueDate is defined %}
+                            {{ clientInvoice.invoice.dueDate|date('F jS, Y') }}
+                        {% endif %}
+                    </td>
+                    <td class="text-left p-1">
+                        {{ clientInvoice.client.name }}
+                    </td>
+                    <td class="text-left p-1">
+                        {% if clientInvoice.invoice.subject is defined %}
+                            {{ clientInvoice.invoice.subject }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td class="text-right p-1">
+                        {{ clientInvoice.expectedTotal|number_format(2) }}
+                    </td>
+                    <td class="text-right p-1">
+                        {% if clientInvoice.invoiceAmount is defined %}
+                            {{ clientInvoice.invoiceAmount|number_format(2) }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td class="actions text-right p-1">
+                        <div>
+                            {% if clientInvoice.status != 'ok' %}
+                                <button type="button" class="btn btn-primary btn-sm position-relative" data-toggle="modal" data-target="#explanationModal" data-explanation-key="invoice-{{ clientInvoice.invoice.number }}">
+                                    {{ clientInvoice.explanation is defined ? 'Explanation' : 'Explain' }}
+                                    {% if clientInvoice.explanation is defined %}
+                                        <div class="tooltiptext tooltip-left">
+                                            {{ clientInvoice.explanation.explanation|nl2br }}
+                                        </div>
+                                    {% endif %}
+                                </button>
+                            {% endif %}
+                            <a href="{{ forecastAccount.harvestAccount.baseUri }}/invoices/{{ clientInvoice.invoice.id }}" class="btn btn-primary btn-sm">
+                                View invoice
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td class="text-right p-1">{{ expectedTotal|number_format(2) }}</td>
+                <td class="text-right p-1">{{ invoicesTotal|number_format(2) }}</td>
+                <td>&nbsp;</td>
+            </tr>
+            {% if missingInvoiceNumbers|length %}
+                <tr>
+                    <td colspan="7" class="p-1">
+                        <div class="alert {{ missingInvoicesExplanation ? 'alert-secondary' : 'alert-warning' }} m-0" role="alert">
+                            Hey, we are missing invoices with numbers {{ missingInvoiceNumbers|join(', ', ' and ') }}. Did you mess up?
+                        </div>
+                    </td>
+                    <td class="actions text-right p-1">
+                        <button type="button" class="btn btn-primary btn-sm position-relative" data-toggle="modal" data-target="#explanationModal" data-explanation-key="missing-invoices">
+                            {% if missingInvoicesExplanation is not null %}
+                                Explanation
+                                <div class="tooltiptext tooltip-left">
+                                    {{ missingInvoicesExplanation.explanation|nl2br }}
+                                </div>
+                            {% else %}
+                                Explain
+                            {% endif %}
+                        </button>
+                    </td>
+                </tr>
+            {% endif %}
+        </tfoot>
+    </table>
+{% if orphanTimeEntries|length > 0 %}
+</div>
+</div>
+<div class="card mt-3">
+    <div class="card-body">
+        <h2>Uninvoiced time entries</h2>
+
+        <p>This section lists time entries declared in timesheets and not associated with invoices</p>
+
+        <table class="table border-bottom invoices">
+            <thead>
+                <tr>
+                    <th scope="col" class="text-left">Client</th>
+                    <th scope="col" class="text-left">Project</th>
+                    <th scope="col" class="text-right">Hours</th>
+                    <th scope="col" class="text-right">Expected amount</th>
+                    <th scope="col" class="text-left">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for orphanTimeEntry in orphanTimeEntries %}
+                    <tr class="{{ orphanTimeEntry.explanation is defined ? 'explained' : 'wrong' }}">
+                        <td class="text-left p-1 pl-3">
+                            {{ orphanTimeEntry.project.client.name }}
+                        </td>
+                        <td class="text-left p-1">
+                            {{ orphanTimeEntry.project.name }}
+                        </td>
+                        <td class="text-right p-1">
+                            {{ orphanTimeEntry.hours }}
+                        </td>
+                        <td class="text-right p-1">
+                            {{ orphanTimeEntry.expectedTotal|number_format(2) }}
+                        </td>
+                        <td class="actions text-right p-1">
+                            <button type="button" class="btn btn-primary btn-sm position-relative" data-toggle="modal" data-target="#explanationModal" data-explanation-key="orphan-{{ orphanTimeEntry.project.id }}">
+                                {{ orphanTimeEntry.explanation is defined ? 'Explanation' : 'Explain' }}
+                                {% if orphanTimeEntry.explanation is defined %}
+                                    <div class="tooltiptext tooltip-left">
+                                        {{ orphanTimeEntry.explanation.explanation|nl2br }}
+                                    </div>
+                                {% endif %}
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td class="text-right p-1">{{ orphanExpectedTotal|number_format(2) }}</td>
+                    <td>&nbsp;</td>
+                </tr>
+            </tfoot>
+        </table>
+{% endif %}
+
+{% if uninvoicedItems|length > 0 %}
+    </div>
+</div>
+<div class="card mt-3">
+    <div class="card-body">
+        <h2>Uninvoiced report</h2>
+
+        <p>This section displays information from Harvest's "uninvoiced report".</p>
+
+        <table class="table border-bottom invoices">
+            <thead>
+                <tr>
+                    <th scope="col" class="text-left">Client</th>
+                    <th scope="col" class="text-left">Project</th>
+                    <th scope="col" class="text-right">Uninvoiced hours</th>
+                    <th scope="col" class="text-right">Uninvoiced amount</th>
+                    <th scope="col" class="text-right">Uninvoiced expenses</th>
+                    <th scope="col" class="text-left">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for uninvoicedItem in uninvoicedItems %}
+                    <tr class="{{ uninvoicedItem.explanation is defined ? 'explained' : 'wrong' }}">
+                        <td class="text-left p-1 pl-3">
+                            {{ uninvoicedItem.uninvoiced.clientName }}
+                        </td>
+                        <td class="text-left p-1">
+                            {{ uninvoicedItem.uninvoiced.projectName }}
+                        </td>
+                        <td class="text-right p-1">
+                            {{ uninvoicedItem.uninvoiced.uninvoicedHours }}
+                        </td>
+                        <td class="text-right p-1">
+                            {{ uninvoicedItem.uninvoiced.uninvoicedAmount|number_format(2) }}
+                        </td>
+                        <td class="text-right p-1">
+                            {{ uninvoicedItem.uninvoiced.uninvoicedExpenses|number_format(2) }}
+                        </td>
+                        <td class="actions text-right p-1">
+                            <button type="button" class="btn btn-primary btn-sm position-relative" data-toggle="modal" data-target="#explanationModal" data-explanation-key="uninvoiced-{{ uninvoicedItem.uninvoiced.projectId }}">
+                                {{ uninvoicedItem.explanation is defined ? 'Explanation' : 'Explain' }}
+                                {% if uninvoicedItem.explanation is defined %}
+                                    <div class="tooltiptext tooltip-left">
+                                        {{ uninvoicedItem.explanation.explanation|nl2br }}
+                                    </div>
+                                {% endif %}
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td class="text-right p-1">{{ uninvoicedAmountTotal|number_format(2) }}</td>
+                    <td class="text-right p-1">{{ uninvoicedExpensesTotal|number_format(2) }}</td>
+                    <td>&nbsp;</td>
+                </tr>
+            </tfoot>
+        </table>
+{% endif %}
+
+<div class="modal fade" id="explanationModal" tabindex="-1" role="dialog" aria-labelledby="explanationModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(event) {
+        var handleResponse = function(response) {
+            var modal = jQuery('#explanationModal')
+            modal.find('.modal-content').html(response);
+
+            jQuery('#explanationModal form').on('submit', function(e) {
+                e.preventDefault();
+                var invoiceId = jQuery(this).find('#invoice_explanation_key').val();
+                var url = '{{ organization_path('invoicing_explain', { invoicingId: invoicingProcess.id, explanationKey: 'placeholder'}) }}'.replace('placeholder', invoiceId);
+
+                jQuery.post(url,
+                    jQuery(this).serialize(),
+                    function(response) {
+                        handleResponse(response);
+                });
+            });
+
+            jQuery('#explanationModal #explanation-delete').on('click', function(e) {
+                if (confirm('Really delete?')) {
+                    var invoiceId = jQuery('#explanationModal form #invoice_explanation_explanationKey').val();
+                    var url = '{{ organization_path('invoicing_explaination_delete', { invoicingId: invoicingProcess.id, explanationKey: 'placeholder'}) }}'.replace('placeholder', invoiceId);
+
+                    jQuery.ajax(url, {
+                        type: 'DELETE',
+                        success: function() {
+                            location.reload();
+                        }
+                    });
+                }
+            });
+        }
+
+        jQuery('#explanationModal').on('show.bs.modal', function (event) {
+            var button = jQuery(event.relatedTarget) // Button that triggered the modal
+            var invoiceId = button.data('explanation-key') // Extract info from data-* attributes
+            var modal = jQuery(this)
+            modal.find('.modal-title').text('Explain invoice #' + invoiceId);
+            var url = '{{ organization_path('invoicing_explain', { invoicingId: invoicingProcess.id, explanationKey: 'placeholder'}) }}'.replace('placeholder', invoiceId);
+
+            // AJAX request
+            jQuery.ajax({
+                url: url,
+                type: 'GET',
+                success: function(response) {
+                    handleResponse(response);
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}
+
+{% block footerLeft %}
+    <small class="float-left text-left">
+        {% if unexplainedErrorsCount > 0 %}
+            There are <code>{{ unexplainedErrorsCount }} unexplained problems</code> on this step, which should prevent you from continuing for the moment. Please take care.
+        {% else %}
+            <code>Everything seems fine, you can continue.</code>
+        {% endif %}<br />
+        In case of an issue, try to <a href="{{ organization_path('invoicing_clear_cache', { invoicingId: invoicingProcess.id }) }}">refresh the data cache</a>.
+    </small>
+{% endblock %}

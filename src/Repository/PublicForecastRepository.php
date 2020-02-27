@@ -11,6 +11,7 @@
 
 namespace App\Repository;
 
+use App\Entity\ForecastAccount;
 use App\Entity\PublicForecast;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -29,12 +30,13 @@ class PublicForecastRepository extends ServiceEntityRepository
         parent::__construct($registry, PublicForecast::class);
     }
 
-    public function findForUser(UserInterface $user)
+    public function findForAccountAndUser(ForecastAccount $forecastAccount, UserInterface $user)
     {
         return $this->createQueryBuilder('p')
-            ->select('p', 'a')
-            ->leftJoin('p.forecastAccount', 'a')
-            ->leftJoin('a.users', 'u')
+            ->select('p', 'f')
+            ->leftJoin('p.forecastAccount', 'f')
+            ->leftJoin('f.userForecastAccounts', 'ufa')
+            ->leftJoin('ufa.user', 'u')
             ->andWhere('u.email = :email')
             ->setParameter('email', $user->getUsername())
             ->orderBy('p.name', 'ASC')

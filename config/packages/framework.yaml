@@ -10,8 +10,21 @@ framework:
         handler_id: ~
         cookie_secure: auto
         cookie_samesite: lax
+        name: forecast-tools
 
     #esi: true
     #fragments: true
     php_errors:
         log: true
+
+    cache:
+        pools:
+            forecast_pool:
+                default_lifetime: 60
+                adapter: cache.adapter.redis
+                provider: app.harvest_redis_provider
+
+            harvest_pool:
+                default_lifetime: 1800
+                adapter: cache.adapter.redis
+                provider: app.harvest_redis_provider

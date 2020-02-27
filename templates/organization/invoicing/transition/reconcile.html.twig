@@ -1,0 +1,91 @@
+{% extends 'organization/invoicing/transition/base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('invoicing-table') }}
+{% endblock %}
+
+{% block transition %}
+    <p>
+        This step allows to reconcile Forecast schedules and Harvest timesheets, ie. ensure that there are no major differences between both.
+    </p>
+
+    <table class="table border-bottom reconcile">
+        <thead>
+            <tr>
+                <th>Name</th>
+
+                {% for day in days %}
+                    <th scope="col"{% if day|date('N') >= 6 %} class="weekend"{% endif %}>
+                        {{ day|date('d')}}
+                    </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for userDiff in diff %}
+                <tr{{ (loop.length - loop.index) <= 3 ? ' class="low-row"' }}>
+                    <th>
+                        {{ userDiff.user.firstName }} {{ userDiff.user.lastName }}
+                    </th>
+
+                    {% for entry in userDiff.entries %}
+                        <td class="entry{{ entry.isWeekend ? ' weekend' }}{{ entry.violations.hasViolations() ? ' bug'}}{{ userDiff.skipErrors and entry.violations.count() <= 1 ? ' skip' }}{{ (loop.length - loop.index) <= 3 ? ' right-column' }}">
+                            {% if not entry.isWeekend %}
+                                <a href="{{ forecastAccount.harvestAccount.baseUri }}/time/week/{{ entry.date|date('Y/m/d') }}/{{ userDiff.user.harvestUserId }}">
+                                    &nbsp;
+                                </a>
+                                <div class="tooltiptext tooltip-bottom">
+                                    {% for forecastEntry in entry.forecastEntries %}
+                                        <div class="entryGroup">
+                                            <div class="forecast">
+                                                {{ forecastEntry.forecastProject.name }} <span class="duration">{{ forecastEntry.forecastEntry.allocation / 3600 }}h</span>
+                                            </div>
+                                            {% if forecastEntry.harvestEntry %}
+                                                <div class="harvest">
+                                                    {{ forecastEntry.harvestEntry.project.name }} <span class="duration">{{ forecastEntry.harvestEntry.hours }}h</span>
+                                                </div>
+                                            {% endif %}
+                                            {% if forecastEntry.violations.hasViolations(false) %}
+                                                <ul>
+                                                    {% for violation in forecastEntry.violations.all %}
+                                                        <li>{{ violation }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                    {% for harvestEntry in entry.extraHarvestEntries %}
+                                        <div class="entryGroup">
+                                            <div class="harvest">
+                                                {{ harvestEntry.project.name }} <span class="duration">{{ harvestEntry.hours }}h</span>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                    {% if entry.violations.hasViolations(false) %}
+                                        <ul>
+                                            {% for violation in entry.violations.all %}
+                                                <li>{{ violation }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block footerLeft %}
+    <small class="float-left text-left">
+        {% if totalViolations > 0 %}
+            There are <code>{{ totalViolations }} problems</code> on this step, which should prevent you from continuing for the moment. Please take care.
+        {% else %}
+            <code>Everything seems fine, you can continue.</code>
+        {% endif %}<br />
+        In case of an issue, try to <a href="{{ organization_path('invoicing_clear_cache', { invoicingId: invoicingProcess.id }) }}">refresh the data cache</a>.
+    </small>
+{% endblock %}

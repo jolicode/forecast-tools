@@ -27,10 +27,10 @@ class ClientOverride
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\ForecastAlert", inversedBy="clientOverrides", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="App\Entity\ForecastReminder", inversedBy="clientOverrides", cascade={"persist"})
      * @ORM\JoinColumn(nullable=false)
      */
-    private $alert;
+    private $forecastReminder;
 
     /**
      * @ORM\Column(type="integer")
@@ -63,14 +63,14 @@ class ClientOverride
         return $this->id;
     }
 
-    public function getAlert(): ?ForecastAlert
+    public function getForecastReminder(): ?ForecastReminder
     {
-        return $this->alert;
+        return $this->forecastReminder;
     }
 
-    public function setAlert(?ForecastAlert $alert): self
+    public function setForecastReminder(?ForecastReminder $forecastReminder): self
     {
-        $this->alert = $alert;
+        $this->forecastReminder = $forecastReminder;
 
         return $this;
     }

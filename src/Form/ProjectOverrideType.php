@@ -23,11 +23,13 @@ class ProjectOverrideType extends AbstractType
     {
         $builder
             ->add('projectId', ChoiceType::class, [
+                'label' => 'Project',
+                'attr' => ['class' => 'select2'],
                 'choices' => $options['choices'],
-                'help' => 'Choose here a project to cutomize: instead of displaying the project name, alerts will use the label of your choice.',
+                'help' => 'Choose here a project name to cutomize.',
             ])
             ->add('name', null, [
-                'help' => 'Type here the label of your choice.',
+                'help' => 'Type here the name of your choice.',
             ])
         ;
     }

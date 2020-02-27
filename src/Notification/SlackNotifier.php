@@ -25,7 +25,7 @@ class SlackNotifier
         $this->messageFactory = $messageFactory;
     }
 
-    public function notify(string $title, string $message, string $webHook)
+    public function notify(string $title, string $message, string $webHookUrl)
     {
         $payload = [
             'username' => 'Forecast bot',
@@ -42,7 +42,7 @@ class SlackNotifier
             ]],
         ];
         $response = $this->httpClient->sendRequest(
-            $this->messageFactory->createRequest('POST', sprintf('https://hooks.slack.com/services/%s', $webHook), [
+            $this->messageFactory->createRequest('POST', $webHookUrl, [
                 'Content-type' => 'application/json',
             ], json_encode($payload))
         );
