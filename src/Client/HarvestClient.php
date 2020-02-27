@@ -86,28 +86,34 @@ class HarvestClient extends AbstractClient
         $now = new \DateTime();
 
         // if more than 60 seconds, try to check if something has changed
-        if ($now->getTimestamp() - $value['time']->getTimestamp() > 60) {
+        if ($now->getTimestamp() - $value['time']->getTimestamp() > 1200) {
             // get the last updated_at from the current objects
             $getter = sprintf('get%s', ucfirst($nodeName));
             $lastUpdated = array_reduce($response->$getter(), function ($carry, $item) {
-                if (null === $carry || $carry->getupdatedAt() < $item->getUpdatedAt()) {
+                if (!method_exists($item, 'getUpdatedAt')) {
+                    return null;
+                }
+
+                if (null === $carry || $carry->getUpdatedAt() < $item->getUpdatedAt()) {
                     return $item;
                 }
 
-                return $item;
+                return $carry;
             }, null);
 
-            $arguments[0]['updated_since'] = $lastUpdated->getUpdatedAt()->format('c');
-            $response = $this->call($name, $arguments, $nodeName, $response);
+            if (null !== $lastUpdated) {
+                $arguments[0]['updated_since'] = $lastUpdated->getUpdatedAt()->format('c');
+                $response = $this->call($name, $arguments, $nodeName, $response);
 
-            // set this in cache for key $cacheKey
-            $item = $this->pool->getItem($cacheKey);
-            $item->set([
-                'time' => $now,
-                'response' => $response,
-            ]);
+                // set this in cache for key $cacheKey
+                $item = $this->pool->getItem($cacheKey);
+                $item->set([
+                    'time' => $now,
+                    'response' => $response,
+                ]);
 
-            $this->pool->save($item);
+                $this->pool->save($item);
+            }
         }
 
         return $response;
@@ -133,7 +139,11 @@ class HarvestClient extends AbstractClient
 
             $toAccumulate = $response->$getter();
             $ids = array_map(function ($a) {
-                return $a->getId();
+                if (method_exists($a, 'getId')) {
+                    return $a->getId();
+                }
+
+                return $a->getProjectId();
             }, $toAccumulate);
             $accumulator = array_replace($accumulator, array_combine($ids, $response->$getter()));
             $arguments[0]['page'] = $response->getNextPage();

@@ -12,7 +12,12 @@
 namespace App\Invoicing\DataSelector;
 
 use App\Client\HarvestClient;
+use JoliCode\Harvest\Api\Model\Client;
+use JoliCode\Harvest\Api\Model\Invoice;
+use JoliCode\Harvest\Api\Model\Project;
+use JoliCode\Harvest\Api\Model\TimeEntry;
 use JoliCode\Harvest\Api\Model\TimeEntryUser;
+use JoliCode\Harvest\Api\Model\UninvoicedReportResult;
 
 class HarvestDataSelector
 {
@@ -21,6 +26,55 @@ class HarvestDataSelector
     public function __construct(HarvestClient $harvestClient)
     {
         $this->client = $harvestClient;
+    }
+
+    /**
+     * @return Client[]
+     */
+    public function getClients()
+    {
+        return $this->client->listClients([], 'clients')->getClients();
+    }
+
+    /**
+     * @return Client[]
+     */
+    public function getClientsById()
+    {
+        $clientsById = [];
+        $clients = $this->getClients();
+
+        foreach ($clients as $client) {
+            $clientsById[$client->getId()] = $client;
+        }
+
+        return $clientsById;
+    }
+
+    /**
+     * @return Client[]
+     */
+    public function getEnabledClients()
+    {
+        return array_filter($this->getClientsById(), function (Client $client) {
+            return $client->getIsActive();
+        });
+    }
+
+    public function getEnabledClientsForChoice()
+    {
+        $choices = [];
+        $clients = $this->getClients();
+
+        foreach ($clients as $key => $client) {
+            if ($client->getIsActive()) {
+                $choices[$client->getName()] = $client->getId();
+            }
+        }
+
+        ksort($choices);
+
+        return $choices;
     }
 
     public function getEnabledUsers()
@@ -75,13 +129,86 @@ class HarvestDataSelector
         return $choices;
     }
 
+    /**
+     * @return Invoice[]
+     */
+    public function getInvoices(\DateTime $from, \DateTime $to)
+    {
+        return $this->client->listInvoices([
+            'from' => $from->format('Y-m-d'),
+            'to' => $to->format('Y-m-d'),
+        ], 'invoices')->getInvoices();
+    }
+
+    /**
+     * @return Invoice[]
+     */
+    public function getInvoicesById(\DateTime $from, \DateTime $to)
+    {
+        $invoicesById = [];
+        $invoices = $this->getInvoices($from, $to);
+
+        foreach ($invoices as $invoice) {
+            $invoicesById[$invoice->getId()] = $invoice;
+        }
+
+        return $invoicesById;
+    }
+
+    /**
+     * @return Project[]
+     */
+    public function getProjects()
+    {
+        return $this->client->listProjects([], 'projects')->getProjects();
+    }
+
+    /**
+     * @return Project[]
+     */
+    public function getProjectsById()
+    {
+        $projectsById = [];
+        $projects = $this->getProjects();
+
+        foreach ($projects as $project) {
+            $projectsById[$project->getId()] = $project;
+        }
+
+        return $projectsById;
+    }
+
+    /**
+     * @return TimeEntry[]
+     */
     public function getTimeEntries(\DateTime $from, \DateTime $to)
     {
-        $result = [];
-        $timeEntries = $this->client->listTimeEntries([
+        return $this->client->listTimeEntries([
             'from' => $from->format('Y-m-d'),
             'to' => $to->format('Y-m-d'),
         ], 'timeEntries')->getTimeEntries();
+    }
+
+    /**
+     * @return UninvoicedReportResult[]
+     */
+    public function getUninvoiced(\DateTime $from, \DateTime $to)
+    {
+        $uninvoiced = $this->client->uninvoicedReport([
+            'from' => $from->format('Y-m-d'),
+            'to' => $to->format('Y-m-d'),
+        ], 'results')->getResults();
+        $uninvoiced = array_filter($uninvoiced, function(UninvoicedReportResult $a) {
+            return ($a->getUninvoicedAmount() + $a->getUninvoicedExpenses()) > 0;
+        });
+
+        return $uninvoiced;
+    }
+
+    public function getUserTimeEntries(\DateTime $from, \DateTime $to)
+    {
+        $result = [];
+        $timeEntries = $this->getTimeEntries($from, $to);
 
         foreach ($timeEntries as $timeEntry) {
             $day = $timeEntry->getSpentDate()->format('Y-m-d');

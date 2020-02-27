@@ -31,7 +31,7 @@
 
                     {% for entry in userEntries.entries %}
                         <td class="entry {{ entry.status }}{{ entry.error ? ' bug'}}">
-                            <a href="{{ forecastAccount.harvestAccount.baseUri }}/time/week/{{ entry.date|date('Y/m/d') }}/{{ userEntries.user.id }}">
+                            <a href="{{ forecastAccount.harvestAccount.baseUri }}/time/week/{{ entry.date|date('Y/m/d') }}/{{ userEntries.user.id }}" target="_blank">
                                 &nbsp;
                             </a>
                         </td>

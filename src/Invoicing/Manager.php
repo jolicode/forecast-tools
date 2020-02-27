@@ -14,6 +14,7 @@ namespace App\Invoicing;
 use App\Entity\InvoicingProcess;
 use App\Invoicing\DataSelector\ForecastDataSelector;
 use App\Invoicing\DataSelector\HarvestDataSelector;
+use App\Repository\InvoiceExplanationRepository;
 
 class Manager
 {
@@ -24,20 +25,28 @@ class Manager
     const TIME_ENTRY_STATUS_SKIP = 'skip';
     const TIME_ENTRY_STATUS_WEEKEND = 'weekend';
 
+    const INVOICE_EXPLAINED = 'explained';
+    const INVOICE_OK = 'ok';
+    const INVOICE_OTHER_MONTH = 'notice';
+    const INVOICE_NON_RECONCILIABLE = 'notice';
+    const INVOICE_WRONG = 'wrong';
+
     private $forecastDataSelector;
     private $harvestDataSelector;
+    private $invoiceExplanationRepository;
 
-    public function __construct(ForecastDataSelector $forecastDataSelector, HarvestDataSelector $harvestDataSelector)
+    public function __construct(ForecastDataSelector $forecastDataSelector, HarvestDataSelector $harvestDataSelector, InvoiceExplanationRepository $invoiceExplanationRepository)
     {
         $this->forecastDataSelector = $forecastDataSelector;
         $this->harvestDataSelector = $harvestDataSelector;
+        $this->invoiceExplanationRepository = $invoiceExplanationRepository;
     }
 
     public function collect(InvoicingProcess $invoicingProcess)
     {
         $period = $this->buildDatesRange($invoicingProcess);
         $rawUsers = $this->harvestDataSelector->getEnabledUsersAsTimeEntryUsers();
-        $rawTimeEntries = $this->harvestDataSelector->getTimeEntries(
+        $rawTimeEntries = $this->harvestDataSelector->getUserTimeEntries(
             $invoicingProcess->getBillingPeriodStart(),
             $invoicingProcess->getBillingPeriodEnd()
         );
@@ -108,7 +117,7 @@ class Manager
         }, 0);
 
         usort($timeEntries, function ($a, $b) {
-            return $a['user']->getName() > $b['user']->getName();
+            return strcasecmp($a['user']->getName(), $b['user']->getName());
         });
 
         return [
@@ -124,7 +133,7 @@ class Manager
         $totalViolations = 0;
         $period = $this->buildDatesRange($invoicingProcess);
         $rawUsers = $this->forecastDataSelector->getPeople();
-        $rawTimeEntries = $this->harvestDataSelector->getTimeEntries(
+        $rawTimeEntries = $this->harvestDataSelector->getUserTimeEntries(
             $invoicingProcess->getBillingPeriodStart(),
             $invoicingProcess->getBillingPeriodEnd()
         );
@@ -172,7 +181,11 @@ class Manager
                 }
 
                 $violations = $this->computeViolations($harvestEntries, $forecastEntries, $projects, $clients, ($date->format('N') >= 6));
-                $totalViolations += $violations['violations']->count();
+
+                if (!$skipErrors) {
+                    $totalViolations += $violations['violations']->count();
+                }
+
                 $entries[] = array_merge([
                     'date' => $date,
                 ], $violations);
@@ -187,10 +200,10 @@ class Manager
 
         usort($diff, function ($a, $b) {
             if ($a['user']->getFirstName() === $b['user']->getFirstName()) {
-                return $a['user']->getLastName() > $b['user']->getLastName();
+                return strcasecmp($a['user']->getLastName(), $b['user']->getLastName());
             }
 
-            return $a['user']->getFirstName() > $b['user']->getFirstName();
+            return strcasecmp($a['user']->getFirstName(), $b['user']->getFirstName());
         });
 
         return [
@@ -203,7 +216,7 @@ class Manager
     public function approve(InvoicingProcess $invoicingProcess)
     {
         $period = $this->buildDatesRange($invoicingProcess);
-        $rawTimeEntries = $this->harvestDataSelector->getTimeEntries(
+        $rawTimeEntries = $this->harvestDataSelector->getUserTimeEntries(
             $invoicingProcess->getBillingPeriodStart(),
             $invoicingProcess->getBillingPeriodEnd()
         );
@@ -227,10 +240,9 @@ class Manager
             foreach ($period as $date) {
                 $key = $date->format('Y-m-d');
                 $isWeekend = ($date->format('N') >= 6);
+                $isClosed = true;
 
                 if (isset($userTimeEntries['entries'][$key])) {
-                    $isClosed = true;
-
                     foreach ($userTimeEntries['entries'][$key] as $entry) {
                         $isClosed = $isClosed && $entry->getIsClosed();
                     }
@@ -248,6 +260,10 @@ class Manager
             $timeEntries[$userId] = $timeEntry;
         }
 
+        usort($timeEntries, function ($a, $b) {
+            return strcasecmp($a['user']->getName(), $b['user']->getName());
+        });
+
         return [
             'days' => $period,
             'errorsCount' => $errorsCount,
@@ -257,7 +273,186 @@ class Manager
 
     public function check(InvoicingProcess $invoicingProcess)
     {
-        return [];
+        $timeEntries = $this->harvestDataSelector->getTimeEntries(
+            $invoicingProcess->getBillingPeriodStart(),
+            $invoicingProcess->getBillingPeriodEnd()
+        );
+        $invoices = $this->harvestDataSelector->getInvoicesById(
+            $invoicingProcess->getBillingPeriodStart(),
+            $invoicingProcess->getBillingPeriodEnd()
+        );
+        $uninvoicedItems = $this->harvestDataSelector->getUninvoiced(
+            $invoicingProcess->getBillingPeriodStart(),
+            $invoicingProcess->getBillingPeriodEnd()
+        );
+        $clients = $this->harvestDataSelector->getClientsById();
+        $projects = $this->harvestDataSelector->getProjectsById();
+        $invoiceDueDelayRequirements = $invoicingProcess->getHarvestAccount()->getInvoiceDueDelayRequirements();
+        $invoiceNotesRequirements = $invoicingProcess->getHarvestAccount()->getInvoiceNotesRequirements();
+        $orphanTimeEntries = [];
+        $clientInvoices = [];
+        $uninvoiced = [];
+        $expectedTotal = 0;
+        $invoicesTotal = 0;
+        $orphanExpectedTotal = 0;
+        $unexplainedErrorsCount = 0;
+        $uninvoicedAmountTotal = 0;
+        $uninvoicedExpensesTotal = 0;
+        $missingInvoiceNumbers = [];
+        $invoiceNumbers = [];
+
+        foreach ($timeEntries as $rawTimeEntry) {
+            $client = $clients[$rawTimeEntry->getClient()->getId()];
+            $project = $projects[$rawTimeEntry->getProject()->getId()];
+
+            if ($rawTimeEntry->getInvoice()) {
+                // drop timeentries invoiced in another month
+                if (isset($invoices[$rawTimeEntry->getInvoice()->getId()])) {
+                    if (!isset($clientInvoices[$rawTimeEntry->getInvoice()->getId()])) {
+                        $invoice = $invoices[$rawTimeEntry->getInvoice()->getId()];
+                        $clientInvoices[$rawTimeEntry->getInvoice()->getId()] = [
+                            'expectedTotal' => 0,
+                            'timeEntries' => [],
+                            'client' => $client,
+                            'invoice' => $invoice,
+                            'invoiceAmount' => $invoice->getAmount() - $invoice->getTaxAmount(),
+                            'violations' => $this->computeInvoiceRequirementsViolations($invoice, $invoiceDueDelayRequirements, $invoiceNotesRequirements),
+                        ];
+                    }
+
+                    $clientInvoices[$rawTimeEntry->getInvoice()->getId()]['timeEntries'][] = [
+                        'project' => $project,
+                        'timeEntry' => $rawTimeEntry,
+                    ];
+                    $clientInvoices[$rawTimeEntry->getInvoice()->getId()]['expectedTotal'] += $rawTimeEntry->getBillableRate() * $rawTimeEntry->getHours();
+                }
+            } else {
+                if ($project->getIsBillable() && !$rawTimeEntry->getIsBilled()) {
+                    // project is billable but the timeEntry is not associated with an invoice
+                    if (!isset($orphanTimeEntries[$project->getId()])) {
+                        $orphanTimeEntries[$project->getId()] = [
+                            'project' => $project,
+                            'timeEntries' => [],
+                            'hours' => 0,
+                            'expectedTotal' => 0,
+                        ];
+                        $explanation = $this->invoiceExplanationRepository->findOneBy([
+                            'invoicingProcess' => $invoicingProcess,
+                            'explanationKey' => 'orphan-' . $project->getId(),
+                        ]);
+
+                        if ($explanation) {
+                            $orphanTimeEntries[$project->getId()]['explanation'] = $explanation;
+                        } else {
+                            $unexplainedErrorsCount++;
+                        }
+                    }
+
+                    $orphanTimeEntries[$project->getId()]['timeEntries'][] = $rawTimeEntry;
+                    $orphanTimeEntries[$project->getId()]['hours'] += $rawTimeEntry->getHours();
+                    $orphanTimeEntries[$project->getId()]['expectedTotal'] += $rawTimeEntry->getHours() * $rawTimeEntry->getBillableRate();
+                    $orphanExpectedTotal += $rawTimeEntry->getHours() * $rawTimeEntry->getBillableRate();
+                } else {
+                    // remove non-billable projects
+                    continue;
+                }
+            }
+        }
+
+        foreach ($invoices as $invoiceId => $invoice) {
+            if (!isset($clientInvoices[$invoiceId])) {
+                $clientInvoices[$invoiceId] = [
+                    'expectedTotal' => 0,
+                    'timeEntries' => [],
+                    'client' => $invoice->getClient(),
+                    'invoice' => $invoice,
+                    'invoiceAmount' => $invoice->getAmount() - $invoice->getTaxAmount(),
+                    'violations' => $this->computeInvoiceRequirementsViolations($invoice, $invoiceDueDelayRequirements, $invoiceNotesRequirements),
+                ];
+            }
+        }
+
+        foreach ($clientInvoices as $invoiceId => $invoice) {
+            $expectedTotal += $invoice['expectedTotal'];
+            $explanation = $this->invoiceExplanationRepository->findOneBy([
+                'invoicingProcess' => $invoicingProcess,
+                'explanationKey' => 'invoice-' . $invoice['invoice']->getNumber(),
+            ]);
+
+            if (isset($invoice['invoiceAmount'])) {
+                $invoicesTotal += $invoice['invoiceAmount'];
+            }
+
+            if ($explanation) {
+                $clientInvoices[$invoiceId]['explanation'] = $explanation;
+            }
+
+            $clientInvoices[$invoiceId]['status'] = $this->computeInvoiceStatus($clientInvoices[$invoiceId]);
+
+            if (!in_array($clientInvoices[$invoiceId]['status'], [self::INVOICE_EXPLAINED, self::INVOICE_OK])) {
+                $unexplainedErrorsCount++;
+            }
+
+            $invoiceNumbers[] =  $invoice['invoice']->getNumber();
+        }
+
+        if (count($invoiceNumbers)) {
+            sort($invoiceNumbers);
+            $missingInvoiceNumbers = array_diff(range($invoiceNumbers[0], end($invoiceNumbers)), $invoiceNumbers);
+        }
+
+        foreach ($uninvoicedItems as $uninvoicedItem) {
+            $item = [
+                'uninvoiced' => $uninvoicedItem,
+            ];
+            $explanation = $this->invoiceExplanationRepository->findOneBy([
+                'invoicingProcess' => $invoicingProcess,
+                'explanationKey' => 'uninvoiced-' . $uninvoicedItem->getProjectId(),
+            ]);
+
+            if ($explanation) {
+                $item['explanation'] = $explanation;
+            } else {
+                $unexplainedErrorsCount++;
+            }
+
+            $uninvoicedAmountTotal += $uninvoicedItem->getUninvoicedAmount();
+            $uninvoicedExpensesTotal += $uninvoicedItem->getUninvoicedExpenses();
+
+            $uninvoiced[] = $item;
+        }
+
+        usort($clientInvoices, function ($a, $b) {
+            return $a['invoice']->getNumber() < $b['invoice']->getNumber();
+        });
+
+        usort($orphanTimeEntries, function ($a, $b) {
+            if ($a['project']->getClient()->getName() === $b['project']->getClient()->getName()) {
+                return strcasecmp($a['project']->getName(), $b['project']->getName());
+            }
+
+            return strcasecmp($a['project']->getClient()->getName(), $b['project']->getClient()->getName());
+        });
+
+        $missingInvoicesExplanation = $this->invoiceExplanationRepository->findOneBy([
+            'invoicingProcess' => $invoicingProcess,
+            'explanationKey' => 'missing-invoices',
+        ]);
+
+        return [
+            'invoices' => $invoices,
+            'clientInvoices' => $clientInvoices,
+            'expectedTotal' => $expectedTotal,
+            'invoicesTotal' => $invoicesTotal,
+            'orphanTimeEntries' => $orphanTimeEntries,
+            'orphanExpectedTotal' => $orphanExpectedTotal,
+            'uninvoicedItems' => $uninvoiced,
+            'unexplainedErrorsCount' => $unexplainedErrorsCount,
+            'uninvoicedAmountTotal' => $uninvoicedAmountTotal,
+            'uninvoicedExpensesTotal' => $uninvoicedExpensesTotal,
+            'missingInvoiceNumbers' => $missingInvoiceNumbers,
+            'missingInvoicesExplanation' => $missingInvoicesExplanation,
+        ];
     }
 
     public function validate(InvoicingProcess $invoicingProcess)
@@ -272,6 +467,57 @@ class Manager
             new \DateInterval('P1D'),
             $invoicingProcess->getBillingPeriodEnd()->add(new \DateInterval('P1D'))
         );
+    }
+
+    private function computeInvoiceRequirementsViolations($invoice, $invoiceDueDelayRequirements, $invoiceNotesRequirements): ViolationContainer
+    {
+        $violationContainer = new ViolationContainer();
+
+        foreach ($invoiceNotesRequirements as $invoiceNotesRequirement) {
+            if ($invoiceNotesRequirement->getHarvestClientId() == $invoice->getClient()->getId()) {
+                if (false === strpos($invoice->getNotes(), $invoiceNotesRequirement->getRequirement())) {
+                    $violationContainer->add(sprintf('The footnotes of the invoice must contain "%s".', $invoiceNotesRequirement->getRequirement()));
+                }
+            }
+        }
+
+        foreach ($invoiceDueDelayRequirements as $invoiceDueDelayRequirement) {
+            if ($invoiceDueDelayRequirement->getHarvestClientId() == $invoice->getClient()->getId()) {
+                $issueDate = clone $invoice->getIssueDate();
+                $theoricalDueDate = $issueDate->add(new \DateInterval(sprintf('P%sD', $invoiceDueDelayRequirement->getDelay())));
+
+                if ($theoricalDueDate > $invoice->getDueDate()) {
+                    $violationContainer->add(sprintf('The due date for this invoice must be at least "%s".', $theoricalDueDate->format('F jS, Y')));
+                }
+            }
+        }
+
+        return $violationContainer;
+    }
+
+    private function computeInvoiceStatus(array $invoice): string
+    {
+        if (isset($invoice['violations']) && ($invoice['violations']->hasViolations() > 0)) {
+            return self::INVOICE_WRONG;
+        }
+
+        if (isset($invoice['explanation'])) {
+            return self::INVOICE_EXPLAINED;
+        }
+
+        if (isset($invoice['invoiceAmount'])) {
+            if (count($invoice['timeEntries']) === 0) {
+                return self::INVOICE_NON_RECONCILIABLE;
+            }
+
+            if ($invoice['invoiceAmount'] !== $invoice['expectedTotal']) {
+                return self::INVOICE_WRONG;
+            }
+
+            return self::INVOICE_OK;
+        } else {
+            return self::INVOICE_OTHER_MONTH;
+        }
     }
 
     /**
@@ -369,7 +615,7 @@ class Manager
         return false;
     }
 
-    private function skipErrorsForUser(InvoicingProcess $invoicingProcess, int $userId): bool
+    private function skipErrorsForUser(InvoicingProcess $invoicingProcess, ?int $userId): bool
     {
         return \in_array(
             $userId,

@@ -19,7 +19,6 @@ Encore
    */
   .addEntry('app', './assets/js/app.js')
   .addEntry('invoicing-table', './assets/css/invoicing-table.scss')
-  .addEntry('reminder', './assets/js/reminder.js')
   .addEntry('forecast', './assets/js/forecast.js')
 
   // will require an extra script tag for runtime.js
