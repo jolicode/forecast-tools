@@ -11,8 +11,8 @@
 
 namespace App\Form;
 
-use App\Entity\PublicForecast;
 use App\DataSelector\ForecastDataSelector;
+use App\Entity\PublicForecast;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;

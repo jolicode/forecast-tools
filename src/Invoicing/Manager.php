@@ -11,9 +11,9 @@
 
 namespace App\Invoicing;
 
-use App\Entity\InvoicingProcess;
 use App\DataSelector\ForecastDataSelector;
 use App\DataSelector\HarvestDataSelector;
+use App\Entity\InvoicingProcess;
 use App\Repository\InvoiceExplanationRepository;
 
 class Manager
