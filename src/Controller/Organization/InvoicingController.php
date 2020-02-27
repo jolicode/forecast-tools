@@ -217,7 +217,7 @@ class InvoicingController extends AbstractController
             'forecast_reconciliated' => 'approve',
             'timesheets_approved' => 'check',
             'all_hours_invoiced' => 'validate',
-            'submitted' => 'completed',
+            'completed' => 'completed',
         ];
 
         return $transitionNames[$invoicingProcess->getCurrentPlace()];
@@ -225,8 +225,10 @@ class InvoicingController extends AbstractController
 
     private function progress(ForecastAccount $forecastAccount, InvoicingProcess $invoicingProcess, string $transition)
     {
-        $this->invoicingStateMachine->apply($invoicingProcess, $transition);
-        $this->em->flush();
+        if ($this->invoicingStateMachine->can($invoicingProcess, $transition)) {
+            $this->invoicingStateMachine->apply($invoicingProcess, $transition);
+            $this->em->flush();
+        }
 
         return $this->resume($forecastAccount, $invoicingProcess);
     }

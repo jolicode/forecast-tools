@@ -460,6 +460,11 @@ class Manager
         return [];
     }
 
+    public function completed(InvoicingProcess $invoicingProcess)
+    {
+        return [];
+    }
+
     private function buildDatesRange(InvoicingProcess $invoicingProcess)
     {
         return new \DatePeriod(
