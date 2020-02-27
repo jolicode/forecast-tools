@@ -11,7 +11,7 @@
 
 namespace App\Form;
 
-use App\Entity\ForecastAccount;
+use App\DataSelector\ForecastDataSelector;
 use App\Entity\ForecastReminder;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -21,14 +21,19 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ForecastReminderType extends AbstractType
 {
-    private $clients = [];
+    private $forecastDataSelector;
+
+    public function __construct(ForecastDataSelector $forecastDataSelector)
+    {
+        $this->forecastDataSelector = $forecastDataSelector;
+    }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        if (\count($options['forecastAccount']->getSlackChannels()) > 0) {
-            $clients = $this->buildClients($options['forecastAccount']);
-            $projects = $this->buildProjects($options['forecastAccount']);
-            $users = $this->buildUsers($options['forecastAccount']);
+        if ($options['hasClackChannels']) {
+            $clients = $this->forecastDataSelector->getEnabledClientsForChoice();
+            $projects = $this->forecastDataSelector->getEnabledProjectsForChoice();
+            $users = $this->forecastDataSelector->getEnabledPeopleForChoice();
         } else {
             $clients = [];
             $projects = [];
@@ -95,75 +100,7 @@ class ForecastReminderType extends AbstractType
             'data_class' => ForecastReminder::class,
         ]);
         $resolver->setRequired([
-            'forecastAccount',
+            'hasClackChannels',
         ]);
-    }
-
-    protected function buildClients(ForecastAccount $forecastAccount): array
-    {
-        $choices = [];
-        $client = \JoliCode\Forecast\ClientFactory::create(
-            $forecastAccount->getAccessToken(),
-            $forecastAccount->getForecastId()
-        );
-        $clients = $client->listClients()->getClients();
-
-        foreach ($clients as $clientObject) {
-            if (!$clientObject->getArchived()) {
-                $choices[$clientObject->getName()] = $clientObject->getId();
-            }
-
-            $this->clients[$clientObject->getId()] = $clientObject;
-        }
-
-        ksort($choices);
-
-        return $choices;
-    }
-
-    protected function buildProjects(ForecastAccount $forecastAccount): array
-    {
-        $choices = [];
-        $client = \JoliCode\Forecast\ClientFactory::create(
-            $forecastAccount->getAccessToken(),
-            $forecastAccount->getForecastId()
-        );
-        $projects = $client->listProjects()->getProjects();
-
-        foreach ($projects as $project) {
-            if (!$project->getArchived()) {
-                if (isset($this->clients[$project->getClientId()])) {
-                    $key = sprintf('%s - %s%s', $this->clients[$project->getClientId()]->getName(), $project->getCode() ? $project->getCode() . ' - ' : '', $project->getName());
-                } else {
-                    $key = $project->getName();
-                }
-
-                $choices[$key] = $project->getId();
-            }
-        }
-
-        ksort($choices);
-
-        return $choices;
-    }
-
-    protected function buildUsers(ForecastAccount $forecastAccount): array
-    {
-        $choices = [];
-        $client = \JoliCode\Forecast\ClientFactory::create(
-            $forecastAccount->getAccessToken(),
-            $forecastAccount->getForecastId()
-        );
-        $users = $client->listPeople()->getPeople();
-
-        foreach ($users as $user) {
-            if (!$user->getArchived()) {
-                $choices[$user->getFirstName() . ' ' . $user->getLastName()] = $user->getId();
-            }
-        }
-
-        ksort($choices);
-
-        return $choices;
     }
 }
