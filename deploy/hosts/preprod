@@ -13,8 +13,8 @@ deploy_database_user=forecast_preprod
 deploy_database_password={{ database_forecast_preprod_password }}
 deploy_database_name=forecast_preprod
 
-app_env_slack_client_id={{{ app_env_slack_client_id_preprod }}}
-app_env_slack_client_secret={{{ app_env_slack_client_secret_preprod }}}
+app_env_slack_client_id={{ app_env_slack_client_id_preprod }}
+app_env_slack_client_secret={{ app_env_slack_client_secret_preprod }}
 
 app_env_harvest_client_id={{ app_env_harvest_client_id_preprod }}
 app_env_harvest_client_secret={{ app_env_harvest_client_secret_preprod }}
