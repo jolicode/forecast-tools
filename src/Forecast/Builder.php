@@ -180,8 +180,8 @@ class Builder
 
     private function buildAssignmentInterval($assignment, $weeklyDays = null)
     {
-        $start = new \DateTime($assignment->getStartDate());
-        $end = new \DateTime($assignment->getEndDate());
+        $start = $assignment->getStartDate();
+        $end = $assignment->getEndDate();
 
         if (null === $weeklyDays) {
             $workingDays = ['1', '2', '3', '4', '5'];

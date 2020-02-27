@@ -68,7 +68,7 @@ class Builder
             } elseif (1 === \count($activities) && $this->isTimeOffActivity($activities[0])) {
                 $endDate = $this->getTimeOffEndDate($user);
                 $timeOffActivityName = $this->forecastReminder->getTimeOffActivityName() ?: 'holidays (until %s)';
-                $activitiesAsText = sprintf($timeOffActivityName, $endDate);
+                $activitiesAsText = sprintf($timeOffActivityName, $endDate->format('Y-m-d'));
             } else {
                 $activitiesAsText = $this->getActivitiesAsText($activities);
             }
@@ -176,7 +176,7 @@ class Builder
         $activities = $this->getPersonActivities($user);
 
         return array_values(array_filter($activities, function ($activity) use ($date) {
-            return $activity->getStartDate() <= $date->format('Y-m-d') && $activity->getEndDate() >= $date->format('Y-m-d');
+            return $activity->getStartDate() <= $date && $activity->getEndDate() >= $date;
         }));
     }
 
@@ -194,11 +194,11 @@ class Builder
             return $this->isTimeOffActivity($activity);
         }));
         $activities = array_map(function ($activity) {
-            $endDate = \DateTime::createFromFormat('Y-m-d', $activity->getEndDate());
+            $endDate = clone $activity->getEndDate();
 
             if ($endDate->format('N') >= 5) {
                 $endDate->modify('next monday');
-                $activity->setEndDate($endDate->format('Y-m-d'));
+                $activity->setEndDate($endDate);
             }
 
             return $activity;
