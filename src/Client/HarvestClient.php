@@ -15,8 +15,8 @@ use App\Repository\UserRepository;
 use JoliCode\Harvest\ClientFactory;
 use Symfony\Component\Cache\Adapter\TraceableAdapter;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Contracts\Cache\ItemInterface;
 
 class HarvestClient extends AbstractClient
 {

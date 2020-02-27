@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of JoliCode's Forecast Tools project.
+ *
+ * (c) JoliCode <coucou@jolicode.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace DoctrineMigrations;
 
 use Doctrine\DBAL\Schema\Schema;
@@ -9,14 +18,14 @@ use Doctrine\Migrations\AbstractMigration;
 
 final class Version20200227110730 extends AbstractMigration
 {
-    public function getDescription() : string
+    public function getDescription(): string
     {
         return '';
     }
 
-    public function up(Schema $schema) : void
+    public function up(Schema $schema): void
     {
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql('CREATE TABLE invoice_due_delay_requirement (id INT AUTO_INCREMENT NOT NULL, updated_by_id INT DEFAULT NULL, harvest_account_id INT NOT NULL, harvest_client_id INT NOT NULL, updated_at DATETIME NOT NULL, delay INT NOT NULL, UNIQUE INDEX UNIQ_1A2EAA8BCE4ADD87 (harvest_client_id), INDEX IDX_1A2EAA8B896DBBDE (updated_by_id), INDEX IDX_1A2EAA8BA409F8D3 (harvest_account_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE invoice_explanation (id INT AUTO_INCREMENT NOT NULL, created_by_id INT NOT NULL, invoicing_process_id INT NOT NULL, explanation_key VARCHAR(20) NOT NULL, explanation LONGTEXT NOT NULL, created_at DATETIME NOT NULL, INDEX IDX_9F6AD13DB03A8386 (created_by_id), INDEX IDX_9F6AD13D1ECC7DFB (invoicing_process_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
@@ -58,9 +67,9 @@ final class Version20200227110730 extends AbstractMigration
         $this->addSql('ALTER TABLE public_forecast ADD CONSTRAINT FK_FA874BBB03A8386 FOREIGN KEY (created_by_id) REFERENCES user (id)');
     }
 
-    public function down(Schema $schema) : void
+    public function down(Schema $schema): void
     {
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql('ALTER TABLE slack_channel DROP FOREIGN KEY FK_E33D2EE03F38CF77');
         $this->addSql('ALTER TABLE user_forecast_account DROP FOREIGN KEY FK_E7EE46C23F38CF77');

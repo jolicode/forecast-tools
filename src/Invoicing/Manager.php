@@ -344,7 +344,7 @@ class Manager
                         if ($explanation) {
                             $orphanTimeEntries[$project->getId()]['explanation'] = $explanation;
                         } else {
-                            $unexplainedErrorsCount++;
+                            ++$unexplainedErrorsCount;
                         }
                     }
 
@@ -389,14 +389,14 @@ class Manager
 
             $clientInvoices[$invoiceId]['status'] = $this->computeInvoiceStatus($clientInvoices[$invoiceId]);
 
-            if (!in_array($clientInvoices[$invoiceId]['status'], [self::INVOICE_EXPLAINED, self::INVOICE_OK])) {
-                $unexplainedErrorsCount++;
+            if (!\in_array($clientInvoices[$invoiceId]['status'], [self::INVOICE_EXPLAINED, self::INVOICE_OK], true)) {
+                ++$unexplainedErrorsCount;
             }
 
-            $invoiceNumbers[] =  $invoice['invoice']->getNumber();
+            $invoiceNumbers[] = $invoice['invoice']->getNumber();
         }
 
-        if (count($invoiceNumbers)) {
+        if (\count($invoiceNumbers)) {
             sort($invoiceNumbers);
             $missingInvoiceNumbers = array_diff(range($invoiceNumbers[0], end($invoiceNumbers)), $invoiceNumbers);
         }
@@ -413,7 +413,7 @@ class Manager
             if ($explanation) {
                 $item['explanation'] = $explanation;
             } else {
-                $unexplainedErrorsCount++;
+                ++$unexplainedErrorsCount;
             }
 
             $uninvoicedAmountTotal += $uninvoicedItem->getUninvoicedAmount();
@@ -479,7 +479,7 @@ class Manager
         $violationContainer = new ViolationContainer();
 
         foreach ($invoiceNotesRequirements as $invoiceNotesRequirement) {
-            if ($invoiceNotesRequirement->getHarvestClientId() == $invoice->getClient()->getId()) {
+            if ($invoiceNotesRequirement->getHarvestClientId() === $invoice->getClient()->getId()) {
                 if (false === strpos($invoice->getNotes(), $invoiceNotesRequirement->getRequirement())) {
                     $violationContainer->add(sprintf('The footnotes of the invoice must contain "%s".', $invoiceNotesRequirement->getRequirement()));
                 }
@@ -487,7 +487,7 @@ class Manager
         }
 
         foreach ($invoiceDueDelayRequirements as $invoiceDueDelayRequirement) {
-            if ($invoiceDueDelayRequirement->getHarvestClientId() == $invoice->getClient()->getId()) {
+            if ($invoiceDueDelayRequirement->getHarvestClientId() === $invoice->getClient()->getId()) {
                 $issueDate = clone $invoice->getIssueDate();
                 $theoricalDueDate = $issueDate->add(new \DateInterval(sprintf('P%sD', $invoiceDueDelayRequirement->getDelay())));
 
@@ -511,7 +511,7 @@ class Manager
         }
 
         if (isset($invoice['invoiceAmount'])) {
-            if (count($invoice['timeEntries']) === 0) {
+            if (0 === \count($invoice['timeEntries'])) {
                 return self::INVOICE_NON_RECONCILIABLE;
             }
 
@@ -520,9 +520,9 @@ class Manager
             }
 
             return self::INVOICE_OK;
-        } else {
-            return self::INVOICE_OTHER_MONTH;
         }
+
+        return self::INVOICE_OTHER_MONTH;
     }
 
     /**
