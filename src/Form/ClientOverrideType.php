@@ -23,11 +23,13 @@ class ClientOverrideType extends AbstractType
     {
         $builder
             ->add('clientId', ChoiceType::class, [
+                'label' => 'Client',
+                'attr' => ['class' => 'select2'],
                 'choices' => $options['choices'],
-                'help' => 'Choose here a client to cutomize: instead of displaying the client name, alerts will use the label of your choice.',
+                'help' => 'Choose here a client name to cutomize.',
             ])
             ->add('name', null, [
-                'help' => 'Type here the label of your choice.',
+                'help' => 'Type here the name of your choice.',
             ])
         ;
     }

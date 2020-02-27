@@ -1,0 +1,50 @@
+framework:
+    workflows:
+        invoicing:
+            type: 'state_machine'
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: 'method'
+                property: 'currentPlace'
+            supports:
+                - App\Entity\InvoicingProcess
+            initial_marking: created
+            places:
+                - created
+                - timesheets_collected
+                - forecast_reconciliated
+                - timesheets_approved
+                - all_hours_invoiced
+                - completed
+            transitions:
+                collect:
+                    from:
+                        - created
+                        - timesheets_collected
+                        - forecast_reconciliated
+                        - timesheets_approved
+                        - all_hours_invoiced
+                    to:   timesheets_collected
+                reconcile:
+                    from:
+                        - timesheets_collected
+                        - forecast_reconciliated
+                        - timesheets_approved
+                        - all_hours_invoiced
+                    to:   forecast_reconciliated
+                approve:
+                    from:
+                        - forecast_reconciliated
+                        - timesheets_approved
+                        - all_hours_invoiced
+                    to:   timesheets_approved
+                check:
+                    from:
+                        - timesheets_approved
+                        - all_hours_invoiced
+                    to:   all_hours_invoiced
+                validate:
+                    from:
+                        - all_hours_invoiced
+                    to:   completed

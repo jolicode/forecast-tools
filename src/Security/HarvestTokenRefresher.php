@@ -12,6 +12,7 @@
 namespace App\Security;
 
 use App\Entity\ForecastAccount;
+use App\Repository\ForecastAccountRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 use KnpU\OAuth2ClientBundle\Client\OAuth2Client;
@@ -23,17 +24,19 @@ class HarvestTokenRefresher
     private $clientRegistry;
     private $em;
     private $logger;
+    private $forecastAccountRepository;
 
-    public function __construct(EntityManagerInterface $em, ClientRegistry $clientRegistry, LoggerInterface $logger)
+    public function __construct(EntityManagerInterface $em, ClientRegistry $clientRegistry, LoggerInterface $logger, ForecastAccountRepository $forecastAccountRepository)
     {
         $this->clientRegistry = $clientRegistry;
         $this->em = $em;
         $this->logger = $logger;
+        $this->forecastAccountRepository = $forecastAccountRepository;
     }
 
     public function refresh()
     {
-        $forecastAccounts = $this->em->getRepository('App:ForecastAccount')->findExpiringTokens(self::DELAY);
+        $forecastAccounts = $this->forecastAccountRepository->findExpiringTokens(self::DELAY);
         $updated = 0;
         $failed = 0;
 

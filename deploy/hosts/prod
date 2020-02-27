@@ -1,5 +1,5 @@
 [webservers]
-167.114.243.99
+51.255.9.124
 
 [webservers:vars]
 ansible_user=debian
@@ -13,5 +13,8 @@ deploy_database_user=forecast_prod
 deploy_database_password={{ database_forecast_prod_password }}
 deploy_database_name=forecast_prod
 
-app_env_harvest_id_client_id={{ app_env_harvest_id_client_id_prod }}
-app_env_harvest_id_client_secret={{ app_env_harvest_id_client_secret_prod }}
+app_env_slack_client_id={{{ app_env_slack_client_id_prod }}}
+app_env_slack_client_secret={{{ app_env_slack_client_secret_prod }}}
+
+app_env_harvest_client_id={{ app_env_harvest_client_id_prod }}
+app_env_harvest_client_secret={{ app_env_harvest_client_secret_prod }}

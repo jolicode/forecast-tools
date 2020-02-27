@@ -18,8 +18,7 @@ Encore
    * and one CSS file (e.g. app.css) if you JavaScript imports CSS.
    */
   .addEntry('app', './assets/js/app.js')
-  .addEntry('alert', './assets/js/alert.js')
-  .addEntry('public-forecast', './assets/js/public-forecast.js')
+  .addEntry('invoicing-table', './assets/css/invoicing-table.scss')
   .addEntry('forecast', './assets/js/forecast.js')
 
   // will require an extra script tag for runtime.js

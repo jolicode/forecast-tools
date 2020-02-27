@@ -1,0 +1,54 @@
+{% extends 'organization/invoicing/transition/base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('invoicing-table') }}
+{% endblock %}
+
+{% block transition %}
+    <p>
+        At this step, you must ensure that every team member has submitted his timesheet. You can check which timesheets are missing <a href="{{ forecastAccount.harvestAccount.baseUri }}/missing_time/period?start_date={{ invoicingProcess.billingPeriodStart.modify('last monday')|date('Y-m-d') }}" target="_blank">directly on Harvest</a> or in the table below.
+    </p>
+
+    <table class="table border-bottom">
+        <thead>
+            <tr>
+                <th>Name</th>
+
+                {% for day in days %}
+                    <th scope="col"{% if day|date('N') >= 6 %} class="weekend"{% endif %}>
+                        {{ day|date('d')}}
+                    </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for userEntries in timeEntries %}
+                <tr>
+                    <th>
+                        {{ userEntries.user.name }}
+                    </th>
+
+                    {% for entry in userEntries.entries %}
+                        <td class="entry {{ entry.status }}{{ entry.error ? ' bug'}}">
+                            <a href="{{ forecastAccount.harvestAccount.baseUri }}/time/week/{{ entry.date|date('Y/m/d') }}/{{ userEntries.user.id }}" target="_blank">
+                                &nbsp;
+                            </a>
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block footerLeft %}
+    <small class="float-left text-left">
+        {% if errorsCount > 0 %}
+            There are <code>{{ errorsCount }} problems</code> on this step, which should prevent you from continuing for the moment. Please take care.
+        {% else %}
+            <code>Everything seems fine, you can continue.</code>
+        {% endif %}<br />
+        In case of an issue, try to <a href="{{ organization_path('invoicing_clear_cache', { invoicingId: invoicingProcess.id }) }}">refresh the data cache</a>.
+    </small>
+{% endblock %}

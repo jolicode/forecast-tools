@@ -1,4 +1,7 @@
 {
+    "adam-paterson/oauth2-slack": {
+        "version": "1.1.3"
+    },
     "antishov/doctrine-extensions-bundle": {
         "version": "1.4",
         "recipe": {
@@ -136,6 +139,9 @@
     },
     "jolicode/forecast-php-api": {
         "version": "v1.0.0"
+    },
+    "jolicode/harvest-php-api": {
+        "version": "dev-feature/jane-5"
     },
     "knpuniversity/oauth2-client-bundle": {
         "version": "1.20",
@@ -571,6 +577,18 @@
             "version": "1.0",
             "ref": "248c29c070dcd79e8333c676b0c5e284e3b365b5"
         }
+    },
+    "symfony/workflow": {
+        "version": "3.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "3.3",
+            "ref": "3b2f8ca32a07fcb00f899649053943fa3d8bbfb6"
+        },
+        "files": [
+            "config/packages/workflow.yaml"
+        ]
     },
     "symfony/yaml": {
         "version": "v4.2.1"

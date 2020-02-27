@@ -9,10 +9,12 @@
         {% endblock %}
     </head>
     <body>
-        <header>
-            <a href="/">⛅&nbsp;Forecast&nbsp;tools</a>
-        </header>
+        {% if is_granted('ROLE_USER') %}
+            {{ render(controller('App\\Controller\\HomeController::loginInfo')) }}
+        {% endif %}
+
         {% block body %}{% endblock %}
+
         {% block javascripts %}
             {{ encore_entry_script_tags('app') }}
         {% endblock %}
