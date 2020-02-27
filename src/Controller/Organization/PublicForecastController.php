@@ -52,9 +52,7 @@ class PublicForecastController extends AbstractController
         $user = $userRepository->findOneBy(['email' => $this->getUser()->getUsername()]);
         $publicForecast->setCreatedBy($user);
         $publicForecast->setForecastAccount($forecastAccount);
-        $form = $this->createForm(PublicForecastType::class, $publicForecast, [
-            'forecastAccount' => $forecastAccount,
-        ]);
+        $form = $this->createForm(PublicForecastType::class, $publicForecast);
         $form->add('save', SubmitType::class, ['label' => 'Save public forecast', 'attr' => ['class' => 'btn btn-primary']]);
         $form->handleRequest($request);
 
@@ -78,9 +76,7 @@ class PublicForecastController extends AbstractController
      */
     public function edit(Request $request, ForecastAccount $forecastAccount, PublicForecast $publicForecast, EntityManagerInterface $em)
     {
-        $form = $this->createForm(PublicForecastType::class, $publicForecast, [
-            'forecastAccount' => $forecastAccount,
-        ]);
+        $form = $this->createForm(PublicForecastType::class, $publicForecast);
         $form->add('save', SubmitType::class, ['label' => 'Save public forecast', 'attr' => ['class' => 'btn btn-primary']]);
         $form->handleRequest($request);
 

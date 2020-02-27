@@ -11,8 +11,8 @@
 
 namespace App\Form;
 
+use App\DataSelector\HarvestDataSelector;
 use App\Entity\HarvestAccount;
-use App\Invoicing\DataSelector\HarvestDataSelector;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
