@@ -86,7 +86,7 @@ class HarvestClient extends AbstractClient
         $now = new \DateTime();
 
         // if more than 60 seconds, try to check if something has changed
-        if ($now->getTimestamp() - $value['time']->getTimestamp() > 1200) {
+        if ($now->getTimestamp() - $value['time']->getTimestamp() > 60) {
             // get the last updated_at from the current objects
             $getter = sprintf('get%s', ucfirst($nodeName));
             $lastUpdated = array_reduce($response->$getter(), function ($carry, $item) {
