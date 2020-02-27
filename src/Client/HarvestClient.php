@@ -13,7 +13,7 @@ namespace App\Client;
 
 use App\Repository\UserRepository;
 use JoliCode\Harvest\ClientFactory;
-use Symfony\Component\Cache\Adapter\TraceableAdapter;
+use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Contracts\Cache\ItemInterface;
@@ -26,7 +26,7 @@ class HarvestClient extends AbstractClient
     private $security;
     private $userRepository;
 
-    public function __construct(RequestStack $requestStack, TraceableAdapter $pool, Security $security, UserRepository $userRepository)
+    public function __construct(RequestStack $requestStack, AdapterInterface $pool, Security $security, UserRepository $userRepository)
     {
         $this->requestStack = $requestStack;
         $this->pool = $pool;
