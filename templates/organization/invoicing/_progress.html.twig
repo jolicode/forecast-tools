@@ -7,7 +7,7 @@
 		forecast_reconciliated: 'Approve',
 		timesheets_approved: 'Check',
 		all_hours_invoiced: 'Pending validation',
-		submitted: 'Completed',
+		completed: 'Completed',
 	}
 	%}
 	{% if invoicingProcess and invoicingProcess.id %}
@@ -19,7 +19,7 @@
 			forecast_reconciliated: 'approve',
 			timesheets_approved: 'check',
 			all_hours_invoiced: 'validate',
-			submitted: 'completed',
+			completed: 'completed',
 		}
 		%}
 		{% for place, route in placeToRoute %}

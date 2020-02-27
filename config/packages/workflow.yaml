@@ -16,9 +16,7 @@ framework:
                 - forecast_reconciliated
                 - timesheets_approved
                 - all_hours_invoiced
-                - submitted
                 - completed
-                - rejected
             transitions:
                 collect:
                     from:
@@ -27,7 +25,6 @@ framework:
                         - forecast_reconciliated
                         - timesheets_approved
                         - all_hours_invoiced
-                        - submitted
                     to:   timesheets_collected
                 reconcile:
                     from:
@@ -35,30 +32,19 @@ framework:
                         - forecast_reconciliated
                         - timesheets_approved
                         - all_hours_invoiced
-                        - submitted
                     to:   forecast_reconciliated
                 approve:
                     from:
                         - forecast_reconciliated
                         - timesheets_approved
                         - all_hours_invoiced
-                        - submitted
                     to:   timesheets_approved
                 check:
                     from:
                         - timesheets_approved
                         - all_hours_invoiced
-                        - submitted
                     to:   all_hours_invoiced
                 validate:
                     from:
                         - all_hours_invoiced
-                        - submitted
-                        - rejected
-                    to:   submitted
-                reject:
-                    from: submitted
-                    to:   rejected
-                complete:
-                    from: submitted
                     to:   completed
