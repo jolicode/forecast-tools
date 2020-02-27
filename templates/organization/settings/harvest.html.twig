@@ -2,11 +2,49 @@
 
 {% block title %}Harvest settings | {{ parent() }}{% endblock %}
 
+{% form_theme form _self %}
+
+{% block _harvest_settings_invoiceDueDelayRequirements_entry_row %}
+    <div class="d-flex flex-wrap flex-row">
+        <div class="col-md-7 p-0">
+            {{ form_label(form.harvestClientId, null, { label_attr: { class: 'd-md-none' }}) }}
+            {{ form_errors(form.harvestClientId) }}
+            {{ form_widget(form.harvestClientId, { attr: { class: 'form-control' }}) }}
+            {{ form_help(form.harvestClientId) }}
+        </div>
+        <div class="col-md-3 p-0 pl-md-3">
+            {{ form_label(form.delay, null, { label_attr: { class: 'd-md-none' }}) }}
+            {{ form_errors(form.delay) }}
+            {{ form_widget(form.delay, { attr: { class: 'form-control' }}) }}
+            {{ form_help(form.delay) }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block _harvest_settings_invoiceNotesRequirements_entry_row %}
+    <div class="d-flex flex-wrap flex-row">
+        <div class="col-md-4 p-0">
+            {{ form_label(form.harvestClientId, null, { label_attr: { class: 'd-md-none' }}) }}
+            {{ form_errors(form.harvestClientId) }}
+            {{ form_widget(form.harvestClientId, { attr: { class: 'form-control' }}) }}
+            {{ form_help(form.harvestClientId) }}
+        </div>
+        <div class="col-md-6 p-0 pl-md-3">
+            {{ form_label(form.requirement, null, { label_attr: { class: 'd-md-none' }}) }}
+            {{ form_errors(form.requirement) }}
+            {{ form_widget(form.requirement, { attr: { class: 'form-control' }}) }}
+            {{ form_help(form.requirement) }}
+        </div>
+    </div>
+{% endblock %}
+
 {% block content %}
     {{ include('organization/settings/_menu.html.twig', {menu: 'harvest'}) }}
     <div class="card border-top-0">
         {{ form_start(form) }}
             <div class="card-body">
+                {{ form_errors(form) }}
+
                 <div class="form-group">
                     {{ form_label(form.doNotCheckTimesheetsFor) }}
                     {{ form_errors(form.doNotCheckTimesheetsFor) }}
@@ -21,12 +59,42 @@
                     {{ form_errors(form.hideSkippedUsers) }}
                     {{ form_help(form.hideSkippedUsers) }}
                 </div>
-
-                {{ form_errors(form) }}
+            </div>
+            <div class="card-body">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-lg pl-lg-0">
+                            <div class="form-group card card-body">
+                                {{ form_label(form.invoiceDueDelayRequirements, null, { label_attr: { class: 'd-md-none' }}) }}
+                                {{ form_help(form.invoiceDueDelayRequirements, { help_attr: { class: 'text-normal' }}) }}
+                                {{ form_errors(form.invoiceDueDelayRequirements) }}
+                                <div>
+                                    {{ form_widget(form.invoiceDueDelayRequirements, { attr: { class: 'dynamic-form-container' }}) }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg pr-lg-0">
+                            <div class="form-group card card-body">
+                                {{ form_label(form.invoiceNotesRequirements, null, { label_attr: { class: 'd-md-none' }}) }}
+                                {{ form_help(form.invoiceNotesRequirements, { help_attr: { class: 'text-normal' }}) }}
+                                {{ form_errors(form.invoiceNotesRequirements) }}
+                                <div>
+                                    {{ form_widget(form.invoiceNotesRequirements, { attr: { class: 'dynamic-form-container' }}) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="card-footer text-right">
                 {{ form_widget(form.save) }}
             </div>
         {{ form_end(form) }}
     </div>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function(event) {
+        dynamicForm('add a new requirement');
+    });
+    </script>
 {% endblock %}

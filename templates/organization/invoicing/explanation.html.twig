@@ -1,0 +1,33 @@
+{{ form_start(form) }}
+    <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Explanation for #{{ explanationKey }}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        {% for message in app.flashes('confirm') %}
+            <div class="alert alert-success">
+                {{ message }}
+            </div>
+        {% endfor %}
+        {{ form_errors(form) }}
+        <div class="form-group">
+            {{ form_label(form.explanation) }}
+            {{ form_errors(form.explanation) }}
+            {{ form_widget(form.explanation, { attr: { class: 'form-control', rows: 10 }}) }}
+            {{ form_help(form.explanation) }}
+        </div>
+        {% if invoiceExplanation.id %}
+            <small>Saved by <code>{{ invoiceExplanation.createdBy.name }}</code> on <code>{{ invoiceExplanation.createdAt|date('F jS, Y, G:i') }}</code>.</small>
+        {% endif %}
+    </div>
+    <div class="modal-footer">
+        <div class="flex-grow-1">
+            <button type="button" id="explanation-delete" class="btn btn-danger float-left" data-dismiss="modal">Delete</button>
+        </div>
+
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        {{ form_widget(form.save, { attr: { class: 'btn btn-primary' }}) }}
+    </div>
+{{ form_end(form) }}

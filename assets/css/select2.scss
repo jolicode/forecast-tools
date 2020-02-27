@@ -1,10 +1,12 @@
 .select2-container--open {
-  max-width: calc(100% - 1.5rem) !important;
+  //max-width: calc(100% - 1.5rem) !important;
+  max-width: 100% !important;
   width: auto !important;
 }
 
 form .select2-container {
-  width: calc(100% - 1.5rem) !important;
+  //width: calc(100% - 1.5rem) !important;
+  width: 100% !important;
 }
 
 .select2-container--default .select2-selection--single {

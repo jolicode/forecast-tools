@@ -11,6 +11,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -67,6 +69,16 @@ class InvoicingProcess
      * @ORM\Column(type="string", length=255)
      */
     private $currentPlace;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\InvoiceExplanation", mappedBy="invoicingProcess", orphanRemoval=true)
+     */
+    private $invoiceExplanations;
+
+    public function __construct()
+    {
+        $this->invoiceExplanations = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -153,6 +165,37 @@ class InvoicingProcess
     public function setCurrentPlace(string $currentPlace): self
     {
         $this->currentPlace = $currentPlace;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|InvoiceExplanation[]
+     */
+    public function getInvoiceExplanations(): Collection
+    {
+        return $this->invoiceExplanations;
+    }
+
+    public function addInvoiceExplanation(InvoiceExplanation $invoiceExplanation): self
+    {
+        if (!$this->invoiceExplanations->contains($invoiceExplanation)) {
+            $this->invoiceExplanations[] = $invoiceExplanation;
+            $invoiceExplanation->setInvoicingProcess($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInvoiceExplanation(InvoiceExplanation $invoiceExplanation): self
+    {
+        if ($this->invoiceExplanations->contains($invoiceExplanation)) {
+            $this->invoiceExplanations->removeElement($invoiceExplanation);
+            // set the owning side to null (unless already changed)
+            if ($invoiceExplanation->getInvoicingProcess() === $this) {
+                $invoiceExplanation->setInvoicingProcess(null);
+            }
+        }
 
         return $this;
     }

@@ -2021,16 +2021,16 @@
         },
         {
             "name": "jolicode/harvest-php-api",
-            "version": "v3.0.0",
+            "version": "v3.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jolicode/harvest-php-api.git",
-                "reference": "fc9d47f81099cfac9621efc5879e74a1b7cd864d"
+                "reference": "e23e5a79cb67a80f987b3a1feaf86ea35739dde6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jolicode/harvest-php-api/zipball/fc9d47f81099cfac9621efc5879e74a1b7cd864d",
-                "reference": "fc9d47f81099cfac9621efc5879e74a1b7cd864d",
+                "url": "https://api.github.com/repos/jolicode/harvest-php-api/zipball/e23e5a79cb67a80f987b3a1feaf86ea35739dde6",
+                "reference": "e23e5a79cb67a80f987b3a1feaf86ea35739dde6",
                 "shasum": ""
             },
             "require": {
@@ -2072,7 +2072,7 @@
                 "sdk",
                 "swagger"
             ],
-            "time": "2020-02-21T01:42:31+00:00"
+            "time": "2020-02-25T18:25:07+00:00"
         },
         {
             "name": "knpuniversity/oauth2-client-bundle",

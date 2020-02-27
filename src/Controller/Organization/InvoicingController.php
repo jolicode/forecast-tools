@@ -14,10 +14,13 @@ namespace App\Controller\Organization;
 use App\Client\ForecastClient;
 use App\Client\HarvestClient;
 use App\Entity\ForecastAccount;
+use App\Entity\InvoiceExplanation;
 use App\Entity\InvoicingProcess;
+use App\Form\InvoiceExplanationType;
 use App\Form\InvoicingCreateType;
 use App\Form\InvoicingProgressType;
 use App\Invoicing\Manager;
+use App\Repository\InvoiceExplanationRepository;
 use App\Repository\InvoicingProcessRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -25,6 +28,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Workflow\StateMachine;
 
@@ -111,13 +115,70 @@ class InvoicingController extends AbstractController
     }
 
     /**
+     * @Route("/{invoicingId}/explain/{explanationKey}", name="explain")
+     * @ParamConverter("invoicingProcess", options={"id" = "invoicingId"})
+     */
+    public function explain(Request $request, ForecastAccount $forecastAccount, InvoicingProcess $invoicingProcess, string $explanationKey, UserRepository $userRepository, InvoiceExplanationRepository $invoiceExplanationRepository)
+    {
+        $invoiceExplanation = $invoiceExplanationRepository->findOneBy([
+            'invoicingProcess' => $invoicingProcess,
+            'explanationKey' => $explanationKey,
+        ]);
+
+        if (!$invoiceExplanation) {
+            $user = $userRepository->findOneBy(['email' => $this->getUser()->getUsername()]);
+            $invoiceExplanation = new InvoiceExplanation();
+            $invoiceExplanation->setInvoicingProcess($invoicingProcess);
+            $invoiceExplanation->setCreatedBy($user);
+            $invoiceExplanation->setExplanationKey($explanationKey);
+        }
+
+        $form = $this->createForm(InvoiceExplanationType::class, $invoiceExplanation);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $invoiceExplanation = $form->getData();
+            $this->em->persist($invoiceExplanation);
+            $this->em->flush();
+
+            $this->addFlash(
+                'confirm',
+                'The explanation has been saved'
+            );
+        }
+
+        return $this->render('organization/invoicing/explanation.html.twig', [
+            'invoiceExplanation' => $invoiceExplanation,
+            'forecastAccount' => $forecastAccount,
+            'form' => $form->createView(),
+            'invoicingProcess' => $invoicingProcess,
+            'explanationKey' => $explanationKey,
+        ]);
+    }
+
+    /**
+     * @Route("/{invoicingId}/explain/{explanationKey}/delete", name="explaination_delete")
+     * @ParamConverter("invoicingProcess", options={"id" = "invoicingId"})
+     */
+    public function deleteExplanation(Request $request, ForecastAccount $forecastAccount, InvoicingProcess $invoicingProcess, string $explanationKey, InvoiceExplanationRepository $invoiceExplanationRepository)
+    {
+        $invoiceExplanation = $invoiceExplanationRepository->findOneBy([
+            'invoicingProcess' => $invoicingProcess,
+            'explanationKey' => $explanationKey,
+        ]);
+        $this->em->remove($invoiceExplanation);
+        $this->em->flush();
+
+        return new Response('');
+    }
+
+    /**
      * @Route("/{invoicingId}/resume", name="resume")
      * @ParamConverter("invoicingProcess", options={"id" = "invoicingId"})
      */
     public function resume(ForecastAccount $forecastAccount, InvoicingProcess $invoicingProcess)
     {
         return $this->redirectToRoute('organization_invoicing_transition', [
-            'forecastAccount' => $forecastAccount,
             'invoicingId' => $invoicingProcess->getId(),
             'slug' => $forecastAccount->getSlug(),
             'transition' => $this->getNextNaturalTransitionName($invoicingProcess),

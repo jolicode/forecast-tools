@@ -6,13 +6,13 @@
 
 {% block _forecast_reminder_projectOverrides_entry_row %}
     <div class="d-flex flex-wrap flex-row">
-        <div class="col-md-6 p-0">
+        <div class="col-md-5 p-0">
             {{ form_label(form.projectId, null, { label_attr: { class: 'd-md-none' }}) }}
             {{ form_errors(form.projectId) }}
             {{ form_widget(form.projectId, { attr: { class: 'form-control' }}) }}
             {{ form_help(form.projectId) }}
         </div>
-        <div class="col-md-5 p-0">
+        <div class="col-md-5 p-0 pl-md-3">
             {{ form_label(form.name, null, { label_attr: { class: 'd-md-none' }}) }}
             {{ form_errors(form.name) }}
             {{ form_widget(form.name, { attr: { class: 'form-control' }}) }}
@@ -23,13 +23,13 @@
 
 {% block _forecast_reminder_clientOverrides_entry_row %}
     <div class="d-flex flex-wrap flex-row">
-        <div class="col-md-6 p-0">
+        <div class="col-md-5 p-0">
             {{ form_label(form.clientId, null, { label_attr: { class: 'd-md-none' }}) }}
             {{ form_errors(form.clientId) }}
             {{ form_widget(form.clientId, { attr: { class: 'form-control' }}) }}
             {{ form_help(form.clientId) }}
         </div>
-        <div class="col-md-5 p-0">
+        <div class="col-md-5 p-0 pl-md-3">
             {{ form_label(form.name, null, { label_attr: { class: 'd-md-none' }}) }}
             {{ form_errors(form.name) }}
             {{ form_widget(form.name, { attr: { class: 'form-control' }}) }}
@@ -38,14 +38,9 @@
     </div>
 {% endblock %}
 
-{% block javascripts %}
-    {{ parent() }}
-    {{ encore_entry_script_tags('reminder') }}
-{% endblock %}
-
 {% block content %}
     {% set saveButton %}
-        {% if not is_granted('admin', forecastAccount) %}
+        {% if is_granted('admin', forecastAccount) %}
             {{ form_widget(form.save) }}
         {% else %}
             You must be a Forecast admin to configure the Slack reminder.
@@ -234,7 +229,7 @@
                             {{ form_help(form.projectOverrides, { help_attr: { class: 'text-normal' }}) }}
                             {{ form_errors(form.projectOverrides) }}
                             <div>
-                                {{ form_widget(form.projectOverrides, { attr: { class: 'overrides-container' }}) }}
+                                {{ form_widget(form.projectOverrides, { attr: { class: 'dynamic-form-container' }}) }}
                             </div>
                         </div>
                     </div>
@@ -256,7 +251,7 @@
                             {{ form_help(form.clientOverrides, { help_attr: { class: 'text-normal' }}) }}
                             {{ form_errors(form.clientOverrides) }}
                             <div>
-                                {{ form_widget(form.clientOverrides, { attr: { class: 'overrides-container' }}) }}
+                                {{ form_widget(form.clientOverrides, { attr: { class: 'dynamic-form-container' }}) }}
                             </div>
                         </div>
                     </div>
@@ -294,6 +289,8 @@
 
     <script>
     document.addEventListener("DOMContentLoaded", function(event) {
+        dynamicForm('add a new override');
+
         jQuery('#confirm-delete').on('show.bs.modal', function(e) {
             jQuery(this).find('.btn-ok').attr('href', jQuery(e.relatedTarget).data('href'));
         });

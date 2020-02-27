@@ -15,6 +15,7 @@ use App\Entity\HarvestAccount;
 use App\Invoicing\DataSelector\HarvestDataSelector;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -39,6 +40,28 @@ class HarvestSettingsType extends AbstractType
             ])
             ->add('hideSkippedUsers', null, [
                 'help' => 'Completely hide those users from the timesheets verification steps?',
+            ])
+            ->add('invoiceDueDelayRequirements', CollectionType::class, [
+                'entry_type' => InvoiceDueDelayRequirementType::class,
+                'entry_options' => [
+                    'choices' => $this->harvestDataSelector->getEnabledClientsForChoice(),
+                ],
+                'allow_add' => true,
+                'allow_delete' => true,
+                'by_reference' => false,
+                'error_bubbling' => false,
+                'help' => 'This section allow to create, for each client, invoice "due delay" requirements.',
+            ])
+            ->add('invoiceNotesRequirements', CollectionType::class, [
+                'entry_type' => InvoiceNotesRequirementType::class,
+                'entry_options' => [
+                    'choices' => $this->harvestDataSelector->getEnabledClientsForChoice(),
+                ],
+                'allow_add' => true,
+                'allow_delete' => true,
+                'by_reference' => false,
+                'error_bubbling' => false,
+                'help' => 'This section allow to create, for each client, invoice footnotes requirements.',
             ])
             ->add('save', SubmitType::class, [
                 'label' => 'Save settings',

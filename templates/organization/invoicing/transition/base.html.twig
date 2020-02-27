@@ -2,16 +2,16 @@
 
 {% block content %}
     {{ include('organization/invoicing/_progress.html.twig', {invoicingProcess: invoicingProcess, transition: transition}) }}
-    {{ form_start(form) }}
-        <div class="card">
-            <div class="card-body">
-                {% block transition %}
-                {% endblock %}
-            </div>
-            <div class="card-footer text-right">
-                {% block footerLeft %}{% endblock %}
-                {{ form_widget(form.next) }}
-            </div>
+    <div class="card">
+        <div class="card-body">
+            {% block transition %}
+            {% endblock %}
         </div>
-    {{ form_end(form) }}
+        <div class="card-footer text-right">
+            {% block footerLeft %}{% endblock %}
+            {{ form_start(form) }}
+                {{ form_widget(form.next) }}
+            {{ form_end(form) }}
+        </div>
+    </div>
 {% endblock %}

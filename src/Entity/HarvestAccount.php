@@ -11,7 +11,11 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use App\Validator\Constraints as AppAssert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\HarvestAccountRepository")
@@ -69,6 +73,25 @@ class HarvestAccount
      * @ORM\Column(type="boolean", nullable=true)
      */
     private $hideSkippedUsers;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\InvoiceDueDelayRequirement", mappedBy="harvestAccount", orphanRemoval=true, cascade={"persist"})
+     * @Assert\Valid
+     * @AppAssert\UniqueClient(message="There is already a due delay requirement for the client ""{{ value }}"".")
+     */
+    private $invoiceDueDelayRequirements;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\InvoiceNotesRequirement", mappedBy="harvestAccount", orphanRemoval=true, cascade={"persist"})
+     * @Assert\Valid
+     */
+    private $invoiceNotesRequirements;
+
+    public function __construct()
+    {
+        $this->invoiceDueDelayRequirements = new ArrayCollection();
+        $this->invoiceNotesRequirements = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -179,6 +202,68 @@ class HarvestAccount
     public function setHideSkippedUsers(?bool $hideSkippedUsers): self
     {
         $this->hideSkippedUsers = $hideSkippedUsers;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|InvoiceDueDelayRequirement[]
+     */
+    public function getInvoiceDueDelayRequirements(): Collection
+    {
+        return $this->invoiceDueDelayRequirements;
+    }
+
+    public function addInvoiceDueDelayRequirement(InvoiceDueDelayRequirement $invoiceDueDelayRequirement): self
+    {
+        if (!$this->invoiceDueDelayRequirements->contains($invoiceDueDelayRequirement)) {
+            $this->invoiceDueDelayRequirements[] = $invoiceDueDelayRequirement;
+            $invoiceDueDelayRequirement->setHarvestAccount($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInvoiceDueDelayRequirement(InvoiceDueDelayRequirement $invoiceDueDelayRequirement): self
+    {
+        if ($this->invoiceDueDelayRequirements->contains($invoiceDueDelayRequirement)) {
+            $this->invoiceDueDelayRequirements->removeElement($invoiceDueDelayRequirement);
+            // set the owning side to null (unless already changed)
+            if ($invoiceDueDelayRequirement->getHarvestAccount() === $this) {
+                $invoiceDueDelayRequirement->setHarvestAccount(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|InvoiceNotesRequirement[]
+     */
+    public function getInvoiceNotesRequirements(): Collection
+    {
+        return $this->invoiceNotesRequirements;
+    }
+
+    public function addInvoiceNotesRequirement(InvoiceNotesRequirement $invoiceNotesRequirement): self
+    {
+        if (!$this->invoiceNotesRequirements->contains($invoiceNotesRequirement)) {
+            $this->invoiceNotesRequirements[] = $invoiceNotesRequirement;
+            $invoiceNotesRequirement->setHarvestAccount($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInvoiceNotesRequirement(InvoiceNotesRequirement $invoiceNotesRequirement): self
+    {
+        if ($this->invoiceNotesRequirements->contains($invoiceNotesRequirement)) {
+            $this->invoiceNotesRequirements->removeElement($invoiceNotesRequirement);
+            // set the owning side to null (unless already changed)
+            if ($invoiceNotesRequirement->getHarvestAccount() === $this) {
+                $invoiceNotesRequirement->setHarvestAccount(null);
+            }
+        }
 
         return $this;
     }

@@ -133,7 +133,7 @@ class ForecastReminderType extends AbstractType
         foreach ($projects as $project) {
             if (!$project->getArchived()) {
                 if (isset($this->clients[$project->getClientId()])) {
-                    $key = sprintf('%s - %s', $this->clients[$project->getClientId()]->getName(), $project->getName());
+                    $key = sprintf('%s - %s%s', $this->clients[$project->getClientId()]->getName(), $project->getCode() ? $project->getCode() . ' - ' : '', $project->getName());
                 } else {
                     $key = $project->getName();
                 }
