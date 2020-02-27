@@ -198,7 +198,7 @@ class HarvestDataSelector
             'from' => $from->format('Y-m-d'),
             'to' => $to->format('Y-m-d'),
         ], 'results')->getResults();
-        $uninvoiced = array_filter($uninvoiced, function(UninvoicedReportResult $a) {
+        $uninvoiced = array_filter($uninvoiced, function (UninvoicedReportResult $a) {
             return ($a->getUninvoicedAmount() + $a->getUninvoicedExpenses()) > 0;
         });
 

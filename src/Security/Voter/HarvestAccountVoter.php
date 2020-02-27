@@ -1,9 +1,18 @@
 <?php
 
+/*
+ * This file is part of JoliCode's Forecast Tools project.
+ *
+ * (c) JoliCode <coucou@jolicode.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace App\Security\Voter;
 
-use App\Repository\UserHarvestAccountRepository;
 use App\Entity\HarvestAccount;
+use App\Repository\UserHarvestAccountRepository;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -21,7 +30,7 @@ class HarvestAccountVoter extends Voter
 
     protected function supports($attribute, $subject)
     {
-        return in_array($attribute, [self::ADMIN])
+        return \in_array($attribute, [self::ADMIN], true)
             && $subject instanceof \App\Entity\HarvestAccount;
     }
 
@@ -41,7 +50,7 @@ class HarvestAccountVoter extends Voter
             case self::ADMIN:
                 $userHarvestAccount = $this->userHarvestAccountRepository->findOneByEmailAndForecastAccount($user->getUsername(), $harvestAccount);
 
-                return ($userHarvestAccount && $userHarvestAccount->getIsAdmin());
+                return $userHarvestAccount && $userHarvestAccount->getIsAdmin();
                 break;
         }
 

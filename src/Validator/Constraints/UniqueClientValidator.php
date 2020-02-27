@@ -46,16 +46,16 @@ class UniqueClientValidator extends ConstraintValidator
         $collectionElements = [];
 
         foreach ($value as $element) {
-            if (\in_array(call_user_func([$element, $constraint->accessor]), $collectionElements, true)) {
+            if (\in_array(\call_user_func([$element, $constraint->accessor]), $collectionElements, true)) {
                 $this->context->buildViolation($constraint->message)
-                    ->setParameter('{{ value }}', $this->formatValue(call_user_func([$element, $constraint->accessor])))
+                    ->setParameter('{{ value }}', $this->formatValue(\call_user_func([$element, $constraint->accessor])))
                     ->setCode(UniqueClient::IS_NOT_UNIQUE)
                     ->addViolation();
 
                 return;
             }
 
-            $collectionElements[] = call_user_func([$element, $constraint->accessor]);
+            $collectionElements[] = \call_user_func([$element, $constraint->accessor]);
         }
     }
 

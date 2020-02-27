@@ -15,8 +15,8 @@ use App\Repository\UserRepository;
 use JoliCode\Forecast\ClientFactory;
 use Symfony\Component\Cache\Adapter\TraceableAdapter;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Contracts\Cache\ItemInterface;
 
 class ForecastClient extends AbstractClient
 {
