@@ -72,6 +72,19 @@ class ForecastClient extends AbstractClient
         return $this->namespace;
     }
 
+    public function __call(string $name, array $arguments)
+    {
+        $nodeName = array_pop($arguments);
+        $cacheKey = sprintf('%s-%s-%s', $this->__namespace(), $name, md5(serialize($arguments)));
+
+        // The callable will only be executed on a cache miss.
+        $this->__addKey($cacheKey);
+
+        return $this->pool->get($cacheKey, function (ItemInterface $item) use ($name, $arguments, $nodeName) {
+            return $this->call($name, $arguments, $nodeName);
+        });
+    }
+
     public function getForecastAccount(): ForecastAccount
     {
         if (null === $this->forecastAccount) {
@@ -84,19 +97,6 @@ class ForecastClient extends AbstractClient
     public function setForecastAccount(ForecastAccount $forecastAccount)
     {
         $this->forecastAccount = $forecastAccount;
-    }
-
-    public function __call(string $name, array $arguments)
-    {
-        $nodeName = array_pop($arguments);
-        $cacheKey = sprintf('%s-%s-%s', $this->__namespace(), $name, md5(serialize($arguments)));
-
-        // The callable will only be executed on a cache miss.
-        $this->__addKey($cacheKey);
-
-        return $this->pool->get($cacheKey, function (ItemInterface $item) use ($name, $arguments, $nodeName) {
-            return $this->call($name, $arguments, $nodeName);
-        });
     }
 
     public function call(string $name, array $arguments, string $nodeName, $responseToUpdate = null)

@@ -43,13 +43,6 @@ class Builder
         return $this->buildPublicForecast($publicForecast, $days, $assignments, $clients, $projects, $users, $placeholders);
     }
 
-    private function getForecastDataSelector(ForecastAccount $forecastAccount): ForecastDataSelector
-    {
-        $this->forecastDataSelector->setForecastAccount($forecastAccount);
-
-        return $this->forecastDataSelector;
-    }
-
     public function buildDays(\DateTime $start, \DateTime $end): array
     {
         $days = $this->buildPrettyDays($start, $end);
@@ -73,6 +66,13 @@ class Builder
         }
 
         return [$days, $weeks, $months];
+    }
+
+    private function getForecastDataSelector(ForecastAccount $forecastAccount): ForecastDataSelector
+    {
+        $this->forecastDataSelector->setForecastAccount($forecastAccount);
+
+        return $this->forecastDataSelector;
     }
 
     private function buildPublicForecast($publicForecast, $days, $assignments, $clients, $projects, $users, $placeholders)
