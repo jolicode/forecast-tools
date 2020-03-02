@@ -50,7 +50,7 @@ class ReminderController extends AbstractController
             $uow->computeChangeSets();
             $changeset = $uow->getEntityChangeSet($forecastReminder);
 
-            if (count($changeset)) {
+            if (\count($changeset)) {
                 // prevent reminder modification from non-forecast admins
                 // however, allow forecast simple users to edit the overrides
                 $this->denyAccessUnlessGranted('admin', $forecastAccount);
