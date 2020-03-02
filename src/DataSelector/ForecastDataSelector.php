@@ -12,9 +12,11 @@
 namespace App\DataSelector;
 
 use App\Client\ForecastClient;
+use App\Entity\ForecastAccount;
 use JoliCode\Forecast\Api\Model\Assignment;
 use JoliCode\Forecast\Api\Model\Client;
 use JoliCode\Forecast\Api\Model\Person;
+use JoliCode\Forecast\Api\Model\Placeholder;
 use JoliCode\Forecast\Api\Model\Project;
 
 class ForecastDataSelector
@@ -51,14 +53,7 @@ class ForecastDataSelector
      */
     public function getClientsById()
     {
-        $clientsById = [];
-        $clients = $this->getClients();
-
-        foreach ($clients as $client) {
-            $clientsById[$client->getId()] = $client;
-        }
-
-        return $clientsById;
+        return self::makeLookup($this->getClients());
     }
 
     public function getEnabledClientsForChoice(): array
@@ -127,10 +122,58 @@ class ForecastDataSelector
     }
 
     /**
+     * @return Client[]
+     */
+    public function getPeopleById()
+    {
+        return self::makeLookup($this->getPeople());
+    }
+
+    /**
+     * @return Placeholder[]
+     */
+    public function getPlaceholders()
+    {
+        return $this->client->listPlaceholders('placeholders')->getPlaceholders();
+    }
+
+    /**
+     * @return Placeholder[]
+     */
+    public function getPlaceholdersById()
+    {
+        return self::makeLookup($this->getPlaceholders());
+    }
+
+    /**
      * @return Project[]
      */
     public function getProjects()
     {
         return $this->client->listProjects('projects')->getProjects();
+    }
+
+    /**
+     * @return Client[]
+     */
+    public function getProjectsById()
+    {
+        return self::makeLookup($this->getProjects());
+    }
+
+    public function setForecastAccount(ForecastAccount $forecastAccount)
+    {
+        $this->client->setForecastAccount($forecastAccount);
+    }
+
+    private static function makeLookup($struct, $methodName = 'getId')
+    {
+        $lookup = [];
+
+        foreach ($struct as $data) {
+            $lookup[$data->$methodName()] = $data;
+        }
+
+        return $lookup;
     }
 }

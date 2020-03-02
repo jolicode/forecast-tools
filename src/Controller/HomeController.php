@@ -54,13 +54,13 @@ class HomeController extends AbstractController
     public function forecast(Builder $forecastBuilder, PublicForecast $publicForecast, $start = null, $end = null)
     {
         if (null === $start) {
-            $start = new \DateTime('first day of this month');
+            $start = new \DateTime('first day of last month');
         } else {
             $start = new \DateTime($start);
         }
 
         if (null === $end) {
-            $end = new \DateTime('last day of this month');
+            $end = new \DateTime('last day of next month');
         } else {
             $end = new \DateTime($end);
         }
