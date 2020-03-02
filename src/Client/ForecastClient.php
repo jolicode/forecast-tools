@@ -11,6 +11,7 @@
 
 namespace App\Client;
 
+use App\Entity\ForecastAccount;
 use App\Repository\UserRepository;
 use JoliCode\Forecast\ClientFactory;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
@@ -25,6 +26,7 @@ class ForecastClient extends AbstractClient
     private $requestStack;
     private $security;
     private $userRepository;
+    private $forecastAccount = null;
 
     public function __construct(RequestStack $requestStack, AdapterInterface $pool, Security $security, UserRepository $userRepository)
     {
@@ -37,9 +39,13 @@ class ForecastClient extends AbstractClient
     protected function __client()
     {
         if (null === $this->client) {
-            $email = $this->security->getUser()->getUsername();
-            $user = $this->userRepository->findOneBy(['email' => $email]);
-            $forecastAccount = $this->requestStack->getCurrentRequest()->attributes->get('forecastAccount');
+            $user = null;
+            $forecastAccount = $this->getForecastAccount();
+
+            if ($this->security->getUser()) {
+                $email = $this->security->getUser()->getUsername();
+                $user = $this->userRepository->findOneBy(['email' => $email]);
+            }
 
             if ($user) {
                 $accessToken = $user->getAccessToken();
@@ -59,11 +65,25 @@ class ForecastClient extends AbstractClient
     protected function __namespace()
     {
         if ('' === $this->namespace) {
-            $forecastAccount = $this->requestStack->getCurrentRequest()->attributes->get('forecastAccount');
+            $forecastAccount = $this->getForecastAccount();
             $this->namespace = 'forecast-' . $forecastAccount->getId();
         }
 
         return $this->namespace;
+    }
+
+    public function getForecastAccount(): ForecastAccount
+    {
+        if (null === $this->forecastAccount) {
+            $this->forecastAccount = $this->requestStack->getCurrentRequest()->attributes->get('forecastAccount');
+        }
+
+        return $this->forecastAccount;
+    }
+
+    public function setForecastAccount(ForecastAccount $forecastAccount)
+    {
+        $this->forecastAccount = $forecastAccount;
     }
 
     public function __call(string $name, array $arguments)

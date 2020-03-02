@@ -9,7 +9,7 @@
         <div class="col-md-5 p-0">
             {{ form_label(form.projectId, null, { label_attr: { class: 'd-md-none' }}) }}
             {{ form_errors(form.projectId) }}
-            {{ form_widget(form.projectId, { attr: { class: 'form-control' }}) }}
+            {{ form_widget(form.projectId) }}
             {{ form_help(form.projectId) }}
         </div>
         <div class="col-md-5 p-0 pl-md-3">
@@ -26,7 +26,7 @@
         <div class="col-md-5 p-0">
             {{ form_label(form.clientId, null, { label_attr: { class: 'd-md-none' }}) }}
             {{ form_errors(form.clientId) }}
-            {{ form_widget(form.clientId, { attr: { class: 'form-control' }}) }}
+            {{ form_widget(form.clientId) }}
             {{ form_help(form.clientId) }}
         </div>
         <div class="col-md-5 p-0 pl-md-3">
@@ -40,12 +40,7 @@
 
 {% block content %}
     {% set saveButton %}
-        {% if is_granted('admin', forecastAccount) %}
-            {{ form_widget(form.save) }}
-        {% else %}
-            You must be a Forecast admin to configure the Slack reminder.
-            {{ form_widget(form.save, { 'disabled': true }) }}
-        {% endif %}
+        {{ form_widget(form.save) }}
     {% endset %}
     {% for message in app.flashes('success') %}
         <div class="flash-notice">
