@@ -33,16 +33,18 @@
                 </div>
             </div>
 
-            <div class="col-md-6 col-lg-4 col-xl-3 p-2">
-                <div class="card card-body h-100">
-                    <img src="/images/invoicing.svg" class="card-img-top" alt="Invoicing process">
-                    <h5 class="car-title">Invoicing process</h2>
-                    <p class="card-text">
-                        Get insights while invoicing, compare Forecast schedules and Harvest timesheets.
-                    </p>
-                    <a href="{{ organization_path('invoicing_index') }}" class="btn btn-primary">💰 Create invoices</a>
+            {% if is_granted('admin', forecastAccount) and is_granted('harvest_admin', forecastAccount) %}
+                <div class="col-md-6 col-lg-4 col-xl-3 p-2">
+                    <div class="card card-body h-100">
+                        <img src="/images/invoicing.svg" class="card-img-top" alt="Invoicing process">
+                        <h5 class="car-title">Invoicing process</h2>
+                        <p class="card-text">
+                            Get insights, compare Forecast schedules and Harvest timesheets.
+                        </p>
+                        <a href="{{ organization_path('invoicing_index') }}" class="btn btn-primary">💰 Create invoices</a>
+                    </div>
                 </div>
-            </div>
+            {% endif %}
         </div>
     </div>
 {% endblock %}
