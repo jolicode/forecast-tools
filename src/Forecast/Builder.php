@@ -11,31 +11,43 @@
 
 namespace App\Forecast;
 
+use App\DataSelector\ForecastDataSelector;
+use App\Entity\ForecastAccount;
 use App\Entity\PublicForecast;
 
 class Builder
 {
+    private $forecastDataSelector;
+
+    public function __construct(ForecastDataSelector $forecastDataSelector)
+    {
+        $this->forecastDataSelector = $forecastDataSelector;
+    }
+
     public function buildAssignments(PublicForecast $publicForecast, \DateTime $start, \DateTime $end)
     {
         $days = $this->buildPrettyDays($start, $end);
-        $account = $publicForecast->getForecastAccount();
-        $client = \JoliCode\Forecast\ClientFactory::create(
-            $account->getAccessToken(),
-            $account->getForecastId()
-        );
+        $forecastDataSelector = $this->getForecastDataSelector($publicForecast->getForecastAccount());
 
         $options = [
-            'start_date' => $start->format('Y-m-d'),
-            'end_date' => $end->format('Y-m-d'),
+            'from' => $start,
+            'to' => $end,
         ];
 
-        $assignments = $client->listAssignments($options)->getAssignments();
-        $clients = self::makeLookup($client->listClients()->getClients());
-        $projects = self::makeLookup($client->listProjects()->getProjects());
-        $users = self::makeLookup($client->listPeople()->getPeople());
-        $placeholders = self::makeLookup($client->listPlaceholders()->getPlaceholders());
+        $assignments = $forecastDataSelector->getAssignments($start, $end);
+        $clients = $forecastDataSelector->getClientsById();
+        $projects = $forecastDataSelector->getProjectsById();
+        $users = $forecastDataSelector->getPeopleById();
+        $placeholders = $forecastDataSelector->getPlaceholdersById();
 
         return $this->buildPublicForecast($publicForecast, $days, $assignments, $clients, $projects, $users, $placeholders);
+    }
+
+    private function getForecastDataSelector(ForecastAccount $forecastAccount): ForecastDataSelector
+    {
+        $this->forecastDataSelector->setForecastAccount($forecastAccount);
+
+        return $this->forecastDataSelector;
     }
 
     public function buildDays(\DateTime $start, \DateTime $end): array
@@ -233,16 +245,5 @@ class Builder
         }
 
         return $dates;
-    }
-
-    private static function makeLookup($struct, $methodName = 'getId')
-    {
-        $lookup = [];
-
-        foreach ($struct as $data) {
-            $lookup[$data->$methodName()] = $data;
-        }
-
-        return $lookup;
     }
 }
