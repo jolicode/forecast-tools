@@ -16,4 +16,8 @@ jQuery(document).ready(function() {
       document.location = baseUrl + '/' + start.format('YYYY-MM-DD') + '/' + end.format('YYYY-MM-DD');
     });
   });
+
+  jQuery('.days').scroll((e) => {
+    jQuery('.days').scrollLeft($(e.currentTarget).scrollLeft());
+  });
 });

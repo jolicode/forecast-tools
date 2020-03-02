@@ -1,12 +1,10 @@
+@import "~bootstrap/scss/bootstrap";
 @import "~daterangepicker/daterangepicker.css";
 
 #content {
   max-width: 100vw;
-  margin-left: -40px;
-  margin-right: -20px;
   margin-bottom: -50px;
   padding-bottom: 50px;
-  overflow-x: auto;
 }
 
 #datepicker {
@@ -14,6 +12,30 @@
   top: 10px;
   right: 1em;
   width: 15em;
+}
+
+.names {
+  min-width: 9em;
+
+  table {
+    width: 100%;
+  }
+}
+
+.total-summary {
+  min-width: 4em;
+
+  table {
+    width: 100%;
+  }
+
+  [rowspan="2"] {
+    height: 50px !important;
+  }
+}
+
+.days {
+  overflow-x: auto;
 }
 
 table {
@@ -30,6 +52,12 @@ table li {
 table ul {
   margin: 0;
   padding: 0;
+}
+
+td.day {
+  color: #bbb;
+  text-align: center;
+  font-weight: normal;
 }
 
 th {
@@ -59,19 +87,24 @@ th.people,
 th.total,
 td.totalDays,
 th.totalDays {
-  padding-right: 1em;
+  height: 25px !important;
+  padding: 0;
   text-align: right;
-  width: 150px !important;
+
+  &.double {
+    height: 52px !important;
+  }
 }
 
 th.people {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 td.totalDays,
 th.totalDays {
-  width: 60px !important;
+  padding-right: 1em;
 }
 
 .totalDays {
@@ -102,8 +135,9 @@ td.monthly.total.totalDays {
 }
 
 .today {
-  border-left: 1px #abc5ff solid;
-  border-right: 1px #abc5ff solid;
+  color: #007bff;
+  border-left: 1px #007bff solid !important;
+  border-right: 1px #007bff solid !important;
 }
 
 .assigned {
@@ -119,9 +153,9 @@ td.monthly.total.totalDays {
 }
 
 .day.today {
-  border-top: 1px #abc5ff solid;
-  background-color: #ebf5ff;
-  color: #336bab;
+  border-top: 1px #007bff solid;
+  background-color: #e9f5ff;
+  color: #007bff;
 }
 
 .separator {
@@ -135,9 +169,8 @@ td.monthly.total {
 }
 
 .total.today {
-  border-bottom: 1px #abc5ff solid;
-  background-color: #ebf5ff;
-  color: #336bab;
+  border-bottom: 1px #007bff solid;
+  background-color: #e9f5ff;
   font-weight: bold;
 }
 
@@ -148,7 +181,16 @@ td.monthly.total {
   border-bottom: 1px #ccc solid;
 }
 
-canvas {
-  width: 100%;
-  height: 300px;
+.chart {
+  td {
+    padding-top: 1em;
+    border-bottom: #bbb 1px dotted;
+  }
+
+  div {
+    width: 21px;
+    background-color: #007bff;
+    margin: 0 auto;
+    border-radius: 1rem 1rem 0 0;
+  }
 }

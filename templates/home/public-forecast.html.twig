@@ -5,177 +5,196 @@
         <title>{% block title %}{{ publicForecast.name }} | ⛅ Forecast tools{% endblock %}</title>
         {% block stylesheets %}
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        {{ encore_entry_link_tags('app') }}
+        {#{ encore_entry_link_tags('app') }#}
         {{ encore_entry_link_tags('forecast') }}
         {% endblock %}
     </head>
     <body>
         {% block body %}
-            <h1>{{ publicForecast.name }}</h1>
+            <nav class="navbar navbar-expand-lg navbar-light">
+                <a class="navbar-brand" href="{{ path('homepage') }}">⛅&nbsp;Forecast&nbsp;tools</a>
+                <div id="datepicker">
+                    <input type="text" name="daterange" class="form-control pull-right" value="{{ start|date("d/m/Y") }} - {{ end|date("d/m/Y") }}" />
+                </div>
+            </nav>
 
-            <div id="datepicker">
-                <input type="text" name="daterange" class="form-control pull-right" value="{{ start|date("d/m/Y") }} - {{ end|date("d/m/Y") }}" />
+            <div class="p-3 m-md-3">
+                {% for project in assignments %}
+                    <div class="card card-body mb-3">
+                        <h5 class="card-title pb-3">{{ project.client}} / {{ project.project.name}}</h5>
+                        <div class="card-text">
+
+                            <div class="container-fluid p-0">
+                                <div class="row">
+                                    <div class="col flex-grow-0 px-0 names">
+                                        <table>
+                                            <tr>
+                                                <th class="people">
+                                                    &nbsp;
+                                                </th>
+                                            </tr>
+                                            <tr>
+                                                <th class="people">
+                                                    &nbsp;
+                                                </th>
+                                            </tr>
+                                            {% for user in project.users %}
+                                                <tr>
+                                                    <th class="people pr-1">
+                                                        {{ user.name }}
+                                                    </th>
+                                                </tr>
+                                            {% endfor %}
+
+                                            <tr>
+                                                <th class="separator">
+                                                    &nbsp;
+                                                </th>
+                                            </tr>
+
+                                            <tr>
+                                                <th class="total pr-1">
+                                                    Total
+                                                </th>
+                                            </tr>
+                                            <tr>
+                                                <th class="total pr-1">
+                                                    Weekly total
+                                                </th>
+                                            </tr>
+                                        </table>
+                                    </div>
+
+                                    <div class="col flex-grow-1 px-0 days">
+                                        <table>
+                                            <tr>
+                                                {% for month, columns in months %}
+                                                    <th class="month" colspan="{{ columns }}">
+                                                        {{ month }}
+                                                    </th>
+                                                {% endfor %}
+                                            </tr>
+
+                                            <tr>
+                                                {% for day in days %}
+                                                    <th class="day{% if day.day == today %} today{% endif %}{% if day.isFirstDayOfMonth %} firstDayOfMonth{% endif %}">
+                                                        {{ day.date|date('j') }}
+                                                    </th>
+                                                {% endfor %}
+                                            </tr>
+
+                                            {% for user in project.users %}
+                                                <tr>
+                                                    {% for prettyDay in days %}
+                                                        {% set day = prettyDay.day %}
+                                                        <td class="assignement{% if user.days[day] is defined %} assigned{% endif %}{% if prettyDay.isWeekend %} weekend{% endif %}{% if day == today %} today{% endif %}{% if prettyDay.isFirstDayOfWeek %} firstDayOfWeek{% endif %}{% if prettyDay.isFirstDayOfMonth %} firstDayOfMonth{% endif %}">
+                                                            {% if user.days[day] is defined %}
+                                                                {{ user.days[day] }}
+                                                            {% else %}
+                                                                &nbsp;
+                                                            {% endif %}
+                                                        </td>
+                                                    {% endfor %}
+                                                </tr>
+                                            {% endfor %}
+
+                                            <tr>
+                                                <th class="separator" colspan="{{ days|length }}">
+                                                    &nbsp;
+                                                </th>
+                                            </tr>
+
+                                            <tr>
+                                                {% for prettyDay in days %}
+                                                    {% set day = prettyDay.day %}
+                                                    <td class="assignement monthly total{% if prettyDay.isWeekend %} weekend{% endif %}{% if day == today %} today{% endif %}{% if prettyDay.isFirstDayOfWeek %} firstDayOfWeek{% endif %}{% if prettyDay.isFirstDayOfMonth %} firstDayOfMonth{% endif %}">
+                                                        {% if project.total[day] is defined %}
+                                                            {{ project.total[day] }}
+                                                        {% endif %}
+                                                    </td>
+                                                {% endfor %}
+                                            </tr>
+
+                                            <tr>
+                                                {% for week, columns in weeks %}
+                                                    <td class="assignement week" colspan="{{ columns }}">
+                                                        {% if project.weekly_total[week] is defined %}
+                                                            {{ project.weekly_total[week] }}
+                                                        {% endif %}
+                                                    </td>
+                                                {% endfor %}
+                                            </tr>
+
+                                            {% set max = max(project.total) %}
+
+                                            {% if max %}
+                                                <tr class="chart">
+                                                    {% for prettyDay in days %}
+                                                        {% set day = prettyDay.day %}
+                                                        <td class="align-bottom text-center">
+                                                            {% if project.total[day] is defined %}
+                                                                <div style="height: {{ (120 * project.total[day] / max)|round }}px">
+                                                                    &nbsp;
+                                                                </div>
+                                                            {% else %}
+                                                                <div style="height: 0px">
+                                                                    &nbsp;
+                                                                </div>
+                                                            {% endif %}
+                                                        </td>
+                                                    {% endfor %}
+                                                </tr>
+
+                                                <tr>
+                                                    {% for day in days %}
+                                                        <td class="day">
+                                                            {{ day.date|date('j') }}
+                                                        </td>
+                                                    {% endfor %}
+                                                </tr>
+                                            {% endif %}
+                                        </table>
+                                    </div>
+
+                                    <div class="col flex-grow-0 px-0 total-summary">
+                                        <table>
+                                            <tr>
+                                                <th class="month totalDays double">
+                                                    Total
+                                                </th>
+                                            </tr>
+
+                                            {% for user in project.users %}
+                                                <tr>
+                                                    <td class="totalDays">{{ user.total }}</td>
+                                                </tr>
+                                            {% endfor %}
+
+                                            <tr>
+                                                <th class="separator">
+                                                    &nbsp;
+                                                </th>
+                                            </tr>
+
+                                            <tr>
+                                                <td class="monthly total totalDays double">
+                                                    {{ project.total_days }}
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
-
-            <div id="content">
-                <table>
-                    {% for project in assignments %}
-                        <tr>
-                            <th class="people">
-                                &nbsp;
-                            </th>
-                            <th class="project" colspan="{{ days|length + 1 }}">
-                                <h2>{{ project.client}} | {{ project.project.name}}</h2>
-                            </th>
-                        </tr>
-
-                        <tr>
-                            <th class="people">
-                                &nbsp;
-                            </th>
-                            {% for month, columns in months %}
-                                <th class="month" colspan="{{ columns }}">
-                                    {{ month }}
-                                </th>
-                            {% endfor %}
-                            <th class="month totalDays" rowspan="2">Total</th>
-                        </tr>
-
-                        <tr>
-                            <th class="people">
-                                &nbsp;
-                            </th>
-                            {% for day in days %}
-                                <th class="day{% if day.day == today %} today{% endif %}{% if day.isFirstDayOfMonth %} firstDayOfMonth{% endif %}">
-                                    {{ day.date|date('j') }}
-                                </th>
-                            {% endfor %}
-                        </tr>
-
-                        {% for user in project.users %}
-                            <tr>
-                                <th class="people">
-                                    {{ user.name }}
-                                </th>
-
-                                {% for prettyDay in days %}
-                                    {% set day = prettyDay.day %}
-                                    <td class="assignement{% if user.days[day] is defined %} assigned{% endif %}{% if prettyDay.isWeekend %} weekend{% endif %}{% if day == today %} today{% endif %}{% if prettyDay.isFirstDayOfWeek %} firstDayOfWeek{% endif %}{% if prettyDay.isFirstDayOfMonth %} firstDayOfMonth{% endif %}">
-                                        {% if user.days[day] is defined %}
-                                            {{ user.days[day] }}
-                                        {% else %}
-                                            &nbsp;
-                                        {% endif %}
-                                    </td>
-                                {% endfor %}
-
-                                <td class="totalDays">{{ user.total }}</td>
-                            </tr>
-                        {% endfor %}
-
-                        <tr>
-                            <th class="separator" colspan="{{ days|length + 1 }}">
-                                &nbsp;
-                            </th>
-                        </tr>
-
-                        <tr>
-                            <th class="total">
-                                Total
-                            </th>
-                            {% for prettyDay in days %}
-                                {% set day = prettyDay.day %}
-                                <td class="assignement monthly total{% if prettyDay.isWeekend %} weekend{% endif %}{% if day == today %} today{% endif %}{% if prettyDay.isFirstDayOfWeek %} firstDayOfWeek{% endif %}{% if prettyDay.isFirstDayOfMonth %} firstDayOfMonth{% endif %}">
-                                    {% if project.total[day] is defined %}
-                                        {{ project.total[day] }}
-                                    {% endif %}
-                                </td>
-                            {% endfor %}
-                            <td class="monthly total totalDays" rowspan="2">{{ project.total_days }}</td>
-                        </tr>
-
-                        <tr>
-                            <th class="total">
-                                Weekly total
-                            </th>
-                            {% for week, columns in weeks %}
-                                <td class="assignement week" colspan="{{ columns }}">
-                                    {% if project.weekly_total[week] is defined %}
-                                        {{ project.weekly_total[week] }}
-                                    {% endif %}
-                                </td>
-                            {% endfor %}
-                        </tr>
-
-                        <tr>
-                            <td colspan="{{ days|length + 1 }}">
-                                <canvas id="chart-{{ project.project.id }}" style="height: 300px; width: {{ 111 + 27 * days|length }}px" height="300"></canvas>
-                            </td>
-                            <td>&nbsp;</td>
-                        </tr>
-                    {% endfor %}
-                </table>
-            </div>
-
             <script>
             var baseUrl = '{{ url('public_forecast', { token: publicForecast.token }) }}';
-            document.addEventListener("DOMContentLoaded", function(event) {
-                {% for project in assignments %}
-                    var ctx = document.getElementById("chart-{{ project.project.id }}");
-                    var myChart = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: [
-                                {% for prettyDay in days %}
-                                    "{{ prettyDay.day }}",
-                                {% endfor %}
-                            ],
-                            datasets: [{
-                                label: 'Total',
-                                backgroundColor: 'rgba(0,70,150,.8)',
-                                data: [
-                                    {% for prettyDay in days %}
-                                        {% set day = prettyDay.day %}
-                                        {% if project.total[day] is defined %}
-                                            {{ project.total[day] }},
-                                        {% else %}
-                                            0,
-                                        {% endif %}
-                                    {% endfor %}
-                                ],
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            layout: {
-                                padding: {
-                                    left: 120,
-                                    right: 0,
-                                    top: 0,
-                                    bottom: 0
-                                }
-                            },
-                            scales: {
-                                xAxes: [{
-                                    ticks: {
-                                        autoSkip: false
-                                    }
-                                }],
-                                yAxes: [{
-                                    ticks: {
-                                        beginAtZero: true
-                                    }
-                                }]
-                            }
-                        }
-                    });
-                {% endfor %}
-            });
             </script>
         {% endblock %}
 
         {% block javascripts %}
-            {{ encore_entry_script_tags('app') }}
             {{ encore_entry_script_tags('forecast') }}
         {% endblock %}
     </body>
