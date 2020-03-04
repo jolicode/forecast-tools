@@ -187,6 +187,12 @@ class HarvestAuthenticator extends SocialAuthenticator
         );
         $harvestUser = $client->retrieveTheCurrentlyAuthenticatedUser();
         $company = $client->retrieveCompany();
+
+        if ($company instanceof \JoliCode\Harvest\Api\Model\Error) {
+            // The company requires Google signin, which seems to break Harvest API...
+            return;
+        }
+
         $harvestAccount = $this->harvestAccountRepository->findOneBy(['harvestId' => $account['id']]);
 
         if (!$harvestAccount) {
