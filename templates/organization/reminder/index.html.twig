@@ -197,13 +197,13 @@
                             {{ form_label(form.onlyUsers) }}
                             {{ form_errors(form.onlyUsers) }}
                             {{ form_widget(form.onlyUsers, { attr: { class: 'select2 multiple' }}) }}
-                            {{ form_help(form.onlyUsers) }}
+                            {{ form_help(form.onlyUsers)|raw }}
                         </div>
                         <div class="form-group">
                             {{ form_label(form.exceptUsers) }}
                             {{ form_errors(form.exceptUsers) }}
                             {{ form_widget(form.exceptUsers, { attr: { class: 'select2 multiple' }}) }}
-                            {{ form_help(form.exceptUsers) }}
+                            {{ form_help(form.exceptUsers)|raw }}
                         </div>
                     </div>
                     <div class="card-footer text-right">

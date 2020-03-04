@@ -70,17 +70,23 @@
                     sending Slack reminders. There is no usage tracker on this platform. All the data retrieved from Harvest APIs
                     is temporarily cached in redis, in order to make the app less APIs-dependant, but it is a short-lived cache.
                 </p>
+                <p>
+                    We also store the Slack webhook URL, in order to be able to post the Forecast schedule to your Slack team.
+                </p>
             </div>
 
             <div class="card-body">
                 <h5>Which libraries do you use to talk with Harvest and Forecast?</h5>
                 <p>
-                    We use two PHP libraries, based on OpenAPI: <a href="https://github.com/jolicode/forecast-php-api">forecast-php-api</a> and <a href="https://github.com/jolicode/harvest-php-api">harvest-php-api</a>.
+                    We use two PHP libraries: <a href="https://github.com/jolicode/forecast-php-api">forecast-php-api</a> and
+                    <a href="https://github.com/jolicode/harvest-php-api">harvest-php-api</a>. Both these libraries are based on
+                    OpenAPI specifications. While Forecast does not have a public API, the Harvest client must be, at the time of
+                    writing, one of the most complete, exhaustive and up-to-date API client for Harvest.
                 </p>
             </div>
 
             <div class="card-body">
-                <h5>Can I run this software on my own infrastructure?</h5>
+                <h5>Can I run this software on my own server?</h5>
                 <p>
                     Yes, it is free software. Go ahead and use it: <a href="https://github.com/jolicode/forecast-tools">Forecast tools on Github</a>.
                 </p>
