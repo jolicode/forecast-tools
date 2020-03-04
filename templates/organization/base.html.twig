@@ -19,7 +19,7 @@
                     <a class="nav-link" href="{{ organization_path('public_forecasts_list') }}">👀 Public forecasts</a>
                 </li>
                 <li class="nav-item{% if currentMenu == 'reminder' %} active{% endif %}">
-                    <a class="nav-link" href="{{ organization_path('reminder_index') }}">📅 Reminder</a>
+                    <a class="nav-link" href="{{ organization_path('reminder_index') }}">📅 Forecast reminder</a>
                 </li>
                 {% if is_granted('admin', forecastAccount) and is_granted('harvest_admin', forecastAccount) %}
                     <li class="nav-item{% if currentMenu == 'invoicing' %} active{% endif %}">
