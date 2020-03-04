@@ -82,7 +82,8 @@ class Manager
         }
 
         foreach ($rawUsers as $user) {
-            $hide = $invoicingProcess->getHarvestAccount()->getHideSkippedUsers() && $this->skipErrorsForUser($invoicingProcess, $user->getId());
+            $skipErrors = $this->skipErrorsForUser($invoicingProcess, $user->getId());
+            $hide = $invoicingProcess->getHarvestAccount()->getHideSkippedUsers() && $skipErrors;
 
             if ($hide) {
                 if (isset($timeEntries[$user->getId()])) {
@@ -98,7 +99,7 @@ class Manager
                         $emptyEntries[$key] = [
                             'date' => $date,
                             'total' => 0,
-                            'status' => $skipErrors . $this->getTimeEntryStatus($date, 0),
+                            'status' => ($skipErrors ? self::TIME_ENTRY_STATUS_SKIP . ' ' : '') . $this->getTimeEntryStatus($date, 0),
                             'error' => $this->hasErrors($date, $total, '' !== $skipErrors) ? 1 : 0,
                         ];
                     }
