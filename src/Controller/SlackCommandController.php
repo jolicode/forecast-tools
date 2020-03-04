@@ -29,7 +29,9 @@ class SlackCommandController extends AbstractController
      */
     public function command(Request $request)
     {
-        $this->temporaryResponse($request->request->get('response_url'));
+        if ('help' !== $request->request->get('text')) {
+            $this->temporaryResponse($request->request->get('response_url'));
+        }
 
         return new Response('');
     }
@@ -43,48 +45,6 @@ class SlackCommandController extends AbstractController
         $this->temporaryResponse($payload['response_url']);
 
         return new JsonResponse('<3 you, Slack');
-    }
-
-    private function multipleReminders(array $forecastReminders): JsonResponse
-    {
-        $body = [
-            'blocks' => [
-                [
-                    'type' => 'section',
-                    'text' => [
-                        'type' => 'mrkdwn',
-                        'text' => sprintf('It seems that you have configured %s reminders in this Slack workspace. Which one would you like to see?', \count($forecastReminders)),
-                    ],
-                ], [
-                    'type' => 'divider',
-                ],
-            ],
-        ];
-
-        foreach ($forecastReminders as $forecastReminder) {
-            $body['blocks'][] = [
-                'type' => 'section',
-                'text' => [
-                    'type' => 'mrkdwn',
-                    'text' => sprintf(
-                        '%s - %s',
-                        $forecastReminder->getForecastAccount()->getName(),
-                        $forecastReminder->getName()
-                    ),
-                ],
-                'accessory' => [
-                    'type' => 'button',
-                    'text' => [
-                        'type' => 'plain_text',
-                        'emoji' => true,
-                        'text' => 'Choose',
-                    ],
-                    'value' => (string) $forecastReminder->getId(),
-                ],
-            ];
-        }
-
-        return new JsonResponse($body);
     }
 
     private function temporaryResponse($responseUrl)
