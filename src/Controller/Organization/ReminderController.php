@@ -39,7 +39,7 @@ class ReminderController extends AbstractController
         }
 
         $form = $this->createForm(ForecastReminderType::class, $forecastReminder, [
-            'hasSlackTeams' => count($forecastAccount->getForecastAccountSlackTeams()) > 0,
+            'hasSlackTeams' => \count($forecastAccount->getForecastAccountSlackTeams()) > 0,
         ]);
         $form->add('save', SubmitType::class, ['label' => 'Save this reminder', 'attr' => ['class' => 'btn btn-primary']]);
         $form->handleRequest($request);

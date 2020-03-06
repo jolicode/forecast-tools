@@ -52,7 +52,7 @@ class Sender
         $client = \JoliCode\Slack\ClientFactory::create($standupMeetingReminder->getSlackTeam()->getAccessToken());
         $client->chatPostMessage([
             'channel' => $standupMeetingReminder->getChannelId(),
-            'blocks' => json_encode($body)
+            'blocks' => json_encode($body),
         ]);
     }
 
@@ -71,7 +71,7 @@ class Sender
             $assignments = $this->forecastDataSelector->getAssignments(new \DateTime('today'), new \DateTime('tomorrow'));
 
             foreach ($assignments as $assignment) {
-                if (in_array($assignment->getProjectId(), $standupMeetingReminder->getForecastProjects())) {
+                if (\in_array($assignment->getProjectId(), $standupMeetingReminder->getForecastProjects(), true)) {
                     $memberName = sprintf(
                         '%s %s',
                         $people[$assignment->getPersonId()]->getFirstName(),
@@ -80,6 +80,11 @@ class Sender
                     $members[$people[$assignment->getPersonId()]->getEmail()] = $memberName;
                 }
             }
+        }
+
+        if (0 === \count($members)) {
+            // do not ping when noone works on the project
+            return;
         }
 
         // find people from Slack
@@ -97,20 +102,20 @@ class Sender
         // format a string to ping the lucky winners
         $ping = array_unique($ping);
 
-        if (count($ping) > 1) {
+        if (\count($ping) > 1) {
             $lastPing = ' and ' . array_pop($ping);
+            $ping = implode(', ', $ping) . $lastPing;
+            $message = sprintf("🕘 It's time for the stand-up meeting!\nToday's participants: %s", $ping);
         } else {
-            $lastPing = '';
+            $message = sprintf('🕘 It should be time for the stand-up meeting, but %s is the only one working on the project today. Cheers up!', array_shift($ping));
         }
-
-        $ping = implode(', ', $ping) . $lastPing;
 
         return [
             [
                 'type' => 'section',
                 'text' => [
                     'type' => 'plain_text',
-                    'text' => sprintf("🕘 It's time for the standup meeting!\n Today's participants: %s", $ping),
+                    'text' => $message,
                     'emoji' => true,
                 ],
             ],

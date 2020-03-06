@@ -277,7 +277,7 @@ class ForecastReminder
         $forecastAccountSlackTeams = $this->getForecastAccount()->getForecastAccountSlackTeams();
 
         foreach ($forecastAccountSlackTeams as $forecastAccountSlackTeam) {
-            if ($forecastAccountSlackTeam->getChannelId() !== null) {
+            if (null !== $forecastAccountSlackTeam->getChannelId()) {
                 return false;
             }
         }

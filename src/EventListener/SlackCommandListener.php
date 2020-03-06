@@ -37,7 +37,7 @@ class SlackCommandListener implements EventSubscriberInterface
 
         if ('slack_command' === $request->attributes->get('_route') && ('/forecast' === $request->request->get('command'))) {
             if ('help' === $request->request->get('text')) {
-                    $message = <<<'EOT'
+                $message = <<<'EOT'
 *Time parameters* display the Forecast for a specific date:
 
 ➡️ `/forecast tomorrow`

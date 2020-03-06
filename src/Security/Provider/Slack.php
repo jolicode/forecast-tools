@@ -17,12 +17,11 @@ class Slack extends BaseSlack
 {
     public function getBaseAuthorizationUrl()
     {
-        return "https://slack.com/oauth/v2/authorize";
+        return 'https://slack.com/oauth/v2/authorize';
     }
-
 
     public function getBaseAccessTokenUrl(array $params)
     {
-        return "https://slack.com/api/oauth.v2.access";
+        return 'https://slack.com/api/oauth.v2.access';
     }
 }

@@ -42,7 +42,7 @@ class Handler
 
     public function handleRequest(Request $request)
     {
-        if ($request->request->get('text') === 'list') {
+        if ('list' === $request->request->get('text')) {
             return $this->listReminders($request);
         }
 
@@ -57,13 +57,13 @@ class Handler
 
         $action = $payload['actions'][0];
 
-        if ($action['action_id'] === 'change') {
+        if ('change' === $action['action_id']) {
             $standupMeetingReminder = $this->standupMeetingReminderRepository->findOneBy([
                 'id' => $action['block_id'],
                 'slackTeam' => $slackTeam,
             ]);
 
-            if ($action['selected_option']['value'] === 'delete') {
+            if ('delete' === $action['selected_option']['value']) {
                 $channelId = $standupMeetingReminder->getChannelId();
                 $this->em->remove($standupMeetingReminder);
                 $this->em->flush();
@@ -86,14 +86,14 @@ class Handler
                         ],
                     ]),
                 ]);
-            } else if ($action['selected_option']['value'] === 'edit') {
+            } elseif ('edit' === $action['selected_option']['value']) {
                 $this->displayModalForm(
                     $payload['team']['id'],
                     $standupMeetingReminder->getChannelId(),
                     $payload['trigger_id'],
                 );
             }
-        } else if ($action['action_id'] === 'create') {
+        } elseif ('create' === $action['action_id']) {
             return $this->displayModalForm(
                 $payload['team']['id'],
                 $payload['channel']['id'],
@@ -129,7 +129,7 @@ class Handler
             $selectedProjectIds[] = $project['value'];
         }
 
-        if (count($selectedProjectForDisplay) > 1) {
+        if (\count($selectedProjectForDisplay) > 1) {
             $lastProject = ' and ' . array_pop($selectedProjectForDisplay);
         } else {
             $lastProject = '';
@@ -199,7 +199,8 @@ class Handler
         );
     }
 
-    private function openModal(Request $request) {
+    private function openModal(Request $request)
+    {
         return $this->displayModalForm(
             $request->request->get('team_id'),
             $request->request->get('channel_id'),
@@ -207,7 +208,8 @@ class Handler
         );
     }
 
-    private function displayModalForm(string $teamId, string $channelId, string $triggerId, string $responseUrl = null) {
+    private function displayModalForm(string $teamId, string $channelId, string $triggerId, string $responseUrl = null)
+    {
         // get the forecast accounts which have a SlackTeam in this organization
         $forecastAccounts = $this->forecastAccountRepository->findBySlackTeamId($teamId);
         $slackTeam = $this->slackTeamRepository->findOneByTeamId($teamId);
@@ -240,7 +242,7 @@ class Handler
                 ];
                 $availableProjects[] = $projectItem;
 
-                if ($standupMeetingReminder && in_array($project->getId(), $standupMeetingReminder->getForecastProjects())) {
+                if ($standupMeetingReminder && \in_array($project->getId(), $standupMeetingReminder->getForecastProjects(), true)) {
                     $initialProjects[] = $projectItem;
                 }
             }
@@ -346,7 +348,7 @@ class Handler
             ],
         ];
 
-        if (count($initialProjects) > 0) {
+        if (\count($initialProjects) > 0) {
             $body['view']['blocks'][0]['element']['initial_options'] = $initialProjects;
         }
 
@@ -363,7 +365,7 @@ class Handler
     private function sendRemindersList(string $teamId, string $triggerId, string $responseUrl)
     {
         $slackTeam = $this->slackTeamRepository->findOneBy([
-            'teamId' => $teamId
+            'teamId' => $teamId,
         ]);
         $reminderBlocks = [];
 
@@ -394,14 +396,14 @@ class Handler
                                 'text' => 'Delete',
                             ],
                             'value' => 'delete',
-                        ]
+                        ],
                     ],
                     'action_id' => 'change',
-                ]
+                ],
             ];
         }
 
-        if (count($reminderBlocks) === 0) {
+        if (0 === \count($reminderBlocks)) {
             $reminderBlocks = [
                 [
                     'type' => 'section',
