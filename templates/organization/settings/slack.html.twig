@@ -5,24 +5,20 @@
 {% block content %}
     {{ include('organization/settings/_menu.html.twig', {menu: 'slack'}) }}
     <div class="card border-top-0">
-        {% if  forecastAccount.slackChannels|length > 0 %}
+        {% if  forecastAccount.forecastAccountSlackTeams|length > 0 %}
             <div class="card-body mb-4 flex-wrap flex-row">
-                <h2>Available workspaces</h2>
+                <h2>Available Slack workspaces</h2>
                 <div style="flex-basis: 100%;"></div>
 
-                {% for slackChannel in forecastAccount.slackChannels %}
+                {% for forecastAccountSlackTeam in forecastAccount.forecastAccountSlackTeams %}
                     <div class="card card-body col-md-4 col-xl-3 mt-3 mr-3">
-                        <a data-href="{{ organization_path('settings_slack_delete', {slackChanneId: slackChannel.id})}}" class="close position-absolute" aria-label="Close" style="top: 1rem; right: 1rem"  data-toggle="modal" data-target="#confirm-delete">
+                        <a data-href="{{ organization_path('settings_slack_delete', {forecastAccountSlackTeamId: forecastAccountSlackTeam.id})}}" class="close position-absolute" aria-label="Close" style="top: 1rem; right: 1rem"  data-toggle="modal" data-target="#confirm-delete">
                             <span aria-hidden="true">&times;</span>
                         </a>
-                        <h5 class="card-title">{{ slackChannel.teamName }}</h5>
+                        <h5 class="card-title">{{ forecastAccountSlackTeam.slackTeam.teamName }}</h5>
                         <p class="card-text">
-                            Posts in <code>{{ slackChannel.webhookChannel }}</code><br />
-                            Added by <code>{{ slackChannel.updatedBy.name }}</code><br />
-                            Added on <code>{{ slackChannel.updatedAt|date('F jS, Y, G:i')  }}</code>
-                        </p>
-                        <p>
-                            <a href="{{ slackChannel.webhookConfigurationUrl }}" class="btn btn-primary">✏️&nbsp;&nbsp;Manage on Slack</a>
+                            Added by <code>{{ forecastAccountSlackTeam.updatedBy.name }}</code><br />
+                            Added on <code>{{ forecastAccountSlackTeam.updatedAt|date('F jS, Y, G:i')  }}</code>
                         </p>
                     </div>
                 {% endfor %}
@@ -33,11 +29,14 @@
             <h2>Register a Slack workspace</h2>
 
             <p>
-                Adding the Slack application to a Slack workspace installs a <code>/forecast</code> command
-                in this workspace and allows to get a <a href="{{ organization_path('reminder_index') }}">Forecast
-                reminder</a> on a regular basis. Installing a Slack application also allows to send a monthly Harvest
-                timesheet reminder, in order to get your users fill their timesheets.
+                Adding the Slack application to a workspace gives several nice features:
             </p>
+            <ul>
+                <li>it allows to receive in the Slack channel of your choice a <a href="{{ organization_path('reminder_index') }}">Forecast reminder</a>, on a regular basis</li>
+                <li>it installs a <code>/forecast</code> command in this workspace, which allows team members to check the Forecast <em>on demand</em></li>
+                <li>it can send a weekly Slack notification to get your users fill their Harvest timesheets</li>
+                <li>it installs a <code>/standup-meeting</code> command in this workspace, which helps manage standup meeting reminders</li>
+            </ul>
 
             <p>
                 <a href="{{ organization_path('settings_slack_install') }}"><img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x"></a>

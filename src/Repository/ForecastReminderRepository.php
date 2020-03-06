@@ -33,7 +33,8 @@ class ForecastReminderRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('fr')
             ->select('fr')
             ->leftJoin('fr.forecastAccount', 'fa')
-            ->leftJoin('fa.slackChannels', 'sc')
+            ->leftJoin('fa.forecastAccountSlackTeams', 'fast')
+            ->leftJoin('fast.slackTeam', 'sc')
             ->andWhere('fr.id = :id')
             ->andWhere('sc.teamId = :teamId')
             ->setParameter('id', $id)
@@ -47,40 +48,12 @@ class ForecastReminderRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('fr')
             ->select('fr')
             ->leftJoin('fr.forecastAccount', 'fa')
-            ->leftJoin('fa.slackChannels', 'sc')
+            ->leftJoin('fa.forecastAccountSlackTeams', 'fast')
+            ->leftJoin('fast.slackTeam', 'sc')
             ->andWhere('sc.teamId = :teamId')
             ->setParameter('teamId', $teamId)
             ->addOrderBy('fa.name', 'ASC')
             ->getQuery()
             ->getResult();
     }
-
-    // /**
-    //  * @return ForecastReminder[] Returns an array of ForecastReminder objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('f')
-            ->andWhere('f.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('f.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?ForecastReminder
-    {
-        return $this->createQueryBuilder('f')
-            ->andWhere('f.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }

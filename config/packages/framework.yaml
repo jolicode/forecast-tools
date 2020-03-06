@@ -28,3 +28,8 @@ framework:
                 default_lifetime: 1800
                 adapter: cache.adapter.redis
                 provider: app.harvest_redis_provider
+
+            slack_pool:
+                default_lifetime: 120
+                adapter: cache.adapter.redis
+                provider: app.harvest_redis_provider

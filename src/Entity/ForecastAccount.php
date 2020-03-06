@@ -83,11 +83,6 @@ class ForecastAccount
     private $forecastReminder;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\SlackChannel", mappedBy="forecastAccount", orphanRemoval=true)
-     */
-    private $slackChannels;
-
-    /**
      * @ORM\OneToOne(targetEntity="App\Entity\HarvestAccount", mappedBy="forecastAccount", cascade={"persist", "remove"})
      */
     private $harvestAccount;
@@ -97,12 +92,18 @@ class ForecastAccount
      */
     private $invoicingProcesses;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\ForecastAccountSlackTeam", mappedBy="forecastAccount", orphanRemoval=true)
+     */
+    private $forecastAccountSlackTeams;
+
     public function __construct()
     {
         $this->publicForecasts = new ArrayCollection();
         $this->userHarvestAccounts = new ArrayCollection();
-        $this->slackChannels = new ArrayCollection();
+        $this->slackTeams = new ArrayCollection();
         $this->invoicingProcesses = new ArrayCollection();
+        $this->forecastAccountSlackTeams = new ArrayCollection();
     }
 
     public function __toString()
@@ -278,37 +279,6 @@ class ForecastAccount
         return $this;
     }
 
-    /**
-     * @return Collection|SlackChannel[]
-     */
-    public function getSlackChannels(): Collection
-    {
-        return $this->slackChannels;
-    }
-
-    public function addSlackChannel(SlackChannel $slackChannel): self
-    {
-        if (!$this->slackChannels->contains($slackChannel)) {
-            $this->slackChannels[] = $slackChannel;
-            $slackChannel->setForecastAccount($this);
-        }
-
-        return $this;
-    }
-
-    public function removeSlackChannel(SlackChannel $slackChannel): self
-    {
-        if ($this->slackChannels->contains($slackChannel)) {
-            $this->slackChannels->removeElement($slackChannel);
-            // set the owning side to null (unless already changed)
-            if ($slackChannel->getForecastAccount() === $this) {
-                $slackChannel->setForecastAccount(null);
-            }
-        }
-
-        return $this;
-    }
-
     public function getHarvestAccount(): ?HarvestAccount
     {
         return $this->harvestAccount;
@@ -352,6 +322,37 @@ class ForecastAccount
             // set the owning side to null (unless already changed)
             if ($invoicingProcess->getForecastAccount() === $this) {
                 $invoicingProcess->setForecastAccount(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ForecastAccountSlackTeam[]
+     */
+    public function getForecastAccountSlackTeams(): Collection
+    {
+        return $this->forecastAccountSlackTeams;
+    }
+
+    public function addForecastAccountSlackTeam(ForecastAccountSlackTeam $forecastAccountSlackTeam): self
+    {
+        if (!$this->forecastAccountSlackTeams->contains($forecastAccountSlackTeam)) {
+            $this->forecastAccountSlackTeams[] = $forecastAccountSlackTeam;
+            $forecastAccountSlackTeam->setForecastAccount($this);
+        }
+
+        return $this;
+    }
+
+    public function removeForecastAccountSlackTeam(ForecastAccountSlackTeam $forecastAccountSlackTeam): self
+    {
+        if ($this->forecastAccountSlackTeams->contains($forecastAccountSlackTeam)) {
+            $this->forecastAccountSlackTeams->removeElement($forecastAccountSlackTeam);
+            // set the owning side to null (unless already changed)
+            if ($forecastAccountSlackTeam->getForecastAccount() === $this) {
+                $forecastAccountSlackTeam->setForecastAccount(null);
             }
         }
 

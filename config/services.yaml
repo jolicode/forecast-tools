@@ -60,3 +60,7 @@ services:
     App\Client\HarvestClient:
         arguments:
             $pool: '@harvest_pool'
+
+    App\Client\SlackClient:
+        arguments:
+            $pool: '@slack_pool'

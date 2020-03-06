@@ -35,7 +35,36 @@ class SlackCommandListener implements EventSubscriberInterface
     {
         $request = $event->getRequest();
 
-        if ('slack_command' === $request->attributes->get('_route')) {
+        if ('slack_command' === $request->attributes->get('_route') && ('/forecast' === $request->request->get('command'))) {
+            if ('help' === $request->request->get('text')) {
+                    $message = <<<'EOT'
+*Time parameters* display the Forecast for a specific date:
+
+➡️ `/forecast tomorrow`
+➡️ `/forecast yesterday`
+➡️ `/forecast today`
+➡️ `/forecast next wednesday`
+➡️ `/forecast in one week and three days`
+➡️ `/forecast 2 weeks ago`
+EOT;
+
+                return $this->sendMessage(
+                    $request->request->get('response_url'),
+                    [
+                        'blocks' => [
+                            [
+                                'type' => 'section',
+                                'text' => [
+                                    'type' => 'mrkdwn',
+                                    'text' => $message,
+                                ],
+                            ],
+                        ],
+                        'replace_original' => true,
+                    ]
+                );
+            }
+
             $forecastReminders = $this->forecastReminderRepository->findByTeamId($request->request->get('team_id'));
 
             if (0 === \count($forecastReminders)) {
@@ -76,30 +105,6 @@ class SlackCommandListener implements EventSubscriberInterface
 
     private function buildReminder(ForecastReminder $forecastReminder, ?string $text = ''): array
     {
-        if ('help' === $text) {
-            $message = <<<'EOT'
-*Time parameters* display the Forecast for a specific date:
-
-➡️ `/forecast tomorrow`
-➡️ `/forecast in one week and three days`
-➡️ `/forecast yesterday`
-➡️ `/forecast 2 weeks ago`
-EOT;
-
-            return [
-                'blocks' => [
-                    [
-                        'type' => 'section',
-                        'text' => [
-                            'type' => 'mrkdwn',
-                            'text' => $message,
-                        ],
-                    ],
-                ],
-                'replace_original' => true,
-            ];
-        }
-
         $startDate = $this->extractStartDateFromtext($text);
         $builder = new Builder($forecastReminder);
         $title = $builder->buildTitle($startDate);
@@ -128,6 +133,10 @@ EOT;
 
     private function extractStartDateFromtext(string $text): \DateTime
     {
+        if ('' === $text) {
+            $text = 'tomorrow';
+        }
+
         $text = $this->wordToNumberConverter->convert($text);
         $sign = '';
 

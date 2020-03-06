@@ -11,7 +11,7 @@
 
 namespace App\Controller;
 
-use App\Repository\ForecastReminderRepository;
+use App\StandupMeetingReminder\Handler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -27,9 +27,13 @@ class SlackCommandController extends AbstractController
     /**
      * @Route("/command", name="command")
      */
-    public function command(Request $request)
+    public function command(Request $request, Handler $standupMeetingReminderHandler)
     {
-        if ('help' !== $request->request->get('text')) {
+        if ('/standup-reminder' === $request->request->get('command')) {
+            $standupMeetingReminderHandler->handleRequest($request);
+        }
+
+        if ('/forecast' === $request->request->get('command') && 'help' !== $request->request->get('text')) {
             $this->temporaryResponse($request->request->get('response_url'));
         }
 
@@ -39,10 +43,17 @@ class SlackCommandController extends AbstractController
     /**
      * @Route("/interactive-endpoint", name="interactive_endpoint")
      */
-    public function interactiveEndpoint(Request $request, ForecastReminderRepository $forecastReminderRepository): JsonResponse
+    public function interactiveEndpoint(Request $request, Handler $standupMeetingReminderHandler): JsonResponse
     {
         $payload = json_decode($request->request->get('payload'), true);
-        $this->temporaryResponse($payload['response_url']);
+
+        if ('block_actions' === $payload['type']) {
+            $standupMeetingReminderHandler->handleBlockAction($payload);
+        }
+
+        if ('view_submission' === $payload['type']) {
+            return $standupMeetingReminderHandler->handleSubmission($payload);
+        }
 
         return new JsonResponse('<3 you, Slack');
     }

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "acd3320901f79fc56e06b752b8e0611f",
+    "content-hash": "cea1406939d56f41cd5f4b934c8cf3cc",
     "packages": [
         {
             "name": "adam-paterson/oauth2-slack",
@@ -2073,6 +2073,67 @@
                 "swagger"
             ],
             "time": "2020-02-25T18:25:07+00:00"
+        },
+        {
+            "name": "jolicode/slack-php-api",
+            "version": "v2.4.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jolicode/slack-php-api.git",
+                "reference": "68e89c7b704dc07357791d65972881e649daf369"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jolicode/slack-php-api/zipball/68e89c7b704dc07357791d65972881e649daf369",
+                "reference": "68e89c7b704dc07357791d65972881e649daf369",
+                "shasum": ""
+            },
+            "require": {
+                "jane-php/open-api-runtime": "^5.3.0",
+                "php": ">= 7.2",
+                "php-http/client-common": "^1.9 || ^2.0",
+                "php-http/discovery": "^1.7",
+                "php-http/multipart-stream-builder": "^1.1",
+                "psr/http-client-implementation": "*"
+            },
+            "conflict": {
+                "php-http/httplug": "< 2.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^2.13",
+                "jane-php/open-api-2": "^5.3.1",
+                "nyholm/psr7": "^1.2",
+                "symfony/http-client": "^4.3.3",
+                "symfony/phpunit-bridge": "^4.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "JoliCode\\Slack\\Api\\": "generated/",
+                    "JoliCode\\Slack\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Loïck Piera",
+                    "email": "pyrech@gmail.com"
+                }
+            ],
+            "description": "An up to date PHP client for Slack's API",
+            "keywords": [
+                "api",
+                "client",
+                "openapi",
+                "sdk",
+                "slack",
+                "slackapi",
+                "swagger"
+            ],
+            "time": "2020-02-24T13:02:13+00:00"
         },
         {
             "name": "knpuniversity/oauth2-client-bundle",
