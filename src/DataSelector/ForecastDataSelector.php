@@ -122,7 +122,7 @@ class ForecastDataSelector
     }
 
     /**
-     * @return Client[]
+     * @return Person[]
      */
     public function getPeopleById()
     {

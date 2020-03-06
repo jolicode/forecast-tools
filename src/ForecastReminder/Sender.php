@@ -12,23 +12,23 @@
 namespace App\ForecastReminder;
 
 use App\Entity\ForecastReminder;
-use App\Notification\SlackNotifier;
 use App\Repository\ForecastReminderRepository;
 use Cron\CronExpression;
+use JoliCode\Slack\ClientFactory;
 
 class Sender
 {
     private $forecastReminderRepository;
-    private $slackNotifier;
+    private $botName;
 
-    public function __construct(ForecastReminderRepository $forecastReminderRepository, SlackNotifier $slackNotifier)
+    public function __construct(ForecastReminderRepository $forecastReminderRepository)
     {
         $this->forecastReminderRepository = $forecastReminderRepository;
-        $this->slackNotifier = $slackNotifier;
     }
 
     public function send()
     {
+        $this->botName = $this->getFunnyBotName();
         $forecastReminders = $this->forecastReminderRepository->findAll();
         $forecastRemindersCount = 0;
 
@@ -46,20 +46,122 @@ class Sender
 
     private function sendForecastReminder(ForecastReminder $forecastReminder)
     {
-        $slackChannels = $forecastReminder->getForecastAccount()->getSlackChannels();
+        $forecastAccountSlackTeams = $forecastReminder->getForecastAccount()->getForecastAccountSlackTeams();
 
-        if (\count($slackChannels) > 0) {
+        if (\count($forecastAccountSlackTeams) > 0) {
             $builder = new Builder($forecastReminder);
             $message = $builder->buildMessage();
             $title = $builder->buildTitle();
 
-            foreach ($slackChannels as $slackChannel) {
-                $this->slackNotifier->notify(
-                    $title,
-                    $message,
-                    $slackChannel->getWebhookUrl()
-                );
+            foreach ($forecastAccountSlackTeams as $forecastAccountSlackTeam) {
+                if ($forecastAccountSlackTeam->getChannelId()) {
+                    $slackClient = ClientFactory::create(
+                        $forecastAccountSlackTeam->getSlackTeam()->getAccessToken()
+                    );
+                    $slackClient->chatPostMessage([
+                        'channel' => $forecastAccountSlackTeam->getChannelId(),
+                        'username' => $this->botName,
+                        'blocks' => json_encode([
+                            [
+                                'type' => 'section',
+                                'text' => [
+                                    'type' => 'mrkdwn',
+                                    'text' => $title,
+                                ],
+                            ],
+                            [
+                                'type' => 'section',
+                                'text' => [
+                                    'type' => 'mrkdwn',
+                                    'text' => $message,
+                                ],
+                            ],
+                        ]),
+                    ]);
+                }
             }
         }
+    }
+
+    private function getFunnyBotName()
+    {
+        $adjectives = [
+            'adorable',
+            'adventurous',
+            'aggressive',
+            'amused',
+            'angry',
+            'annoying',
+            'anxious',
+            'beautiful',
+            'bloody',
+            'brave',
+            'bright',
+            'cautious',
+            'charming',
+            'clumsy',
+            'combative',
+            'confused',
+            'cooperative',
+            'courageous',
+            'crazy',
+            'creepy',
+            'cruel',
+            'cute',
+            'depressed',
+            'determined',
+            'disgusted',
+            'disturbed',
+            'doubtful',
+            'eager',
+            'elegant',
+            'embarrassed',
+            'encouraging',
+            'enthusiastic',
+            'evil',
+            'faithful',
+            'famous',
+            'fantastic',
+            'foolish',
+            'friendly',
+            'gentle',
+            'glorious',
+            'grumpy',
+            'happy',
+            'innocent',
+            'lazy',
+            'lovely',
+            'magnificent',
+            'mysterious',
+            'nervous',
+            'perfect',
+            'pleasant',
+            'proud',
+            'shiny',
+            'silly',
+            'smiling',
+            'sparkling',
+            'splendid',
+            'strange',
+            'stupid',
+            'talented',
+            'tender',
+            'troubled',
+            'ugly',
+            'vivacious',
+            'wild',
+            'worried',
+            'zealous',
+        ];
+        $nouns = [
+            'almost-human',
+            'automat',
+            'droid',
+            'bot',
+            'better-than-a-CHO thing',
+            'robot',
+        ];
+
+        return sprintf('The %s Forecast %s', $adjectives[array_rand($adjectives)], $nouns[array_rand($nouns)]);
     }
 }

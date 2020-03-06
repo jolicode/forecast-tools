@@ -21,7 +21,7 @@ use Symfony\Contracts\Cache\ItemInterface;
 
 class ForecastClient extends AbstractClient
 {
-    private $client = null;
+    private $client = [];
     private $namespace = '';
     private $requestStack;
     private $security;
@@ -38,7 +38,9 @@ class ForecastClient extends AbstractClient
 
     protected function __client()
     {
-        if (null === $this->client) {
+        $forecastAccount = $this->getForecastAccount();
+
+        if (!isset($this->client[$forecastAccount->getForecastId()])) {
             $user = null;
             $forecastAccount = $this->getForecastAccount();
 
@@ -53,13 +55,13 @@ class ForecastClient extends AbstractClient
                 $accessToken = $forecastAccount->getAccessToken();
             }
 
-            $this->client = ClientFactory::create(
+            $this->client[$forecastAccount->getForecastId()] = ClientFactory::create(
                 $accessToken,
                 $forecastAccount->getForecastId()
             );
         }
 
-        return $this->client;
+        return $this->client[$forecastAccount->getForecastId()];
     }
 
     protected function __namespace()

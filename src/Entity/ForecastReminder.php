@@ -86,11 +86,6 @@ class ForecastReminder
      */
     private $forecastAccount;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private $isEnabled = false;
-
     public function __construct()
     {
         $this->projectOverrides = new ArrayCollection();
@@ -277,15 +272,16 @@ class ForecastReminder
         return $this;
     }
 
-    public function getIsEnabled(): ?bool
+    public function getIsMuted(): ?bool
     {
-        return $this->isEnabled;
-    }
+        $forecastAccountSlackTeams = $this->getForecastAccount()->getForecastAccountSlackTeams();
 
-    public function setIsEnabled(bool $isEnabled): self
-    {
-        $this->isEnabled = $isEnabled;
+        foreach ($forecastAccountSlackTeams as $forecastAccountSlackTeam) {
+            if ($forecastAccountSlackTeam->getChannelId() !== null) {
+                return false;
+            }
+        }
 
-        return $this;
+        return true;
     }
 }
