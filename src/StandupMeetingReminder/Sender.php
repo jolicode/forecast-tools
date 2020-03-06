@@ -75,7 +75,7 @@ class Sender
             $assignments = $this->forecastDataSelector->getAssignments(new \DateTime('today'), new \DateTime('tomorrow'));
 
             foreach ($assignments as $assignment) {
-                if (\in_array((string)$assignment->getProjectId(), $standupMeetingReminder->getForecastProjects(), true)) {
+                if (\in_array((string) $assignment->getProjectId(), $standupMeetingReminder->getForecastProjects(), true)) {
                     if ($assignment->getPersonId()) {
                         $members[$people[$assignment->getPersonId()]->getEmail()] = $memberName = sprintf(
                             '%s %s',

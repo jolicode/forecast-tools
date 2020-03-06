@@ -144,6 +144,8 @@ class ForecastDataSelector
     }
 
     /**
+     * @param mixed|null $enabled
+     *
      * @return Project[]
      */
     public function getProjects($enabled = null)
@@ -162,6 +164,8 @@ class ForecastDataSelector
     }
 
     /**
+     * @param mixed|null $enabled
+     *
      * @return Client[]
      */
     public function getProjectsById($enabled = null)

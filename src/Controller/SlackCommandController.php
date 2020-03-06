@@ -47,7 +47,7 @@ class SlackCommandController extends AbstractController
     {
         $payload = json_decode($request->request->get('payload'), true);
 
-        if ($payload['action_id'] === 'selected_projects') {
+        if ('selected_projects' === $payload['action_id']) {
             return new JsonResponse($standupMeetingReminderHandler->listProjects($payload));
         }
 
