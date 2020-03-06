@@ -204,7 +204,7 @@ class Handler
             foreach ($projects as $project) {
                 $clientName = isset($clients[$project->getClientId()]) ? $clients[$project->getClientId()]->getName() : '';
 
-                if (strpos(mb_strtolower($project->getName()), $searched) !== false || strpos(mb_strtolower($project->getCode()), $searched) !== false || strpos(mb_strtolower($clientName), $searched) !== false) {
+                if (false !== strpos(mb_strtolower($project->getName()), $searched) || false !== strpos(mb_strtolower($project->getCode()), $searched) || false !== strpos(mb_strtolower($clientName), $searched)) {
                     $availableProjects[] = [
                         'text' => [
                             'type' => 'plain_text',
@@ -267,7 +267,7 @@ class Handler
                     $projects = $this->forecastDataSelector->getProjects(true);
 
                     foreach ($projects as $project) {
-                        if (\in_array($project->getId(), $standupMeetingReminder->getForecastProjects())) {
+                        if (\in_array((string) $project->getId(), $standupMeetingReminder->getForecastProjects(), true)) {
                             $initialProjects[] = [
                                 'text' => [
                                     'type' => 'plain_text',
