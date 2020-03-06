@@ -11,7 +11,6 @@
 
 namespace App\Controller\Organization;
 
-use App\Security\Provider\Slack;
 use App\Entity\ForecastAccount;
 use App\Entity\ForecastAccountSlackTeam;
 use App\Entity\SlackTeam;
@@ -19,6 +18,7 @@ use App\Form\HarvestSettingsType;
 use App\Repository\ForecastAccountSlackTeamRepository;
 use App\Repository\SlackTeamRepository;
 use App\Repository\UserRepository;
+use App\Security\Provider\Slack;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;

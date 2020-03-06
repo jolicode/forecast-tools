@@ -28,20 +28,6 @@ class SlackClient extends AbstractClient
         $this->pool = $pool;
     }
 
-    public function getSlackTeam(): SlackTeam
-    {
-        if (null === $this->slackTeam) {
-            throw new \Exception('Please choose a Slack team');
-        }
-
-        return $this->slackTeam;
-    }
-
-    public function setSlackTeam(SlackTeam $slackTeam)
-    {
-        $this->slackTeam = $slackTeam;
-    }
-
     protected function __client()
     {
         $slackTeam = $this->getSlackTeam();
@@ -68,6 +54,20 @@ class SlackClient extends AbstractClient
         return $this->pool->get($cacheKey, function (ItemInterface $item) use ($name, $arguments) {
             return $this->call($name, $arguments);
         });
+    }
+
+    public function getSlackTeam(): SlackTeam
+    {
+        if (null === $this->slackTeam) {
+            throw new \Exception('Please choose a Slack team');
+        }
+
+        return $this->slackTeam;
+    }
+
+    public function setSlackTeam(SlackTeam $slackTeam)
+    {
+        $this->slackTeam = $slackTeam;
     }
 
     public function call(string $name, array $arguments)
