@@ -49,11 +49,14 @@ class Sender
     private function sendStandupMeetingReminder(StandupMeetingReminder $standupMeetingReminder)
     {
         $body = $this->buildBody($standupMeetingReminder);
-        $client = \JoliCode\Slack\ClientFactory::create($standupMeetingReminder->getSlackTeam()->getAccessToken());
-        $client->chatPostMessage([
-            'channel' => $standupMeetingReminder->getChannelId(),
-            'blocks' => json_encode($body),
-        ]);
+
+        if (null !== $body) {
+            $client = \JoliCode\Slack\ClientFactory::create($standupMeetingReminder->getSlackTeam()->getAccessToken());
+            $client->chatPostMessage([
+                'channel' => $standupMeetingReminder->getChannelId(),
+                'blocks' => json_encode($body),
+            ]);
+        }
     }
 
     private function buildBody(StandupMeetingReminder $standupMeetingReminder)
@@ -68,23 +71,27 @@ class Sender
         foreach ($forecastAccounts as $forecastAccount) {
             $this->forecastDataSelector->setForecastAccount($forecastAccount);
             $people = $this->forecastDataSelector->getPeopleById();
+            $placeholders = $this->forecastDataSelector->getPlaceholdersById();
             $assignments = $this->forecastDataSelector->getAssignments(new \DateTime('today'), new \DateTime('tomorrow'));
 
             foreach ($assignments as $assignment) {
-                if (\in_array($assignment->getProjectId(), $standupMeetingReminder->getForecastProjects(), true)) {
-                    $memberName = sprintf(
-                        '%s %s',
-                        $people[$assignment->getPersonId()]->getFirstName(),
-                        $people[$assignment->getPersonId()]->getLastName()
-                    );
-                    $members[$people[$assignment->getPersonId()]->getEmail()] = $memberName;
+                if (\in_array((string)$assignment->getProjectId(), $standupMeetingReminder->getForecastProjects(), true)) {
+                    if ($assignment->getPersonId()) {
+                        $members[$people[$assignment->getPersonId()]->getEmail()] = $memberName = sprintf(
+                            '%s %s',
+                            $people[$assignment->getPersonId()]->getFirstName(),
+                            $people[$assignment->getPersonId()]->getLastName()
+                        );
+                    } elseif ($assignment->getPlaceholderId()) {
+                        $members[$assignment->getPlaceholderId()] = $memberName = $placeholders[$assignment->getPlaceholderId()]->getName();
+                    }
                 }
             }
         }
 
         if (0 === \count($members)) {
             // do not ping when noone works on the project
-            return;
+            return null;
         }
 
         // find people from Slack
