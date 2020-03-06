@@ -22,7 +22,6 @@ use Symfony\Contracts\Cache\ItemInterface;
 class ForecastClient extends AbstractClient
 {
     private $client = [];
-    private $namespace = '';
     private $requestStack;
     private $security;
     private $userRepository;
@@ -66,12 +65,7 @@ class ForecastClient extends AbstractClient
 
     protected function __namespace()
     {
-        if ('' === $this->namespace) {
-            $forecastAccount = $this->getForecastAccount();
-            $this->namespace = 'forecast-' . $forecastAccount->getId();
-        }
-
-        return $this->namespace;
+        return 'forecast-' . $this->getForecastAccount()->getId();
     }
 
     public function __call(string $name, array $arguments)
