@@ -2,27 +2,129 @@
 
 {% block title %}Welcome | {{ parent() }}{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+{% endblock %}
+
 {% block body %}
-<div class="h-100 d-table w-100">
-    <div class="card card-body d-table-cell align-middle border-0 text-center">
+    <div class="homepage container">
+        <div class="jumbotron text-center">
             <h1><a href="{{ path('homepage') }}">⛅&nbsp;Forecast&nbsp;tools</a></h1>
 
             <p>
-                These tools improve the use of ⛅ Forecast.
+                Some tools to improve the use of ⛅ <a href="https://www.getharvest.com/forecast">Forecast</a> and <a href="https://www.getharvest.com/">Harvest</a>.
             </p>
 
             <p>
                 <a href="{{ path('connect_harvest') }}" class="btn btn-primary">🔓&nbsp;&nbsp;Connect with Forecast</a>
             </p>
+
+            <div class="scroll-down"></div>
+        </div>
+
+        <div class="container content-row py-5">
+            <div class="row">
+                <div class="col-md-6 p-sm-2">
+                    <div class="card card-body h-100">
+                        <img src="/images/reminder.svg" class="card-img-top" alt="Forecast reminder">
+                        <h5 class="car-title">Forecast reminder</h2>
+                        <p class="card-text text-justify">
+                            Set up and configure a Slack reminder for your organization's Forecast. Each day, your
+                            team will get a nicely formatted notification directly in the Slack Channel of your choice.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 p-sm-2">
+                    <div class="card card-body h-100">
+                        <img src="/images/public-forecast.svg" class="card-img-top" alt="Public Forecast">
+                        <h5 class="car-title">Public Forecast</h2>
+                        <p class="card-text text-justify">
+                            Share your Forecast outside of your organization, for a specific client or project. In a
+                            living organization, forecasts tend to change and be adapted. Share the live status of your
+                            Forecast with your clients!
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 p-sm-2">
+                    <div class="card card-body h-100">
+                        <img src="/images/standup-reminder.svg" class="card-img-top" alt="Stand-up meeting reminder">
+                        <h5 class="car-title">Stand-up meeting reminder</h2>
+                        <p class="card-text text-justify">
+                            Configure per-channel stand-up meeting reminder, to ping the right people every morning when
+                            it is time for the meeting. Get your team do its daily scrum!
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 p-sm-2">
+                    <div class="card card-body h-100">
+                        <img src="/images/invoicing.svg" class="card-img-top" alt="Invoicing process">
+                        <h5 class="car-title">Strong invoicing process</h2>
+                        <p class="card-text text-justify">
+                            Get insights while invoicing! These tools help compare Forecast schedules and Harvest
+                            timesheets. Also, you will notice when invoices do not match your contractual requirements.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="text-center mt-5">Questions</h3>
+
+        <div class="card border-0 pt-3">
+            <div class="card-body">
+                <h5>Which data do you collect and store?</h5>
+                <p>
+                    The only thing that we store is your Forecast token, which is used to grab Forecast data at the time of
+                    sending Slack reminders. There is no usage tracker on this platform. All the data retrieved from Harvest APIs
+                    is temporarily cached in redis, in order to make the app less APIs-dependant, but it is a short-lived cache.
+                </p>
+                <p>
+                    We also store the Slack webhook URL, in order to be able to post the Forecast schedule to your Slack team.
+                </p>
+            </div>
+
+            <div class="card-body">
+                <h5>Which libraries do you use to talk with Harvest and Forecast?</h5>
+                <p>
+                    We use two PHP libraries: <a href="https://github.com/jolicode/forecast-php-api">forecast-php-api</a> and
+                    <a href="https://github.com/jolicode/harvest-php-api">harvest-php-api</a>. Both these libraries are based on
+                    OpenAPI specifications. While Forecast does not have a public API, the Harvest client must be, at the time of
+                    writing, one of the most complete, exhaustive and up-to-date API client for Harvest.
+                </p>
+            </div>
+
+            <div class="card-body">
+                <h5>Can I run this software on my own server?</h5>
+                <p>
+                    Yes, it is free software. Go ahead and use it: <a href="https://github.com/jolicode/forecast-tools">Forecast tools on Github</a>.
+                </p>
+            </div>
+
+            <div class="card-body">
+                <h5>How reliable is this thing?</h5>
+                <p>
+                    We have built these tools for our own use and we use it on a daily basis, which means that we do our best
+                    for these tools to work. However, we do not provide professional support for these tools.
+                </p>
+            </div>
+
+            <div class="card-body">
+                <h5>Credits?</h5>
+                <p>
+                    This software is written by <a href="https://jolicode.com/">JoliCode</a>, a French web development company.
+                    The illustrations on this page are provided free of charge by Sleekbundle in the
+                    <a href="https://sleekbundle.com/pulse-illustration-kit/" rel="nofollow">Pulse illustration kit</a>. The
+                    Github corner is provided by <a href="https://github.com/tholman/github-corners" rel="nofollow">Tim Holman</a>.
+                </p>
+            </div>
+
+        </div>
     </div>
-</div>
 
-<style>
-html,
-body {
-  width: 100%;
-  height: 100%;
-}
-</style>
-
+    <a href="https://github.com/jolicode/forecast-tools" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
 {% endblock %}
+
+{% block javascripts %}{% endblock %}

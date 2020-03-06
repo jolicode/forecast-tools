@@ -30,7 +30,7 @@ class ForecastReminderType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        if ($options['hasClackChannels']) {
+        if ($options['hasSlackTeams']) {
             $clients = $this->forecastDataSelector->getEnabledClientsForChoice();
             $projects = $this->forecastDataSelector->getEnabledProjectsForChoice();
             $users = $this->forecastDataSelector->getEnabledPeopleForChoice();
@@ -41,9 +41,6 @@ class ForecastReminderType extends AbstractType
         }
 
         $builder
-            ->add('isEnabled', null, [
-                'help' => 'You can enable or mute this reminder. If muted, no notification will be sent to Slack.',
-            ])
             ->add('cronExpression', null, [
                 'help' => 'Write here a cron-style execution expression, which will define when the reminder must be sent.',
             ])
@@ -92,6 +89,12 @@ class ForecastReminderType extends AbstractType
                 'help' => 'Please choose here the users that you want <strong>exclude</strong> from the reminder. Let this field empty to include all users.',
             ])
         ;
+
+        if ($options['hasSlackTeams']) {
+            $builder
+                ->add('forecastAccount', ForecastAccountForReminderType::class)
+            ;
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver)
@@ -100,7 +103,7 @@ class ForecastReminderType extends AbstractType
             'data_class' => ForecastReminder::class,
         ]);
         $resolver->setRequired([
-            'hasClackChannels',
+            'hasSlackTeams',
         ]);
     }
 }

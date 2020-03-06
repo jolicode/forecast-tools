@@ -90,18 +90,16 @@ class ForecastDataSelector
     {
         $choices = [];
         $clients = $this->getClientsById();
-        $projects = $this->getProjects();
+        $projects = $this->getProjects(true);
 
         foreach ($projects as $project) {
-            if (!$project->getArchived()) {
-                if (isset($clients[$project->getClientId()])) {
-                    $key = sprintf('%s - %s%s', $clients[$project->getClientId()]->getName(), $project->getCode() ? $project->getCode() . ' - ' : '', $project->getName());
-                } else {
-                    $key = $project->getName();
-                }
-
-                $choices[$key] = $project->getId();
+            if (isset($clients[$project->getClientId()])) {
+                $key = sprintf('%s - %s%s', $clients[$project->getClientId()]->getName(), $project->getCode() ? $project->getCode() . ' - ' : '', $project->getName());
+            } else {
+                $key = $project->getName();
             }
+
+            $choices[$key] = $project->getId();
         }
 
         ksort($choices);
@@ -122,7 +120,7 @@ class ForecastDataSelector
     }
 
     /**
-     * @return Client[]
+     * @return Person[]
      */
     public function getPeopleById()
     {
@@ -146,19 +144,33 @@ class ForecastDataSelector
     }
 
     /**
+     * @param mixed|null $enabled
+     *
      * @return Project[]
      */
-    public function getProjects()
+    public function getProjects($enabled = null)
     {
-        return $this->client->listProjects('projects')->getProjects();
+        $projects = $this->client->listProjects('projects')->getProjects();
+
+        if (null !== $enabled) {
+            foreach ($projects as $key => $project) {
+                if (!($enabled xor $project->getArchived())) {
+                    unset($projects[$key]);
+                }
+            }
+        }
+
+        return $projects;
     }
 
     /**
+     * @param mixed|null $enabled
+     *
      * @return Client[]
      */
-    public function getProjectsById()
+    public function getProjectsById($enabled = null)
     {
-        return self::makeLookup($this->getProjects());
+        return self::makeLookup($this->getProjects($enabled));
     }
 
     public function setForecastAccount(ForecastAccount $forecastAccount)

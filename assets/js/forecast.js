@@ -18,6 +18,6 @@ jQuery(document).ready(function() {
   });
 
   jQuery('.days').scroll((e) => {
-    jQuery('.days').scrollLeft($(e.currentTarget).scrollLeft());
+    jQuery('.days').scrollLeft(jQuery(e.currentTarget).scrollLeft());
   });
 });

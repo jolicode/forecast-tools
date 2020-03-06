@@ -48,7 +48,7 @@
         </div>
     {% endfor %}
 
-    {% if forecastAccount.slackChannels|length == 0 %}
+    {% if forecastAccount.forecastAccountSlackTeams|length == 0 %}
         {% set disabled = ' disabled' %}
     {% else %}
         {% set disabled = '' %}
@@ -56,8 +56,7 @@
 
     <nav>
         <div class="nav nav-tabs" id="nav-tab" role="tablist">
-            <a class="nav-item nav-link active" id="workspaces-tab" data-toggle="tab" href="#nav-workspaces" role="tab" aria-controls="nav-workspaces" aria-selected="true">Slack</a>
-            <a class="nav-item nav-link{{ disabled }}" id="timing-tab" data-toggle="tab" href="#nav-timing" role="tab" aria-controls="nav-timing" aria-selected="true">Timing</a>
+            <a class="nav-item nav-link active" id="workspaces-tab" data-toggle="tab" href="#nav-workspaces" role="tab" aria-controls="nav-workspaces" aria-selected="true">Schedule</a>
             <a class="nav-item nav-link{{ disabled }}" id="labels-tab" data-toggle="tab" href="#nav-labels" role="tab" aria-controls="nav-labels" aria-selected="false">Labels</a>
             <a class="nav-item nav-link{{ disabled }}" id="users-tab" data-toggle="tab" href="#nav-users" role="tab" aria-controls="nav-users" aria-selected="false">Users</a>
             <a class="nav-item nav-link{{ disabled }}" id="project-overrides-tab" data-toggle="tab" href="#nav-project-overrides" role="tab" aria-controls="nav-project-overrides" aria-selected="false">Project overrides</a>
@@ -72,41 +71,52 @@
                     <div class="card-body">
                         {{ form_errors(form) }}
 
-                        {% if forecastAccount.slackChannels|length == 0 %}
+                        <div class="form-group">
+                            {{ form_label(form.cronExpression) }}
+                            {{ form_errors(form.cronExpression) }}
+                            {{ form_widget(form.cronExpression, { attr: { class: 'form-control' }}) }}
+                            {{ form_help(form.cronExpression) }}
+                        </div>
+
+                        {% if forecastAccount.forecastAccountSlackTeams|length == 0 %}
                             <div class="alert alert-danger mb-0 d-flex" role="alert">
-                                <div class="flex-grow-1 py-1">This reminder cannot be executed, as no Slack workspace has been added.</div>
+                                <div class="flex-grow-1 py-1">This reminder cannot be executed, as no Slack workspace has been added to your account.</div>
                             </div>
-                        {% else %}
-                            {% if forecastAccount.forecastReminder is null or not forecastAccount.forecastReminder.isEnabled %}
-                                <div class="alert alert-danger mb-0 d-flex" role="alert">
-                                    <div class="flex-grow-1 py-1">This reminder is muted.</div>
-                                    <button type="button" onclick="$('#timing-tab').tab('show')" class="btn btn-primary btn-sm">enable</button>
-                                </div>
-                            {% else %}
-                                <div class="alert alert-success mb-0 d-flex" role="alert">
-                                    <div class="flex-grow-1 py-1">This reminder is enabled.</div>
-                                    <button type="button" onclick="$('#timing-tab').tab('show')" class="btn btn-primary btn-sm">disable</button>
-                                </div>
-                            {% endif %}
+                        {% elseif forecastAccount.forecastReminder is null or forecastAccount.forecastReminder.isMuted %}
+                            <div class="alert alert-danger mb-0 d-flex" role="alert">
+                                <div class="flex-grow-1 py-1">This reminder does not post in any Slack team. Please choose a Channel for at least one Slack team.</div>
+                            </div>
                         {% endif %}
 
                         <div class="d-flex flex-wrap flex-row">
-                            {% for slackChannel in forecastAccount.slackChannels %}
-                                <div class="card card-body col-md-4 col-xl-3 mt-3 mr-3">
-                                    <a data-href="{{ organization_path('settings_slack_delete', {slackChanneId: slackChannel.id})}}" class="close position-absolute" aria-label="Close" style="top: 1rem; right: 1rem"  data-toggle="modal" data-target="#confirm-delete">
-                                        <span aria-hidden="true">&times;</span>
-                                    </a>
-                                    <h5 class="card-title">{{ slackChannel.teamName }}</h5>
-                                    <p class="card-text">
-                                        Posts in <code>{{ slackChannel.webhookChannel }}</code><br />
-                                        Added by <code>{{ slackChannel.updatedBy.name }}</code><br />
-                                        Added on <code>{{ slackChannel.updatedAt|date('F jS, Y, G:i')  }}</code>
-                                    </p>
-                                    <p>
-                                        <a href="{{ slackChannel.webhookConfigurationUrl }}" class="btn btn-primary">✏️&nbsp;&nbsp;Manage on Slack</a>
-                                    </p>
-                                </div>
-                            {% endfor %}
+                            {% if forecastAccount.forecastAccountSlackTeams|length > 0 %}
+                                {% for forecastAccountSlackTeamForm in form.forecastAccount.forecastAccountSlackTeams %}
+                                    {% set forecastAccountSlackTeam = forecastAccountSlackTeamForm.vars.value %}
+                                    <div class="col-md-4 col-xl-3 mt-3 mr-3">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <a data-href="{{ organization_path('settings_slack_delete', {forecastAccountSlackTeamId: forecastAccountSlackTeam.id})}}" class="close position-absolute" aria-label="Close" style="top: 1rem; right: 1rem"  data-toggle="modal" data-target="#confirm-delete">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </a>
+                                                <h5 class="card-title">{{ forecastAccountSlackTeam.slackTeam.teamName }}</h5>
+                                                <p class="card-text">
+                                                    Added by <code>{{ forecastAccountSlackTeam.updatedBy.name }}</code><br />
+                                                    Added on <code>{{ forecastAccountSlackTeam.updatedAt|date('F jS, Y, G:i')  }}</code><br />
+                                                    {% if forecastAccountSlackTeam.channel %}
+                                                        Posts in <code>{{ forecastAccountSlackTeam.channel }}</code><br />
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                            <div class="card-footer">
+                                                {{ form_label(forecastAccountSlackTeamForm.channelId) }}
+                                                {{ form_errors(forecastAccountSlackTeamForm.channelId) }}
+                                                {{ form_widget(forecastAccountSlackTeamForm.channelId, { attr: { class: 'form-control' }}) }}
+                                                {{ form_help(forecastAccountSlackTeamForm.channelId) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
 
                             <div class="card card-body col-md-4 col-xl-3 mt-3 mr-3">
                                 <h5 class="card-title">Add a Slack workspace</h5>
@@ -126,24 +136,6 @@
                                     </p>
                                 {% endif %}
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="tab-pane" id="nav-timing" role="tabpanel" aria-labelledby="timing-tab">
-                    <div class="card-body">
-                        <div class="custom-control custom-switch">
-                            {{ form_widget(form.isEnabled, { attr: { class: 'custom-control-input' }}) }}
-                            {{ form_label(form.isEnabled, null, { label_attr: { class: 'custom-control-label' }}) }}
-                            {{ form_errors(form.isEnabled) }}
-                            {{ form_help(form.isEnabled) }}
-                        </div>
-
-                        <div class="form-group">
-                            {{ form_label(form.cronExpression) }}
-                            {{ form_errors(form.cronExpression) }}
-                            {{ form_widget(form.cronExpression, { attr: { class: 'form-control' }}) }}
-                            {{ form_help(form.cronExpression) }}
                         </div>
                     </div>
                     <div class="card-footer text-right">
@@ -197,13 +189,13 @@
                             {{ form_label(form.onlyUsers) }}
                             {{ form_errors(form.onlyUsers) }}
                             {{ form_widget(form.onlyUsers, { attr: { class: 'select2 multiple' }}) }}
-                            {{ form_help(form.onlyUsers) }}
+                            {{ form_help(form.onlyUsers)|raw }}
                         </div>
                         <div class="form-group">
                             {{ form_label(form.exceptUsers) }}
                             {{ form_errors(form.exceptUsers) }}
                             {{ form_widget(form.exceptUsers, { attr: { class: 'select2 multiple' }}) }}
-                            {{ form_help(form.exceptUsers) }}
+                            {{ form_help(form.exceptUsers)|raw }}
                         </div>
                     </div>
                     <div class="card-footer text-right">

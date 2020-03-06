@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html class="w-100 h-100">
     <head>
         <meta charset="UTF-8">
         <title>{% block title %}⛅ Forecast tools{% endblock %}</title>
@@ -12,7 +12,7 @@
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
         <link rel="manifest" href="/site.webmanifest">
     </head>
-    <body>
+    <body class="w-100 h-100">
         {% if is_granted('ROLE_USER') %}
             {{ render(controller('App\\Controller\\HomeController::loginInfo')) }}
         {% endif %}

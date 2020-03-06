@@ -12,6 +12,10 @@
 namespace App\ForecastReminder;
 
 use App\Entity\ForecastReminder;
+use JoliCode\Forecast\Api\Model\Assignment;
+use JoliCode\Forecast\Api\Model\Client;
+use JoliCode\Forecast\Api\Model\Person;
+use JoliCode\Forecast\Api\Model\Project;
 
 class Builder
 {
@@ -19,6 +23,18 @@ class Builder
     protected $client;
     protected $clientOverrides;
     protected $projectOverrides;
+
+    /** @var Assignment[] */
+    protected $assignments;
+
+    /** @var Client[] */
+    protected $clients;
+
+    /** @var Project[] */
+    protected $projects;
+
+    /** @var Person[] */
+    protected $users;
 
     public function __construct(ForecastReminder $forecastReminder)
     {
@@ -88,6 +104,10 @@ class Builder
             $result[] = sprintf('` %s ` %s', $name, $activities);
         }
 
+        if (0 === \count($result)) {
+            $result = ['Could not find any forecast for this day!'];
+        }
+
         return implode("\n", $result);
     }
 
@@ -138,7 +158,7 @@ class Builder
 
     private function getActivitiesAsText($activities)
     {
-        $activities = array_map(function ($activity) {
+        $activities = array_unique(array_map(function ($activity) {
             if (isset($this->projectOverrides[$activity->getProjectId()])) {
                 return $this->projectOverrides[$activity->getProjectId()];
             }
@@ -152,7 +172,7 @@ class Builder
             $client = $this->clients[$project->getClientId()];
 
             return $client->getName() . ' | ' . $project->getName();
-        }, $activities);
+        }, $activities));
 
         if (\count($activities) > 1) {
             return implode('', [

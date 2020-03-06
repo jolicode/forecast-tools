@@ -11,7 +11,7 @@
 
 namespace App\Controller;
 
-use App\Repository\ForecastReminderRepository;
+use App\StandupMeetingReminder\Handler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -27,64 +27,49 @@ class SlackCommandController extends AbstractController
     /**
      * @Route("/command", name="command")
      */
-    public function command(Request $request)
+    public function command(Request $request, Handler $standupMeetingReminderHandler)
     {
-        $this->temporaryResponse($request->request->get('response_url'));
+        if ('/standup-reminder' === $request->request->get('command')) {
+            $standupMeetingReminderHandler->handleRequest($request);
+        }
+
+        if ('/forecast' === $request->request->get('command') && 'help' !== $request->request->get('text')) {
+            $this->temporaryResponse($request->request->get('response_url'));
+        }
 
         return new Response('');
     }
 
     /**
-     * @Route("/interactive-endpoint", name="interactive_endpoint")
+     * @Route("/data-source", name="data_source")
      */
-    public function interactiveEndpoint(Request $request, ForecastReminderRepository $forecastReminderRepository): JsonResponse
+    public function dataSource(Request $request, Handler $standupMeetingReminderHandler): JsonResponse
     {
         $payload = json_decode($request->request->get('payload'), true);
-        $this->temporaryResponse($payload['response_url']);
+
+        if ('selected_projects' === $payload['action_id']) {
+            return new JsonResponse($standupMeetingReminderHandler->listProjects($payload));
+        }
 
         return new JsonResponse('<3 you, Slack');
     }
 
-    private function multipleReminders(array $forecastReminders): JsonResponse
+    /**
+     * @Route("/interactive-endpoint", name="interactive_endpoint")
+     */
+    public function interactiveEndpoint(Request $request, Handler $standupMeetingReminderHandler): JsonResponse
     {
-        $body = [
-            'blocks' => [
-                [
-                    'type' => 'section',
-                    'text' => [
-                        'type' => 'mrkdwn',
-                        'text' => sprintf('It seems that you have configured %s reminders in this Slack workspace. Which one would you like to see?', \count($forecastReminders)),
-                    ],
-                ], [
-                    'type' => 'divider',
-                ],
-            ],
-        ];
+        $payload = json_decode($request->request->get('payload'), true);
 
-        foreach ($forecastReminders as $forecastReminder) {
-            $body['blocks'][] = [
-                'type' => 'section',
-                'text' => [
-                    'type' => 'mrkdwn',
-                    'text' => sprintf(
-                        '%s - %s',
-                        $forecastReminder->getForecastAccount()->getName(),
-                        $forecastReminder->getName()
-                    ),
-                ],
-                'accessory' => [
-                    'type' => 'button',
-                    'text' => [
-                        'type' => 'plain_text',
-                        'emoji' => true,
-                        'text' => 'Choose',
-                    ],
-                    'value' => (string) $forecastReminder->getId(),
-                ],
-            ];
+        if ('block_actions' === $payload['type']) {
+            $standupMeetingReminderHandler->handleBlockAction($payload);
         }
 
-        return new JsonResponse($body);
+        if ('view_submission' === $payload['type']) {
+            return $standupMeetingReminderHandler->handleSubmission($payload);
+        }
+
+        return new JsonResponse('<3 you, Slack');
     }
 
     private function temporaryResponse($responseUrl)
