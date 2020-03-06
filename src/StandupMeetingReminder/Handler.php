@@ -190,6 +190,37 @@ class Handler
         return new JsonResponse(['response_action' => 'clear']);
     }
 
+    public function listProjects(array $payload)
+    {
+        $forecastAccounts = $this->forecastAccountRepository->findBySlackTeamId($payload['team']['id']);
+        $availableProjects = [];
+        $searched = mb_strtolower($payload['value']);
+
+        foreach ($forecastAccounts as $forecastAccount) {
+            $this->forecastDataSelector->setForecastAccount($forecastAccount);
+            $projects = $this->forecastDataSelector->getProjects(true);
+            $clients = $this->forecastDataSelector->getClientsById();
+
+            foreach ($projects as $project) {
+                $clientName = isset($clients[$project->getClientId()]) ? $clients[$project->getClientId()]->getName() : '';
+
+                if (strpos(mb_strtolower($project->getName()), $searched) !== false || strpos(mb_strtolower($project->getCode()), $searched) !== false || strpos(mb_strtolower($clientName), $searched) !== false) {
+                    $availableProjects[] = [
+                        'text' => [
+                            'type' => 'plain_text',
+                            'text' => substr(sprintf('[%s] %s - %s', $project->getCode(), $clientName, $project->getName()), 0, 75),
+                        ],
+                        'value' => (string) $project->getId(),
+                    ];
+                }
+            }
+        }
+
+        return [
+            'options' => $availableProjects,
+        ];
+    }
+
     public function listReminders(Request $request)
     {
         $this->sendRemindersList(
@@ -213,66 +244,46 @@ class Handler
         // get the forecast accounts which have a SlackTeam in this organization
         $forecastAccounts = $this->forecastAccountRepository->findBySlackTeamId($teamId);
         $slackTeam = $this->slackTeamRepository->findOneByTeamId($teamId);
-        $availableProjects = [];
         $availableTimes = [];
         $initialProjects = [];
         $initialTime = null;
+        $initialHour = 10;
+        $initialMinute = 0;
         $blocks = [];
         $privateMetadata = [
             'channel_id' => $channelId,
         ];
 
-        // search if there's already a StandupMeetingReminder in this channel
-        $standupMeetingReminder = $this->standupMeetingReminderRepository->findOneBy([
-            'channelId' => $channelId,
-            'slackTeam' => $slackTeam,
-        ]);
+        if (null === $responseUrl) {
+            // search if there's already a StandupMeetingReminder in this channel
+            $standupMeetingReminder = $this->standupMeetingReminderRepository->findOneBy([
+                'channelId' => $channelId,
+                'slackTeam' => $slackTeam,
+            ]);
 
-        foreach ($forecastAccounts as $forecastAccount) {
-            $this->forecastDataSelector->setForecastAccount($forecastAccount);
-            $projects = $this->forecastDataSelector->getProjects();
+            if ($standupMeetingReminder) {
+                foreach ($forecastAccounts as $forecastAccount) {
+                    $this->forecastDataSelector->setForecastAccount($forecastAccount);
+                    $projects = $this->forecastDataSelector->getProjects(true);
 
-            foreach ($projects as $project) {
-                $projectItem = [
-                    'text' => [
-                        'type' => 'plain_text',
-                        'text' => $project->getName(),
-                    ],
-                    'value' => (string) $project->getId(),
-                ];
-                $availableProjects[] = $projectItem;
-
-                if ($standupMeetingReminder && \in_array($project->getId(), $standupMeetingReminder->getForecastProjects(), true)) {
-                    $initialProjects[] = $projectItem;
+                    foreach ($projects as $project) {
+                        if (\in_array($project->getId(), $standupMeetingReminder->getForecastProjects())) {
+                            $initialProjects[] = [
+                                'text' => [
+                                    'type' => 'plain_text',
+                                    'text' => str_replace('"', '', $project->getName()),
+                                ],
+                                'value' => (string) $project->getId(),
+                            ];
+                        }
+                    }
                 }
             }
-        }
 
-        if ($standupMeetingReminder) {
-            list($initialHour, $initialMinute) = explode(':', $standupMeetingReminder->getTime());
+            if ($standupMeetingReminder) {
+                list($initialHour, $initialMinute) = explode(':', $standupMeetingReminder->getTime());
+            }
         } else {
-            $initialHour = 10;
-            $initialMinute = 0;
-        }
-
-        foreach (range(0, 23) as $hour) {
-            foreach (range(0, 45, 15) as $minute) {
-                $timeItem = [
-                    'text' => [
-                        'type' => 'plain_text',
-                        'text' => sprintf('%02d:%02d', $hour, $minute),
-                    ],
-                    'value' => sprintf('%02d:%02d', $hour, $minute),
-                ];
-                $availableTimes[] = $timeItem;
-
-                if ($hour === (int) $initialHour && $minute === (int) $initialMinute) {
-                    $initialTime = $timeItem;
-                }
-            }
-        }
-
-        if (null !== $responseUrl) {
             $blocks[] = [
                 'type' => 'input',
                 'block_id' => 'channel',
@@ -292,7 +303,24 @@ class Handler
             $privateMetadata['response_url'] = $responseUrl;
         }
 
-        $blocks[] = [
+        foreach (range(0, 23) as $hour) {
+            foreach (range(0, 45, 15) as $minute) {
+                $timeItem = [
+                    'text' => [
+                        'type' => 'plain_text',
+                        'text' => sprintf('%02d:%02d', $hour, $minute),
+                    ],
+                    'value' => sprintf('%02d:%02d', $hour, $minute),
+                ];
+                $availableTimes[] = $timeItem;
+
+                if ($hour === (int) $initialHour && $minute === (int) $initialMinute) {
+                    $initialTime = $timeItem;
+                }
+            }
+        }
+
+        $projectsBlock = [
             'type' => 'input',
             'block_id' => 'projects',
             'label' => [
@@ -300,15 +328,21 @@ class Handler
                 'text' => 'Select one or more Forecast projects',
             ],
             'element' => [
-                'type' => 'multi_static_select',
+                'type' => 'multi_external_select',
                 'action_id' => 'selected_projects',
                 'placeholder' => [
                     'type' => 'plain_text',
                     'text' => 'Select projects',
                 ],
-                'options' => $availableProjects,
+                'min_query_length' => 3,
             ],
         ];
+
+        if (\count($initialProjects) > 0) {
+            $projectsBlock['element']['initial_options'] = $initialProjects;
+        }
+
+        $blocks[] = $projectsBlock;
         $blocks[] = [
             'type' => 'input',
             'block_id' => 'time',
@@ -347,11 +381,6 @@ class Handler
                 'blocks' => $blocks,
             ],
         ];
-
-        if (\count($initialProjects) > 0) {
-            $body['view']['blocks'][0]['element']['initial_options'] = $initialProjects;
-        }
-
         $client = HttpClient::create();
         $client->request('POST', 'https://slack.com/api/views.open', [
             'headers' => [

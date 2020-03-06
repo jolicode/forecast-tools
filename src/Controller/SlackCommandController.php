@@ -41,6 +41,20 @@ class SlackCommandController extends AbstractController
     }
 
     /**
+     * @Route("/data-source", name="data_source")
+     */
+    public function dataSource(Request $request, Handler $standupMeetingReminderHandler): JsonResponse
+    {
+        $payload = json_decode($request->request->get('payload'), true);
+
+        if ($payload['action_id'] === 'selected_projects') {
+            return new JsonResponse($standupMeetingReminderHandler->listProjects($payload));
+        }
+
+        return new JsonResponse('<3 you, Slack');
+    }
+
+    /**
      * @Route("/interactive-endpoint", name="interactive_endpoint")
      */
     public function interactiveEndpoint(Request $request, Handler $standupMeetingReminderHandler): JsonResponse
