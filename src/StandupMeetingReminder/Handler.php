@@ -42,7 +42,9 @@ class Handler
 
     public function handleRequest(Request $request)
     {
-        if ('list' === $request->request->get('text')) {
+        if ('help' === $request->request->get('text')) {
+            return $this->help($request->request->get('response_url'));
+        } elseif ('list' === $request->request->get('text')) {
             return $this->listReminders($request);
         }
 
@@ -111,7 +113,7 @@ class Handler
 
     public function handleSubmission(array $payload)
     {
-        $selectedProjectForDisplay = [];
+        $selectedProjectsForDisplay = [];
         $selectedProjectIds = [];
         $slackTeam = $this->slackTeamRepository->findOneBy([
             'teamId' => $payload['team']['id'],
@@ -125,17 +127,17 @@ class Handler
         }
 
         foreach ($payload['view']['state']['values']['projects']['selected_projects']['selected_options'] as $project) {
-            $selectedProjectForDisplay[] = sprintf('"%s"', $project['text']['text']);
+            $selectedProjectsForDisplay[] = sprintf('"%s"', $project['text']['text']);
             $selectedProjectIds[] = $project['value'];
         }
 
-        if (\count($selectedProjectForDisplay) > 1) {
-            $lastProject = ' and ' . array_pop($selectedProjectForDisplay);
+        if (\count($selectedProjectsForDisplay) > 1) {
+            $lastProject = ' and ' . array_pop($selectedProjectsForDisplay);
         } else {
             $lastProject = '';
         }
 
-        $selectedProjectForDisplay = implode(', ', $selectedProjectForDisplay) . $lastProject;
+        $selectedProjectsForDisplay = implode(', ', $selectedProjectsForDisplay) . $lastProject;
         $selectedTime = $payload['view']['state']['values']['time']['selected_time']['selected_option']['value'];
         $standupMeetingReminder = $this->standupMeetingReminderRepository->findOneBy([
             'channelId' => $channelId,
@@ -159,11 +161,12 @@ class Handler
 
         $client = \JoliCode\Slack\ClientFactory::create($slackTeam->getAccessToken());
         $message = sprintf(
-            '<@%s> %s a stand-up reminder in this channel. It will run each day at `%s` and ping people working on projects %s.',
+            '<@%s> %s a stand-up reminder in this channel. It will run each day at `%s` and ping people working on the project%s %s.',
             $payload['user']['username'],
             $actionName,
             $selectedTime,
-            $selectedProjectForDisplay
+            ('' !== $lastProject) ? 's' : '',
+            $selectedProjectsForDisplay
         );
         $client->chatPostMessage([
             'channel' => $channelId,
@@ -205,10 +208,11 @@ class Handler
                 $clientName = isset($clients[$project->getClientId()]) ? $clients[$project->getClientId()]->getName() : '';
 
                 if (false !== strpos(mb_strtolower($project->getName()), $searched) || false !== strpos(mb_strtolower($project->getCode()), $searched) || false !== strpos(mb_strtolower($clientName), $searched)) {
+                    $projectCode = $project->getCode() ? '[' . $project->getCode() . '] ' : '';
                     $availableProjects[] = [
                         'text' => [
                             'type' => 'plain_text',
-                            'text' => substr(sprintf('[%s] %s - %s', $project->getCode(), $clientName, $project->getName()), 0, 75),
+                            'text' => substr(sprintf('%s%s%s', $projectCode, $clientName ? $clientName . ' - ' : '', $project->getName()), 0, 75),
                         ],
                         'value' => (string) $project->getId(),
                     ];
@@ -216,12 +220,52 @@ class Handler
             }
         }
 
+        usort($availableProjects, function ($a, $b) {
+            if (preg_match('/^\[[^0-9]*(\d+)\] .*$/', $a['text']['text'], $aMatches)) {
+                if (preg_match('/^\[[^0-9]*(\d+)\] .*$/', $b['text']['text'], $bMatches)) {
+                    return ($aMatches[1] < $bMatches[1]) ? -1 : 1;
+                }
+
+                return 1;
+            }
+
+            return ($a['text']['text'] < $b['text']['text']) ? -1 : 1;
+        });
+
         return [
             'options' => $availableProjects,
         ];
     }
 
-    public function listReminders(Request $request)
+    private function help(string $responseUrl)
+    {
+        $message = <<<'EOT'
+Use the `/standup-reminder` command to create or edit a stand-up reminder in the current channel.
+
+You can use `/standup-reminder list` to list all the existing stand-up reminders in the workspace.
+EOT;
+
+        $client = HttpClient::create();
+        $client->request('POST', $responseUrl, [
+            'headers' => [
+                'Content-Type' => 'application/json',
+            ],
+            'body' => json_encode([
+                'blocks' => [
+                    [
+                        'type' => 'section',
+                        'text' => [
+                            'type' => 'mrkdwn',
+                            'text' => $message,
+                        ],
+                    ],
+                ],
+                'replace_original' => true,
+            ]),
+        ]);
+    }
+
+    private function listReminders(Request $request)
     {
         $this->sendRemindersList(
             $request->request->get('team_id'),
@@ -268,10 +312,11 @@ class Handler
 
                     foreach ($projects as $project) {
                         if (\in_array((string) $project->getId(), $standupMeetingReminder->getForecastProjects(), true)) {
+                            $projectCode = $project->getCode() ? '[' . $project->getCode() . '] ' : '';
                             $initialProjects[] = [
                                 'text' => [
                                     'type' => 'plain_text',
-                                    'text' => str_replace('"', '', $project->getName()),
+                                    'text' => $projectCode . $project->getName(),
                                 ],
                                 'value' => (string) $project->getId(),
                             ];

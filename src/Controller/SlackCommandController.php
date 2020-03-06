@@ -13,7 +13,6 @@ namespace App\Controller;
 
 use App\StandupMeetingReminder\Handler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,16 +26,8 @@ class SlackCommandController extends AbstractController
     /**
      * @Route("/command", name="command")
      */
-    public function command(Request $request, Handler $standupMeetingReminderHandler)
+    public function command(Request $request)
     {
-        if ('/standup-reminder' === $request->request->get('command')) {
-            $standupMeetingReminderHandler->handleRequest($request);
-        }
-
-        if ('/forecast' === $request->request->get('command') && 'help' !== $request->request->get('text')) {
-            $this->temporaryResponse($request->request->get('response_url'));
-        }
-
         return new Response('');
     }
 
@@ -70,27 +61,5 @@ class SlackCommandController extends AbstractController
         }
 
         return new JsonResponse('<3 you, Slack');
-    }
-
-    private function temporaryResponse($responseUrl)
-    {
-        $body = [
-            'blocks' => [
-                [
-                    'type' => 'section',
-                    'text' => [
-                        'type' => 'mrkdwn',
-                        'text' => '_Computing the forecast, one moment please..._',
-                    ],
-                ],
-            ],
-        ];
-        $client = HttpClient::create();
-        $client->request('POST', $responseUrl, [
-            'headers' => [
-                'Content-Type' => 'application/json',
-            ],
-            'body' => json_encode($body),
-        ]);
     }
 }
