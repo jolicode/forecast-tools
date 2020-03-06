@@ -29,8 +29,22 @@ class ForecastAccountRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param mixed $delay
-     *
+     * @return ForecastAccount[] Returns an array of ForecastAccount objects
+     */
+    public function findBySlackTeamId(string $teamId)
+    {
+        return $this->createQueryBuilder('f')
+            ->select('f')
+            ->leftJoin('f.forecastAccountSlackTeams', 'fast')
+            ->leftJoin('fast.slackTeam', 's')
+            ->andWhere('s.teamId = :teamId')
+            ->setParameter('teamId', $teamId)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    /**
      * @return ForecastAccount[] Returns an array of ForecastAccount objects
      */
     public function findExpiringTokens(int $delay)
@@ -43,6 +57,9 @@ class ForecastAccountRepository extends ServiceEntityRepository
         ;
     }
 
+    /**
+     * @return ForecastAccount[] Returns an array of ForecastAccount objects
+     */
     public function findForecastAccountsForEmail(string $email)
     {
         return $this->createQueryBuilder('f')
@@ -53,9 +70,15 @@ class ForecastAccountRepository extends ServiceEntityRepository
             ->setParameter('email', $email)
             ->orderBy('f.name', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
     }
 
+    /**
+     * @param mixed $user
+     *
+     * @return ForecastAccount[] Returns an array of ForecastAccount objects
+     */
     public function findForecastAccountsForUser($user)
     {
         return $this->findForecastAccountsForEmail($user->getEmail());

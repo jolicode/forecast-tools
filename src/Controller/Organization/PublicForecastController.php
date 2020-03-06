@@ -18,6 +18,7 @@ use App\Repository\PublicForecastRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
@@ -72,6 +73,7 @@ class PublicForecastController extends AbstractController
 
     /**
      * @Route("/edit/{publicForecastId}", name="edit")
+     * @ParamConverter("publicForecast", options={"id" = "publicForecastId"})
      * @IsGranted("admin", subject="forecastAccount")
      */
     public function edit(Request $request, ForecastAccount $forecastAccount, PublicForecast $publicForecast, EntityManagerInterface $em)
@@ -97,6 +99,7 @@ class PublicForecastController extends AbstractController
 
     /**
      * @Route("/delete/{publicForecastId}", name="delete")
+     * @ParamConverter("publicForecast", options={"id" = "publicForecastId"})
      * @IsGranted("admin", subject="forecastAccount")
      */
     public function delete(Request $request, ForecastAccount $forecastAccount, PublicForecast $publicForecast, EntityManagerInterface $em)

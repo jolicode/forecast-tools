@@ -208,7 +208,7 @@ class User
     {
         if (!$this->forecastReminders->contains($forecastReminder)) {
             $this->forecastReminders[] = $forecastReminder;
-            $forecastReminder->setCreatedBy($this);
+            $forecastReminder->setUpdatedBy($this);
         }
 
         return $this;
@@ -219,8 +219,8 @@ class User
         if ($this->forecastReminders->contains($forecastReminder)) {
             $this->forecastReminders->removeElement($forecastReminder);
             // set the owning side to null (unless already changed)
-            if ($forecastReminder->getCreatedBy() === $this) {
-                $forecastReminder->setCreatedBy(null);
+            if ($forecastReminder->getUpdatedBy() === $this) {
+                $forecastReminder->setUpdatedBy(null);
             }
         }
 

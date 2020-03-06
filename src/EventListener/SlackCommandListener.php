@@ -15,7 +15,6 @@ use App\Converter\WordToNumberConverter;
 use App\Entity\ForecastReminder;
 use App\ForecastReminder\Builder;
 use App\Repository\ForecastReminderRepository;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpKernel\Event\TerminateEvent;
@@ -25,22 +24,48 @@ class SlackCommandListener implements EventSubscriberInterface
 {
     private $forecastReminderRepository;
     private $wordToNumberConverter;
-    private $logger;
 
-    public function __construct(ForecastReminderRepository $forecastReminderRepository, WordToNumberConverter $wordToNumberConverter, LoggerInterface $logger)
+    public function __construct(ForecastReminderRepository $forecastReminderRepository, WordToNumberConverter $wordToNumberConverter)
     {
         $this->forecastReminderRepository = $forecastReminderRepository;
         $this->wordToNumberConverter = $wordToNumberConverter;
-        $this->logger = $logger;
     }
 
     public function onTerminate(TerminateEvent $event)
     {
         $request = $event->getRequest();
 
-        if ('slack_command' === $request->attributes->get('_route')) {
+        if ('slack_command' === $request->attributes->get('_route') && ('/forecast' === $request->request->get('command'))) {
+            if ('help' === $request->request->get('text')) {
+                $message = <<<'EOT'
+*Time parameters* display the Forecast for a specific date:
+
+➡️ `/forecast tomorrow`
+➡️ `/forecast yesterday`
+➡️ `/forecast today`
+➡️ `/forecast next wednesday`
+➡️ `/forecast in one week and three days`
+➡️ `/forecast 2 weeks ago`
+EOT;
+
+                return $this->sendMessage(
+                    $request->request->get('response_url'),
+                    [
+                        'blocks' => [
+                            [
+                                'type' => 'section',
+                                'text' => [
+                                    'type' => 'mrkdwn',
+                                    'text' => $message,
+                                ],
+                            ],
+                        ],
+                        'replace_original' => true,
+                    ]
+                );
+            }
+
             $forecastReminders = $this->forecastReminderRepository->findByTeamId($request->request->get('team_id'));
-            $this->logger->info($request->request->get('team_id'));
 
             if (0 === \count($forecastReminders)) {
                 $body = [
@@ -49,7 +74,7 @@ class SlackCommandListener implements EventSubscriberInterface
                             'type' => 'section',
                             'text' => [
                                 'type' => 'mrkdwn',
-                                'text' => 'Your Slack team is not configured in Forecast tools. How dear can you have our app installed? :upside_down_face:',
+                                'text' => 'Your Slack team is not configured in Forecast tools, or the Slack reminder has not been enabled. Oh dear, why do you have our app installed? :upside_down_face:',
                             ],
                         ],
                     ],
@@ -78,10 +103,9 @@ class SlackCommandListener implements EventSubscriberInterface
         ];
     }
 
-    private function buildReminder(ForecastReminder $forecastReminder, string $text = ''): array
+    private function buildReminder(ForecastReminder $forecastReminder, ?string $text = ''): array
     {
         $startDate = $this->extractStartDateFromtext($text);
-
         $builder = new Builder($forecastReminder);
         $title = $builder->buildTitle($startDate);
         $message = $builder->buildMessage($startDate);
@@ -109,20 +133,23 @@ class SlackCommandListener implements EventSubscriberInterface
 
     private function extractStartDateFromtext(string $text): \DateTime
     {
-        $this->logger->info($text);
+        if ('' === $text) {
+            $text = 'tomorrow';
+        }
+
         $text = $this->wordToNumberConverter->convert($text);
-        $this->logger->info($text);
+        $sign = '';
 
         if (0 === strncmp($text, 'in ', 3)) {
             $text = '+' . substr($text, 3);
         }
-        $this->logger->info($text);
 
         if (0 === substr_compare($text, ' ago', -4)) {
             $text = '-' . substr($text, 0, \strlen($text) - 4);
+            $sign = '-';
         }
-        $this->logger->info($text);
 
+        $text = str_replace(' and ', ', ' . $sign, $text);
         $datetime = new \DateTime($text);
 
         if ($datetime && 0 === \DateTime::getLastErrors()['warning_count'] && 0 === \DateTime::getLastErrors()['error_count']) {

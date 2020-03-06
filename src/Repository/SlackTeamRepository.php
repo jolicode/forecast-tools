@@ -11,20 +11,20 @@
 
 namespace App\Repository;
 
-use App\Entity\HarvestAccount;
+use App\Entity\SlackTeam;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
 /**
- * @method HarvestAccount|null find($id, $lockMode = null, $lockVersion = null)
- * @method HarvestAccount|null findOneBy(array $criteria, array $orderBy = null)
- * @method HarvestAccount[]    findAll()
- * @method HarvestAccount[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method SlackTeam|null find($id, $lockMode = null, $lockVersion = null)
+ * @method SlackTeam|null findOneBy(array $criteria, array $orderBy = null)
+ * @method SlackTeam[]    findAll()
+ * @method SlackTeam[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class HarvestAccountRepository extends ServiceEntityRepository
+class SlackTeamRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, HarvestAccount::class);
+        parent::__construct($registry, SlackTeam::class);
     }
 }

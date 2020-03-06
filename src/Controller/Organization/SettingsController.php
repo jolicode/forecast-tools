@@ -11,12 +11,14 @@
 
 namespace App\Controller\Organization;
 
-use AdamPaterson\OAuth2\Client\Provider\Slack;
 use App\Entity\ForecastAccount;
-use App\Entity\SlackChannel;
+use App\Entity\ForecastAccountSlackTeam;
+use App\Entity\SlackTeam;
 use App\Form\HarvestSettingsType;
-use App\Repository\SlackChannelRepository;
+use App\Repository\ForecastAccountSlackTeamRepository;
+use App\Repository\SlackTeamRepository;
 use App\Repository\UserRepository;
+use App\Security\Provider\Slack;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
@@ -71,7 +73,7 @@ class SettingsController extends AbstractController
     /**
      * @Route("/slack", name="slack")
      */
-    public function slack(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em, UserRepository $userRepository, SlackChannelRepository $slackChannelRepository)
+    public function slack(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em, UserRepository $userRepository, SlackTeamRepository $slackTeamRepository, ForecastAccountSlackTeamRepository $forecastAccountSlackTeamRepository)
     {
         if ($request->query->has('code')) {
             $session = $request->getSession();
@@ -89,27 +91,32 @@ class SettingsController extends AbstractController
                     'code' => $request->query->get('code'),
                 ]);
                 $values = $token->getValues();
-
-                $slackChannel = $slackChannelRepository->findOneBy([
-                    'teamId' => $values['team_id'],
-                    'forecastAccount' => $forecastAccount,
+                $slackTeam = $slackTeamRepository->findOneBy([
+                    'teamId' => $values['team']['id'],
                 ]);
 
-                if (!$slackChannel) {
-                    $slackChannel = new SlackChannel();
-                    $slackChannel->setForecastAccount($forecastAccount);
-                    $slackChannel->setTeamId($values['team_id']);
+                if (!$slackTeam) {
+                    $slackTeam = new SlackTeam();
+                    $slackTeam->setTeamId($values['team']['id']);
+                }
+
+                $forecastAccountSlackTeam = $forecastAccountSlackTeamRepository->findOneBy([
+                    'forecastAccount' => $forecastAccount,
+                    'slackTeam' => $slackTeam,
+                ]);
+
+                if (!$forecastAccountSlackTeam) {
+                    $forecastAccountSlackTeam = new ForecastAccountSlackTeam();
+                    $forecastAccountSlackTeam->setForecastAccount($forecastAccount);
+                    $forecastAccountSlackTeam->setSlackTeam($slackTeam);
                 }
 
                 $user = $userRepository->findOneBy(['email' => $this->getUser()->getUsername()]);
-                $slackChannel->setWebhookConfigurationUrl($values['incoming_webhook']['configuration_url']);
-                $slackChannel->setAccessToken($token->getToken());
-                $slackChannel->setUpdatedBy($user);
-                $slackChannel->setWebhookUrl($values['incoming_webhook']['url']);
-                $slackChannel->setWebhookChannelId($values['incoming_webhook']['channel_id']);
-                $slackChannel->setWebhookChannel($values['incoming_webhook']['channel']);
-                $slackChannel->setTeamName($values['team_name']);
-                $em->persist($slackChannel);
+                $slackTeam->setAccessToken($token->getToken());
+                $slackTeam->setTeamName($values['team']['name']);
+                $forecastAccountSlackTeam->setUpdatedBy($user);
+                $em->persist($slackTeam);
+                $em->persist($forecastAccountSlackTeam);
                 $em->flush();
 
                 return new RedirectResponse($this->router->generate('organization_settings_slack', [
@@ -126,24 +133,28 @@ class SettingsController extends AbstractController
     }
 
     /**
-     * @Route("/slack/delete/{slackChanneId}", name="slack_delete")
-     * @ParamConverter("slackChannel", options={"id" = "slackChanneId"})
+     * @Route("/slack/delete/{forecastAccountSlackTeamId}", name="slack_delete")
+     * @ParamConverter("forecastAccountSlackTeam", options={"id" = "forecastAccountSlackTeamId"})
      */
-    public function slackDelete(ForecastAccount $forecastAccount, SlackChannel $slackChannel, SlackChannelRepository $slackChannelRepository)
+    public function slackDelete(ForecastAccount $forecastAccount, ForecastAccountSlackTeam $forecastAccountSlackTeam)
     {
-        if ($slackChannel->getForecastAccount() !== $forecastAccount) {
+        $entityManager = $this->getDoctrine()->getManager();
+
+        if ($forecastAccountSlackTeam->getForecastAccount() !== $forecastAccount) {
             throw new NotFoundHttpException('Could not find this Slack channel.');
         }
 
-        // if this is the last slackChannel with this workspace teamId, uninstall the app from the workspace
-        if (1 === $slackChannelRepository->countByTeamId($slackChannel->getTeamId())) {
+        $slackTeam = $forecastAccountSlackTeam->getSlackTeam();
+        $entityManager->remove($forecastAccountSlackTeam);
+        $entityManager->flush();
+
+        // if this is the last slackTeam with this workspace teamId, uninstall the app from the workspace
+        if (0 === \count($slackTeam->getForecastAccountSlackTeams())) {
             // @TODO once slack-php-api releases a version using jane 5
             // call https://api.slack.com/methods/apps.uninstall
+            $entityManager->remove($slackTeam);
+            $entityManager->flush();
         }
-
-        $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->remove($slackChannel);
-        $entityManager->flush();
 
         return new RedirectResponse($this->router->generate('organization_settings_slack', [
             'slug' => $forecastAccount->getSlug(),
@@ -153,17 +164,20 @@ class SettingsController extends AbstractController
     /**
      * @Route("/slack/install", name="slack_install")
      */
-    public function slackInstall(Request $request, ForecastAccount $forecastAccount, UserRepository $userRepository, SlackChannelRepository $slackChannelRepository)
+    public function slackInstall(Request $request, ForecastAccount $forecastAccount)
     {
         $provider = $this->getSlackProvider($forecastAccount);
 
         // build the Slack url
         $options = [
             'scope' => [
-                'incoming-webhook',
+                'channels:read',
+                'chat:write',
+                'chat:write.public',
                 'commands',
                 'users:read',
                 'users:read.email',
+                'chat:write.customize',
             ],
         ];
         $authUrl = $provider->getAuthorizationUrl($options);

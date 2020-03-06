@@ -3,7 +3,8 @@
 Forecast tools improves the overall experience with Harvest & Harvest Forecast, and adds some features:
 
  * share publicly a Client's or Project's forecast
- * have Slack notifications for the team's schedule
+ * Slack notifications for the team's schedule
+ * per-channel Slack notifications for pinging the right people for the standup meeting
  * a Slack command for letting team members know the schedule
  * mass-insert entries in Harvest timesheets or Forecast schedules
  * Harvest timesheets and Forecast schedules comparison
@@ -37,13 +38,22 @@ pipenv shell
 $ git clone https://github.com/jolicode/forecast-tools.git
 ```
 
-### Get a Harvest developer key
+### Get a Harvest developer key and a Slack application
 
 Create an Harvest application at https://id.getharvest.com/developers
   * Name: choose whatever name you want
-  * Redirect URL: use your deployment domain, or `http://127.0.0.1:8000` if testing locally
+  * Redirect URL: use your deployment domain, or `https://local.forecast.jolicode.com` if testing locally
   * Multi Account: choose "I can work with multiple accounts"
-  * Products: choose "I want access to Forecast"
+  * Products: choose "I want access to Forecast and Harvest"
+
+Create a Slack application for your Slack workspace at https://api.slack.com/apps
+  * configure two slash commands:
+    * `/forecast` - In "Request URL", write https://[YOUR DOMAIN]/slack/command
+    * `/standup-reminder` - In "Request URL", write https://[YOUR DOMAIN]/slack/command
+  * under "Interactive components", in "Request URL", write https://[YOUR DOMAIN]/slack/interactive-endpoint
+  * under "OAuth & permissions"
+    * add https://local.forecast.jolicode.com/ as a "Redirect URL" (or your own deployment domain)
+    * choose the following scopes: `channels:read`, `chat:write`, `chat:write.customize`, `chat:write.public`, `commands`, `users:read`, `users:read.email`
 
 Then, copy `.env` file to `.env.local`, and edit its values accordingly.
 
@@ -109,10 +119,11 @@ Checkout `fab -l` to have the list of available fabric tasks.
 
 ## Cron jobs
 
-In order to send Slack alerts, add a crontab directive to run every minute the `./bin/console forecast:alert-send` task, eg.
+In order to send Slack alerts, add a crontab directive to run every minute the `./bin/console forecast:alert-send` task, and every 15 minutes the `./bin/console forecast:standup-meeting-reminder-send` task eg.
 
 ```
 * * * * * /path/to/install/bin/console forecast:alert-send
+*/15 * * * * /path/to/install/bin/console forecast:standup-meeting-reminder-send
 ```
 
 Harvest tokens need to be refreshed once in a while. They have a two-weeks duration, hence we try to refresh them when they will expire in less than 7 days. In order to force tokens to be refreshed once a day, please add this cron job:

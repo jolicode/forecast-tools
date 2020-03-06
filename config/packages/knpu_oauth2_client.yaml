@@ -18,7 +18,9 @@ knpu_oauth2_client:
             redirect_params: {}
             use_state: false
         slack:
-            type: slack
+            type: generic
+            provider_class: App\Security\Provider\Slack
+
             client_id: '%env(SLACK_CLIENT_ID)%'
             client_secret: '%env(SLACK_CLIENT_SECRET)%'
             redirect_route: connect_slack_check
