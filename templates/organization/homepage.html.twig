@@ -9,39 +9,69 @@
         </div>
     {% endfor %}
 
+    {% if forecastAccount.forecastAccountSlackTeams|length == 0 %}
+        <div class="card">
+            <div class="card-body">
+                <h5 class="car-title">Slack commands</h2>
+                <p class="card-text">
+                    It seems that you have not yet added a Slack team to this account. Adding a Slack team gives you two commands:
+                </p>
+                <ul>
+                    <li>the <code>/forecast</code> command allows team members to check the Forecast <em>on demand</em></li>
+                    <li>the <code>/standup-meeting</code> command helps manage stand-up meeting reminders</li>
+                </ul>
+            </div>
+            <div class="card-footer">
+                <a href="{{ organization_path('settings_slack') }}" class="btn btn-primary">✨ Add a Slack team now</a>
+            </div>
+        </div>
+    {% endif %}
+
     <div class="container-fluid content-row">
         <div class="row">
             <div class="col-md-6 col-lg-4 col-xl-3 p-2">
-                <div class="card card-body h-100">
-                    <img src="/images/public-forecast.svg" class="card-img-top" alt="Public Forecast">
-                    <h5 class="car-title">Public Forecast</h2>
-                    <p class="card-text">
-                        Share your Forecast outside of your organization for a client or project.
-                    </p>
-                    <a href="{{ organization_path('public_forecasts_list') }}" class="btn btn-primary">📅 👀 Add a public Forecast</a>
+                <div class="card h-100">
+                    <div class="card-body">
+                        <img src="/images/public-forecast.svg" class="card-img-top" alt="Public Forecast">
+                        <h5 class="car-title">Public Forecast</h2>
+                        <p class="card-text">
+                            Share your Forecast outside of your organization for a client or project.
+                        </p>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ organization_path('public_forecasts_list') }}" class="btn btn-primary">👀 Add a public Forecast</a>
+                    </div>
                 </div>
             </div>
 
             <div class="col-md-6 col-lg-4 col-xl-3 p-2">
-                <div class="card card-body h-100">
-                    <img src="/images/reminder.svg" class="card-img-top" alt="Forecast reminder">
-                    <h5 class="car-title">Forecast reminder</h2>
-                    <p class="card-text">
-                        Set up and configure a Slack reminder for your organization's Forecast.
-                    </p>
-                    <a href="{{ organization_path('reminder_index') }}" class="btn btn-primary">📅 Set up a Slack reminder</a>
+                <div class="card h-100">
+                    <div class="card-body">
+                        <img src="/images/reminder.svg" class="card-img-top" alt="Forecast reminder">
+                        <h5 class="car-title">Forecast reminder</h2>
+                        <p class="card-text">
+                            Set up and configure a Slack reminder for your organization's Forecast.
+                        </p>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ organization_path('reminder_index') }}" class="btn btn-primary">📅 Set up a Slack reminder</a>
+                    </div>
                 </div>
             </div>
 
             {% if is_granted('admin', forecastAccount) and is_granted('harvest_admin', forecastAccount) %}
                 <div class="col-md-6 col-lg-4 col-xl-3 p-2">
-                    <div class="card card-body h-100">
-                        <img src="/images/invoicing.svg" class="card-img-top" alt="Invoicing process">
-                        <h5 class="car-title">Invoicing process</h2>
-                        <p class="card-text">
-                            Get insights, compare Forecast schedules and Harvest timesheets.
-                        </p>
-                        <a href="{{ organization_path('invoicing_index') }}" class="btn btn-primary">💰 Create invoices</a>
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <img src="/images/invoicing.svg" class="card-img-top" alt="Invoicing process">
+                            <h5 class="car-title">Invoicing process</h2>
+                            <p class="card-text">
+                                Get insights, compare Forecast schedules and Harvest timesheets.
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ organization_path('invoicing_index') }}" class="btn btn-primary">💰 Create invoices</a>
+                        </div>
                     </div>
                 </div>
             {% endif %}

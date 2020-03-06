@@ -26,16 +26,16 @@
         {% endif %}
 
         <div class="card-body">
-            <h2>Register a Slack workspace</h2>
+            <h2>Register a Slack team</h2>
 
             <p>
-                Adding the Slack application to a workspace gives several nice features:
+                Adding our Slack application to your workspace gives several nice features:
             </p>
             <ul>
-                <li>it allows to receive in the Slack channel of your choice a <a href="{{ organization_path('reminder_index') }}">Forecast reminder</a>, on a regular basis</li>
+                <li>it allows to receive a <a href="{{ organization_path('reminder_index') }}">Forecast reminder</a> in the Slack channel of your choice, on a regular basis</li>
                 <li>it installs a <code>/forecast</code> command in this workspace, which allows team members to check the Forecast <em>on demand</em></li>
+                <li>it installs a <code>/standup-meeting</code> command in this workspace, which helps manage stand-up meeting reminders</li>
                 <li>it can send a weekly Slack notification to get your users fill their Harvest timesheets</li>
-                <li>it installs a <code>/standup-meeting</code> command in this workspace, which helps manage standup meeting reminders</li>
             </ul>
 
             <p>
