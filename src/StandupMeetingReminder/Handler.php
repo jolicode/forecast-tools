@@ -183,11 +183,15 @@ class Handler
         ]);
 
         if (isset($privateMetadata['response_url'])) {
-            $this->sendRemindersList(
-                $slackTeam->getTeamId(),
-                $payload['trigger_id'],
-                $privateMetadata['response_url']
-            );
+            try {
+                $this->sendRemindersList(
+                    $slackTeam->getTeamId(),
+                    $payload['trigger_id'],
+                    $privateMetadata['response_url']
+                );
+            } catch (\Exception $e) {
+                // silence, the window might just be opened since a long time
+            }
         }
 
         return new JsonResponse(['response_action' => 'clear']);
@@ -195,28 +199,22 @@ class Handler
 
     public function listProjects(array $payload)
     {
-        $forecastAccounts = $this->forecastAccountRepository->findBySlackTeamId($payload['team']['id']);
         $availableProjects = [];
         $searched = mb_strtolower($payload['value']);
+        $data = $this->loadProjects($payload['team']['id']);
 
-        foreach ($forecastAccounts as $forecastAccount) {
-            $this->forecastDataSelector->setForecastAccount($forecastAccount);
-            $projects = $this->forecastDataSelector->getProjects(true);
-            $clients = $this->forecastDataSelector->getClientsById();
+        foreach ($data['projects'] as $project) {
+            $clientName = isset($data['clients'][$project->getClientId()]) ? $data['clients'][$project->getClientId()]->getName() : '';
 
-            foreach ($projects as $project) {
-                $clientName = isset($clients[$project->getClientId()]) ? $clients[$project->getClientId()]->getName() : '';
-
-                if (false !== strpos(mb_strtolower($project->getName()), $searched) || false !== strpos(mb_strtolower($project->getCode()), $searched) || false !== strpos(mb_strtolower($clientName), $searched)) {
-                    $projectCode = $project->getCode() ? '[' . $project->getCode() . '] ' : '';
-                    $availableProjects[] = [
-                        'text' => [
-                            'type' => 'plain_text',
-                            'text' => substr(sprintf('%s%s%s', $projectCode, $clientName ? $clientName . ' - ' : '', $project->getName()), 0, 75),
-                        ],
-                        'value' => (string) $project->getId(),
-                    ];
-                }
+            if (false !== strpos(mb_strtolower($project->getName()), $searched) || false !== strpos(mb_strtolower($project->getCode()), $searched) || false !== strpos(mb_strtolower($clientName), $searched)) {
+                $projectCode = $project->getCode() ? '[' . $project->getCode() . '] ' : '';
+                $availableProjects[] = [
+                    'text' => [
+                        'type' => 'plain_text',
+                        'text' => substr(sprintf('%s%s%s', $projectCode, $clientName ? $clientName . ' - ' : '', $project->getName()), 0, 75),
+                    ],
+                    'value' => (string) $project->getId(),
+                ];
             }
         }
 
@@ -234,6 +232,24 @@ class Handler
 
         return [
             'options' => $availableProjects,
+        ];
+    }
+
+    public function loadProjects(string $teamId)
+    {
+        $forecastAccounts = $this->forecastAccountRepository->findBySlackTeamId($teamId);
+        $clients = [];
+        $projects = [];
+
+        foreach ($forecastAccounts as $forecastAccount) {
+            $this->forecastDataSelector->setForecastAccount($forecastAccount);
+            $projects = array_merge($projects, $this->forecastDataSelector->getProjects(true));
+            $clients = array_merge($clients, $this->forecastDataSelector->getClientsById());
+        }
+
+        return [
+            'clients' => $clients,
+            'projects' => $projects,
         ];
     }
 

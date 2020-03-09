@@ -47,6 +47,11 @@ class SlackCommandListener implements EventSubscriberInterface
                 $this->sendForecastReminders($request);
             } elseif ('/standup-reminder' === $request->request->get('command')) {
                 $this->standupMeetingReminderHandler->handleRequest($request);
+
+                // if list command, try to preload available projects so that they're in cache
+                if ('list' === $request->request->get('text')) {
+                    $this->standupMeetingReminderHandler->loadProjects($request->request->get('team_id'));
+                }
             }
         }
     }
