@@ -17,7 +17,15 @@ jQuery(document).ready(function() {
     });
   });
 
-  jQuery('.days').scroll((e) => {
-    jQuery('.days').scrollLeft(jQuery(e.currentTarget).scrollLeft());
-  });
+  jQuery('.days').on({
+    'mouseover': (event) => {
+      let item = jQuery(event.currentTarget);
+      item.bind('scroll', (e) => {
+        jQuery('.days').scrollLeft(item.scrollLeft());
+      });
+    },
+    'mouseout': (event) => {
+      jQuery(event.currentTarget).unbind('scroll');
+    }
+  })
 });
