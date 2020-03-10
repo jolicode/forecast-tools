@@ -39,7 +39,12 @@ class Sender
         $standupMeetingRemindersCount = 0;
 
         foreach ($standupMeetingReminders as $standupMeetingReminder) {
-            $this->sendStandupMeetingReminder($standupMeetingReminder);
+            try {
+                $this->sendStandupMeetingReminder($standupMeetingReminder);
+            } catch (\Exception $e) {
+                // silence
+            }
+
             ++$standupMeetingRemindersCount;
         }
 
@@ -121,9 +126,8 @@ class Sender
             [
                 'type' => 'section',
                 'text' => [
-                    'type' => 'plain_text',
+                    'type' => 'mrkdwn',
                     'text' => $message,
-                    'emoji' => true,
                 ],
             ],
         ];
