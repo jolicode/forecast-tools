@@ -12,11 +12,13 @@
 namespace App\StandupMeetingReminder;
 
 use App\DataSelector\ForecastDataSelector;
+use App\DataSelector\SlackDataSelector;
 use App\Entity\StandupMeetingReminder;
 use App\Repository\ForecastAccountRepository;
 use App\Repository\SlackTeamRepository;
 use App\Repository\StandupMeetingReminderRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use JoliCode\Slack\Exception\SlackErrorResponse;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,17 +28,19 @@ class Handler
     private $em;
     private $forecastAccountRepository;
     private $forecastDataSelector;
+    private $slackDataSelector;
 
     /** @var SlackTeamRepository */
     private $slackTeamRepository;
     private $standupMeetingReminderRepository;
 
-    public function __construct(EntityManagerInterface $em, ForecastAccountRepository $forecastAccountRepository, SlackTeamRepository $slackTeamRepository, ForecastDataSelector $forecastDataSelector, StandupMeetingReminderRepository $standupMeetingReminderRepository)
+    public function __construct(EntityManagerInterface $em, ForecastAccountRepository $forecastAccountRepository, SlackTeamRepository $slackTeamRepository, ForecastDataSelector $forecastDataSelector, SlackDataSelector $slackDataSelector, StandupMeetingReminderRepository $standupMeetingReminderRepository)
     {
         $this->em = $em;
         $this->forecastAccountRepository = $forecastAccountRepository;
         $this->slackTeamRepository = $slackTeamRepository;
         $this->forecastDataSelector = $forecastDataSelector;
+        $this->slackDataSelector = $slackDataSelector;
         $this->standupMeetingReminderRepository = $standupMeetingReminderRepository;
     }
 
@@ -201,56 +205,79 @@ class Handler
     {
         $availableProjects = [];
         $searched = mb_strtolower($payload['value']);
-        $data = $this->loadProjects($payload['team']['id']);
+        $projectsByAccount = $this->loadProjects($payload['team']['id']);
 
-        foreach ($data['projects'] as $project) {
-            $clientName = isset($data['clients'][$project->getClientId()]) ? $data['clients'][$project->getClientId()]->getName() : '';
+        foreach ($projectsByAccount as $data) {
+            $accountProjects = [];
 
-            if (false !== strpos(mb_strtolower($project->getName()), $searched) || false !== strpos(mb_strtolower($project->getCode()), $searched) || false !== strpos(mb_strtolower($clientName), $searched)) {
-                $projectCode = $project->getCode() ? '[' . $project->getCode() . '] ' : '';
+            foreach ($data['projects'] as $project) {
+                $clientName = isset($data['clients'][$project->getClientId()]) ? $data['clients'][$project->getClientId()]->getName() : '';
+
+                if (false !== strpos(mb_strtolower($project->getName()), $searched) || false !== strpos(mb_strtolower($project->getCode()), $searched) || false !== strpos(mb_strtolower($clientName), $searched)) {
+                    $projectCode = $project->getCode() ? '[' . $project->getCode() . '] ' : '';
+                    $accountProjects[] = [
+                        'text' => [
+                            'type' => 'plain_text',
+                            'text' => substr(sprintf('%s%s%s', $projectCode, $clientName ? $clientName . ' - ' : '', $project->getName()), 0, 75),
+                        ],
+                        'value' => (string) $project->getId(),
+                    ];
+                }
+            }
+
+            if (\count($accountProjects) > 0) {
+                usort($accountProjects, function ($a, $b) {
+                    if (preg_match('/^\[[^0-9]*(\d+)\] .*$/', $a['text']['text'], $aMatches)) {
+                        if (preg_match('/^\[[^0-9]*(\d+)\] .*$/', $b['text']['text'], $bMatches)) {
+                            return ($aMatches[1] < $bMatches[1]) ? -1 : 1;
+                        }
+
+                        return 1;
+                    }
+
+                    return ($a['text']['text'] < $b['text']['text']) ? -1 : 1;
+                });
+
                 $availableProjects[] = [
-                    'text' => [
+                    'label' => [
                         'type' => 'plain_text',
-                        'text' => substr(sprintf('%s%s%s', $projectCode, $clientName ? $clientName . ' - ' : '', $project->getName()), 0, 75),
+                        'text' => $data['forecastAccount']->getName(),
                     ],
-                    'value' => (string) $project->getId(),
+                    'options' => $accountProjects,
                 ];
             }
         }
 
-        usort($availableProjects, function ($a, $b) {
-            if (preg_match('/^\[[^0-9]*(\d+)\] .*$/', $a['text']['text'], $aMatches)) {
-                if (preg_match('/^\[[^0-9]*(\d+)\] .*$/', $b['text']['text'], $bMatches)) {
-                    return ($aMatches[1] < $bMatches[1]) ? -1 : 1;
-                }
-
-                return 1;
-            }
-
-            return ($a['text']['text'] < $b['text']['text']) ? -1 : 1;
-        });
+        if (1 === \count($availableProjects)) {
+            return [
+                'options' => $availableProjects[0]['options'],
+            ];
+        }
 
         return [
-            'options' => $availableProjects,
+            'option_groups' => $availableProjects,
         ];
     }
 
     public function loadProjects(string $teamId)
     {
         $forecastAccounts = $this->forecastAccountRepository->findBySlackTeamId($teamId);
-        $clients = [];
-        $projects = [];
+        $projectsByAccount = [];
 
         foreach ($forecastAccounts as $forecastAccount) {
             $this->forecastDataSelector->setForecastAccount($forecastAccount);
-            $projects = array_merge($projects, $this->forecastDataSelector->getProjects(true));
-            $clients = array_merge($clients, $this->forecastDataSelector->getClientsById());
+            $projectsByAccount[] = [
+                'forecastAccount' => $forecastAccount,
+                'clients' => $this->forecastDataSelector->getClientsById(),
+                'projects' => $this->forecastDataSelector->getProjects(true),
+            ];
         }
 
-        return [
-            'clients' => $clients,
-            'projects' => $projects,
-        ];
+        usort($projectsByAccount, function ($a, $b) {
+            return $a['forecastAccount']->getName() < $b['forecastAccount']->getName() ? -1 : 1;
+        });
+
+        return $projectsByAccount;
     }
 
     private function help(string $responseUrl)
@@ -292,14 +319,24 @@ EOT;
 
     private function openModal(Request $request)
     {
+        $slackTeam = $this->slackTeamRepository->findOneByTeamId($request->request->get('team_id'));
+        $channelId = $request->request->get('channel_id');
+
+        try {
+            $this->slackDataSelector->getConversationInfos($slackTeam, $channelId);
+        } catch (SlackErrorResponse $e) {
+            // this is not a public channel, do not prefill it in the modal
+            $channelId = null;
+        }
+
         return $this->displayModalForm(
             $request->request->get('team_id'),
-            $request->request->get('channel_id'),
+            $channelId,
             $request->request->get('trigger_id')
         );
     }
 
-    private function displayModalForm(string $teamId, string $channelId, string $triggerId, string $responseUrl = null)
+    private function displayModalForm(string $teamId, ?string $channelId, string $triggerId, string $responseUrl = null)
     {
         // get the forecast accounts which have a SlackTeam in this organization
         $forecastAccounts = $this->forecastAccountRepository->findBySlackTeamId($teamId);
@@ -314,14 +351,26 @@ EOT;
             'channel_id' => $channelId,
         ];
 
-        if (null === $responseUrl) {
+        if (null !== $channelId && null === $responseUrl) {
             // search if there's already a StandupMeetingReminder in this channel
             $standupMeetingReminder = $this->standupMeetingReminderRepository->findOneBy([
                 'channelId' => $channelId,
                 'slackTeam' => $slackTeam,
             ]);
+            $blocks[] = [
+                'type' => 'section',
+                'text' => [
+                    'type' => 'mrkdwn',
+                    'text' => sprintf('*Posts to* <#%s>', $channelId),
+                ],
+            ];
+            $blocks[] = [
+                'type' => 'divider',
+            ];
 
             if ($standupMeetingReminder) {
+                list($initialHour, $initialMinute) = explode(':', $standupMeetingReminder->getTime());
+
                 foreach ($forecastAccounts as $forecastAccount) {
                     $this->forecastDataSelector->setForecastAccount($forecastAccount);
                     $projects = $this->forecastDataSelector->getProjects(true);
@@ -340,10 +389,6 @@ EOT;
                     }
                 }
             }
-
-            if ($standupMeetingReminder) {
-                list($initialHour, $initialMinute) = explode(':', $standupMeetingReminder->getTime());
-            }
         } else {
             $blocks[] = [
                 'type' => 'input',
@@ -357,11 +402,14 @@ EOT;
                     'action_id' => 'selected_channel',
                     'placeholder' => [
                         'type' => 'plain_text',
-                        'text' => 'Select a channel',
+                        'text' => 'Select a public channel',
                     ],
                 ],
             ];
-            $privateMetadata['response_url'] = $responseUrl;
+
+            if (null !== $responseUrl) {
+                $privateMetadata['response_url'] = $responseUrl;
+            }
         }
 
         foreach (range(0, 23) as $hour) {

@@ -24,6 +24,18 @@ class SlackDataSelector
     }
 
     /**
+     * @return \JoliCode\Slack\Api\Model\ObjsConversation
+     */
+    public function getConversationInfos(SlackTeam $slackTeam, string $channelId)
+    {
+        $this->client->setSlackTeam($slackTeam);
+
+        return $this->client->conversationsInfo([
+            'channel' => $channelId,
+        ])->getChannel();
+    }
+
+    /**
      * @return \JoliCode\Slack\Api\Model\ObjsConversation[]
      */
     public function getConversations(SlackTeam $slackTeam)
@@ -64,7 +76,7 @@ class SlackDataSelector
 
         foreach ($users as $user) {
             if ($user->getProfile()->getEmail()) {
-                $emails[$user->getProfile()->getEmail()] = $user->getName();
+                $emails[$user->getProfile()->getEmail()] = $user->getId();
             }
         }
 
