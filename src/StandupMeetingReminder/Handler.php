@@ -225,7 +225,7 @@ class Handler
                 }
             }
 
-            if (count($accountProjects) > 0) {
+            if (\count($accountProjects) > 0) {
                 usort($accountProjects, function ($a, $b) {
                     if (preg_match('/^\[[^0-9]*(\d+)\] .*$/', $a['text']['text'], $aMatches)) {
                         if (preg_match('/^\[[^0-9]*(\d+)\] .*$/', $b['text']['text'], $bMatches)) {
@@ -248,7 +248,7 @@ class Handler
             }
         }
 
-        if (count($availableProjects) === 1) {
+        if (1 === \count($availableProjects)) {
             return [
                 'options' => $availableProjects[0]['options'],
             ];
@@ -273,7 +273,7 @@ class Handler
             ];
         }
 
-        usort($projectsByAccount, function($a, $b) {
+        usort($projectsByAccount, function ($a, $b) {
             return $a['forecastAccount']->getName() < $b['forecastAccount']->getName() ? -1 : 1;
         });
 
