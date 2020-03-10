@@ -477,7 +477,7 @@ EOT;
                 'private_metadata' => json_encode($privateMetadata),
                 'title' => [
                     'type' => 'plain_text',
-                    'text' => 'Standup Reminder',
+                    'text' => 'Stand-up Reminder',
                 ],
                 'submit' => [
                     'type' => 'plain_text',
