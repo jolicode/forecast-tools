@@ -2,6 +2,9 @@
 <nav>
     <div class="nav nav-tabs" id="nav-tab" role="tablist">
         <a class="nav-item nav-link{% if menu == 'slack' %} active{% endif %}" href="{{ organization_path('settings_slack') }}" role="tab">Slack settings</a>
-        <a class="nav-item nav-link{% if menu == 'harvest' %} active{% endif %}" href="{{ organization_path('settings_harvest') }}">Harvest settings</a>
+
+        {% if is_granted('harvest_admin', forecastAccount) %}
+            <a class="nav-item nav-link{% if menu == 'harvest' %} active{% endif %}" href="{{ organization_path('settings_harvest') }}">Harvest settings</a>
+        {% endif %}
     </div>
 </nav>
