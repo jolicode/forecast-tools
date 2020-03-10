@@ -201,56 +201,79 @@ class Handler
     {
         $availableProjects = [];
         $searched = mb_strtolower($payload['value']);
-        $data = $this->loadProjects($payload['team']['id']);
+        $projectsByAccount = $this->loadProjects($payload['team']['id']);
 
-        foreach ($data['projects'] as $project) {
-            $clientName = isset($data['clients'][$project->getClientId()]) ? $data['clients'][$project->getClientId()]->getName() : '';
+        foreach ($projectsByAccount as $data) {
+            $accountProjects = [];
 
-            if (false !== strpos(mb_strtolower($project->getName()), $searched) || false !== strpos(mb_strtolower($project->getCode()), $searched) || false !== strpos(mb_strtolower($clientName), $searched)) {
-                $projectCode = $project->getCode() ? '[' . $project->getCode() . '] ' : '';
+            foreach ($data['projects'] as $project) {
+                $clientName = isset($data['clients'][$project->getClientId()]) ? $data['clients'][$project->getClientId()]->getName() : '';
+
+                if (false !== strpos(mb_strtolower($project->getName()), $searched) || false !== strpos(mb_strtolower($project->getCode()), $searched) || false !== strpos(mb_strtolower($clientName), $searched)) {
+                    $projectCode = $project->getCode() ? '[' . $project->getCode() . '] ' : '';
+                    $accountProjects[] = [
+                        'text' => [
+                            'type' => 'plain_text',
+                            'text' => substr(sprintf('%s%s%s', $projectCode, $clientName ? $clientName . ' - ' : '', $project->getName()), 0, 75),
+                        ],
+                        'value' => (string) $project->getId(),
+                    ];
+                }
+            }
+
+            if (count($accountProjects) > 0) {
+                usort($accountProjects, function ($a, $b) {
+                    if (preg_match('/^\[[^0-9]*(\d+)\] .*$/', $a['text']['text'], $aMatches)) {
+                        if (preg_match('/^\[[^0-9]*(\d+)\] .*$/', $b['text']['text'], $bMatches)) {
+                            return ($aMatches[1] < $bMatches[1]) ? -1 : 1;
+                        }
+
+                        return 1;
+                    }
+
+                    return ($a['text']['text'] < $b['text']['text']) ? -1 : 1;
+                });
+
                 $availableProjects[] = [
-                    'text' => [
+                    'label' => [
                         'type' => 'plain_text',
-                        'text' => substr(sprintf('%s%s%s', $projectCode, $clientName ? $clientName . ' - ' : '', $project->getName()), 0, 75),
+                        'text' => $data['forecastAccount']->getName(),
                     ],
-                    'value' => (string) $project->getId(),
+                    'options' => $accountProjects,
                 ];
             }
         }
 
-        usort($availableProjects, function ($a, $b) {
-            if (preg_match('/^\[[^0-9]*(\d+)\] .*$/', $a['text']['text'], $aMatches)) {
-                if (preg_match('/^\[[^0-9]*(\d+)\] .*$/', $b['text']['text'], $bMatches)) {
-                    return ($aMatches[1] < $bMatches[1]) ? -1 : 1;
-                }
-
-                return 1;
-            }
-
-            return ($a['text']['text'] < $b['text']['text']) ? -1 : 1;
-        });
+        if (count($availableProjects) === 1) {
+            return [
+                'options' => $availableProjects[0]['options'],
+            ];
+        }
 
         return [
-            'options' => $availableProjects,
+            'option_groups' => $availableProjects,
         ];
     }
 
     public function loadProjects(string $teamId)
     {
         $forecastAccounts = $this->forecastAccountRepository->findBySlackTeamId($teamId);
-        $clients = [];
-        $projects = [];
+        $projectsByAccount = [];
 
         foreach ($forecastAccounts as $forecastAccount) {
             $this->forecastDataSelector->setForecastAccount($forecastAccount);
-            $projects = array_merge($projects, $this->forecastDataSelector->getProjects(true));
-            $clients = array_merge($clients, $this->forecastDataSelector->getClientsById());
+            $projectsByAccount[] = [
+                'forecastAccount' => $forecastAccount,
+                'clients' => $this->forecastDataSelector->getClientsById(),
+                'projects' => $this->forecastDataSelector->getProjects(true),
+            ];
         }
 
-        return [
-            'clients' => $clients,
-            'projects' => $projects,
-        ];
+        usort($projectsByAccount, function($a, $b) {
+            return $a['forecastAccount']->getName() < $b['forecastAccount']->getName() ? -1 : 1;
+        });
+
+        return $projectsByAccount;
     }
 
     private function help(string $responseUrl)
