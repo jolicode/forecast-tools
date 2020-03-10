@@ -64,7 +64,7 @@ class SlackDataSelector
 
         foreach ($users as $user) {
             if ($user->getProfile()->getEmail()) {
-                $emails[$user->getProfile()->getEmail()] = $user->getName();
+                $emails[$user->getProfile()->getEmail()] = $user->getId();
             }
         }
 
