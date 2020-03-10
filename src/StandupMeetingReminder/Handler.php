@@ -343,8 +343,20 @@ EOT;
                 'channelId' => $channelId,
                 'slackTeam' => $slackTeam,
             ]);
+            $blocks[] = [
+                'type' => 'section',
+                'text' => [
+                    'type' => 'mrkdwn',
+                    'text' => sprintf('*Posts to* <#%s>', $channelId),
+                ],
+            ];
+            $blocks[] = [
+                'type' => 'divider',
+            ];
 
             if ($standupMeetingReminder) {
+                list($initialHour, $initialMinute) = explode(':', $standupMeetingReminder->getTime());
+
                 foreach ($forecastAccounts as $forecastAccount) {
                     $this->forecastDataSelector->setForecastAccount($forecastAccount);
                     $projects = $this->forecastDataSelector->getProjects(true);
@@ -362,10 +374,6 @@ EOT;
                         }
                     }
                 }
-            }
-
-            if ($standupMeetingReminder) {
-                list($initialHour, $initialMinute) = explode(':', $standupMeetingReminder->getTime());
             }
         } else {
             $blocks[] = [
