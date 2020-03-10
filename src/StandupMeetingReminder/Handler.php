@@ -12,11 +12,13 @@
 namespace App\StandupMeetingReminder;
 
 use App\DataSelector\ForecastDataSelector;
+use App\DataSelector\SlackDataSelector;
 use App\Entity\StandupMeetingReminder;
 use App\Repository\ForecastAccountRepository;
 use App\Repository\SlackTeamRepository;
 use App\Repository\StandupMeetingReminderRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use JoliCode\Slack\Exception\SlackErrorResponse;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,17 +28,19 @@ class Handler
     private $em;
     private $forecastAccountRepository;
     private $forecastDataSelector;
+    private $slackDataSelector;
 
     /** @var SlackTeamRepository */
     private $slackTeamRepository;
     private $standupMeetingReminderRepository;
 
-    public function __construct(EntityManagerInterface $em, ForecastAccountRepository $forecastAccountRepository, SlackTeamRepository $slackTeamRepository, ForecastDataSelector $forecastDataSelector, StandupMeetingReminderRepository $standupMeetingReminderRepository)
+    public function __construct(EntityManagerInterface $em, ForecastAccountRepository $forecastAccountRepository, SlackTeamRepository $slackTeamRepository, ForecastDataSelector $forecastDataSelector, SlackDataSelector $slackDataSelector, StandupMeetingReminderRepository $standupMeetingReminderRepository)
     {
         $this->em = $em;
         $this->forecastAccountRepository = $forecastAccountRepository;
         $this->slackTeamRepository = $slackTeamRepository;
         $this->forecastDataSelector = $forecastDataSelector;
+        $this->slackDataSelector = $slackDataSelector;
         $this->standupMeetingReminderRepository = $standupMeetingReminderRepository;
     }
 
@@ -315,14 +319,24 @@ EOT;
 
     private function openModal(Request $request)
     {
+        $slackTeam = $this->slackTeamRepository->findOneByTeamId($request->request->get('team_id'));
+        $channelId = $request->request->get('channel_id');
+
+        try {
+            $this->slackDataSelector->getConversationInfos($slackTeam, $channelId);
+        } catch (SlackErrorResponse $e) {
+            // this is not a public channel, do not prefill it in the modal
+            $channelId = null;
+        }
+
         return $this->displayModalForm(
             $request->request->get('team_id'),
-            $request->request->get('channel_id'),
+            $channelId,
             $request->request->get('trigger_id')
         );
     }
 
-    private function displayModalForm(string $teamId, string $channelId, string $triggerId, string $responseUrl = null)
+    private function displayModalForm(string $teamId, ?string $channelId, string $triggerId, string $responseUrl = null)
     {
         // get the forecast accounts which have a SlackTeam in this organization
         $forecastAccounts = $this->forecastAccountRepository->findBySlackTeamId($teamId);
@@ -337,7 +351,7 @@ EOT;
             'channel_id' => $channelId,
         ];
 
-        if (null === $responseUrl) {
+        if (null !== $channelId && null === $responseUrl) {
             // search if there's already a StandupMeetingReminder in this channel
             $standupMeetingReminder = $this->standupMeetingReminderRepository->findOneBy([
                 'channelId' => $channelId,
@@ -388,11 +402,14 @@ EOT;
                     'action_id' => 'selected_channel',
                     'placeholder' => [
                         'type' => 'plain_text',
-                        'text' => 'Select a channel',
+                        'text' => 'Select a public channel',
                     ],
                 ],
             ];
-            $privateMetadata['response_url'] = $responseUrl;
+
+            if (null !== $responseUrl) {
+                $privateMetadata['response_url'] = $responseUrl;
+            }
         }
 
         foreach (range(0, 23) as $hour) {
