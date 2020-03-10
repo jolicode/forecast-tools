@@ -50,6 +50,7 @@ class SettingsController extends AbstractController
 
     /**
      * @Route("/harvest", name="harvest")
+     * @IsGranted("harvest_admin", subject="forecastAccount")
      */
     public function harvest(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em)
     {

@@ -79,10 +79,20 @@
                 <p>
                     The only thing that we store is your Forecast token, which is used to grab Forecast data at the time of
                     sending Slack reminders. There is no usage tracker on this platform. All the data retrieved from Harvest APIs
-                    is temporarily cached in redis, in order to make the app less APIs-dependant, but it is a short-lived cache.
+                    is temporarily cached in redis, in order to make the app less APIs-dependant, but it is a short-lived cache
+                    that is deleted upon logout.
                 </p>
                 <p>
-                    We also store the Slack webhook URL, in order to be able to post the Forecast schedule to your Slack team.
+                    We also store the Slack bot token, in order to be able to post the Forecast schedule and the stand-up meeting
+                    reminders to your Slack team.
+                </p>
+            </div>
+
+            <div class="card-body">
+                <h5>What is your commitment for privacy?</h5>
+                <p>
+                    We only use the strictly required permissions for Forecast, Harvest and Slack. We will never share your data
+                    with any third-party service. You can ask for your information to be deleted by dropping us an email.
                 </p>
             </div>
 
