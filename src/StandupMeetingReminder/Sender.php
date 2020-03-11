@@ -77,7 +77,11 @@ class Sender
             $this->forecastDataSelector->setForecastAccount($forecastAccount);
             $people = $this->forecastDataSelector->getPeopleById();
             $placeholders = $this->forecastDataSelector->getPlaceholdersById();
-            $assignments = $this->forecastDataSelector->getAssignments(new \DateTime('today'), new \DateTime('tomorrow'));
+            $today = new \DateTime('today');
+            $assignments = $this->forecastDataSelector->getAssignments($today, new \DateTime('tomorrow'));
+            $assignments = array_values(array_filter($assignments, function ($assignment) use ($today) {
+                return $assignment->getStartDate()->format('Y-m-d') <= $today->format('Y-m-d') && $assignment->getEndDate()->format('Y-m-d') >= $today->format('Y-m-d');
+            }));
 
             foreach ($assignments as $assignment) {
                 if (\in_array((string) $assignment->getProjectId(), $standupMeetingReminder->getForecastProjects(), true)) {
