@@ -6,7 +6,7 @@ security:
             id: knpu.oauth2.user_provider
     firewalls:
         dev:
-            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            pattern: ^/(_(profiler|wdt)|css|forecast|images|js)/
             security: false
         public:
             pattern: ^/(privacy-policy|terms-of-service)$
