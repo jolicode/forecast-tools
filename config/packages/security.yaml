@@ -8,6 +8,9 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+        public:
+            pattern: ^/(privacy-policy|terms-of-service)$
+            security: false
         main:
             pattern: ^/
             logout:

@@ -94,4 +94,20 @@ class HomeController extends AbstractController
             'currentAccount' => $request->attributes->get('forecastAccount'),
         ]);
     }
+
+    /**
+     * @Route("/privacy-policy", name="privacy_policy")
+     */
+    public function privacy()
+    {
+        return $this->render('home/privacy-policy.html.twig');
+    }
+
+    /**
+     * @Route("/terms-of-service", name="terms")
+     */
+    public function terms()
+    {
+        return $this->render('home/terms.html.twig');
+    }
 }
