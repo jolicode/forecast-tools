@@ -174,11 +174,11 @@ class SettingsController extends AbstractController
             'scope' => [
                 'channels:read',
                 'chat:write',
+                'chat:write.customize',
                 'chat:write.public',
                 'commands',
                 'users:read',
                 'users:read.email',
-                'chat:write.customize',
             ],
         ];
         $authUrl = $provider->getAuthorizationUrl($options);
