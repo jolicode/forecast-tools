@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Privacy Policy | {{ parent() }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+    h2 {
+        font-size: 1.2em;
+        padding-bottom: .3em;
+        padding-top: 1.2em;
+    }
+    li {
+        padding-bottom: .3em;
+    }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container p-3">
+        <div class="card card-body">
+            <h1>Forecast Tools Privacy Policy</h1>
+            <p>
+                This policy is effective as of March 10th, 2020.
+            </p>
+            <p>
+                It is JoliCode's policy to respect your privacy regarding any information we
+                may collect from you across our website, <a href="https://forecast.jolicode.com/">https://forecast.jolicode.com/</a>,
+                and other sites we own and operate. We only use the strictly required permissions for Forecast, Harvest and Slack.
+                We don’t and will never share any of your information publicly or with third-parties, except when required to
+                by law.
+            </p>
+            <p>
+                Our website may link to external sites that are not operated by us. Please be aware that we have no control
+                over the content and practices of these sites, and cannot accept responsibility or liability for their
+                respective privacy policies.
+            </p>
+            <p>
+                You are free to refuse our request for your personal information, with the understanding that we may be unable
+                to provide you with some of your desired services.
+            </p>
+            <p>
+                Your continued use of our website will be regarded as acceptance of our practices around privacy and personal
+                information. If you have any questions about how we handle user data and personal information, feel free to
+                contact us.
+            </p>
+            <p>
+                You can ask for your information to be deleted by sending us an email at
+                <a href="mailto:forecast-tools@jolicode.com">forecast-tools@jolicode.com</a>.
+            </p>
+            <p class="pt-5">
+                <a href="{{ path('homepage') }}" class="btn btn-primary">Back to the homepage</a>
+            </p>
+        </div>
+    </div>
+{% endblock %}

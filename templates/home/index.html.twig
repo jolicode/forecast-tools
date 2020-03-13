@@ -77,31 +77,42 @@
             <div class="card-body">
                 <h5>Which data do you collect and store?</h5>
                 <p>
-                    The only thing that we store is your Forecast token, which is used to grab Forecast data at the time of
-                    sending Slack reminders. There is no usage tracker on this platform. All the data retrieved from Harvest APIs
-                    is temporarily cached in redis, in order to make the app less APIs-dependant, but it is a short-lived cache
-                    that is deleted upon logout.
+                    The only thing that we store is your Harvest/Forecast/Slack tokens, which are solely used at run time to
+                    perform the features of this tool. Our website only uses Forecast or Harvest APIs at the time of sending
+                    Slack reminders, stand-up reminders, or when running an invoicing process.
                 </p>
                 <p>
-                    We also store the Slack bot token, in order to be able to post the Forecast schedule and the stand-up meeting
-                    reminders to your Slack team.
+                    Some of the data retrieved from Harvest APIs is temporarily cached in redis, in order to make the app less
+                    APIs-dependant, but it is a short-lived cache that is cleared upon logout.
+                </p>
+                <p>
+                    There is no usage tracker on this website.
                 </p>
             </div>
 
             <div class="card-body">
                 <h5>What is your commitment for privacy?</h5>
                 <p>
-                    We only use the strictly required permissions for Forecast, Harvest and Slack. We will never share your data
-                    with any third-party service. You can ask for your information to be deleted by dropping us an email.
+                    Your privacy is important to us. Shortly said, we do only store the strictly required information to deliver
+                    our service. We do not and will never share any of your information to others, except required to by law.
+                    There is no usage tracker on this website.
+                </p>
+                <p>
+                    You can read our detailed <a href="{{ path('privacy_policy') }}">Privacy Policy</a> for detailed explanations.
                 </p>
             </div>
 
             <div class="card-body">
-                <h5>Which libraries do you use to talk with Harvest and Forecast?</h5>
+                <h5>Which libraries do you use to talk with Harvest, Forecast and Slack?</h5>
                 <p>
-                    We use two PHP libraries: <a href="https://github.com/jolicode/forecast-php-api">forecast-php-api</a> and
-                    <a href="https://github.com/jolicode/harvest-php-api">harvest-php-api</a>. Both these libraries are based on
-                    OpenAPI specifications. While Forecast does not have a public API, the Harvest client must be, at the time of
+                    We use three PHP libraries: <a href="https://github.com/jolicode/forecast-php-api">forecast-php-api</a>,
+                    <a href="https://github.com/jolicode/harvest-php-api">harvest-php-api</a> and
+                    <a href="https://github.com/jolicode/slack-php-api">slack-php-api</a>. All three are based on
+                    OpenAPI specifications and generated using an open-source software crafted by JoliCode,
+                    <a href="https://jane.readthedocs.io/en/latest/">Jane</a>.
+                </p>
+                <p>
+                    While Forecast does not have a public API, the Harvest client must be, at the time of
                     writing, one of the most complete, exhaustive and up-to-date API client for Harvest.
                 </p>
             </div>
@@ -114,10 +125,11 @@
             </div>
 
             <div class="card-body">
-                <h5>How reliable is this thing?</h5>
+                <h5>How reliable is this software?</h5>
                 <p>
                     We have built these tools for our own use and we use it on a daily basis, which means that we do our best
-                    for these tools to work. However, we do not provide professional support for these tools.
+                    for these tools to work. However, we do not provide professional support for these tools. See our
+                    <a href="{{ path('terms') }}">Terms of Service</a> for detailed explanations.
                 </p>
             </div>
 
@@ -128,6 +140,10 @@
                     The illustrations on this page are provided free of charge by Sleekbundle in the
                     <a href="https://sleekbundle.com/pulse-illustration-kit/" rel="nofollow">Pulse illustration kit</a>. The
                     Github corner is provided by <a href="https://github.com/tholman/github-corners" rel="nofollow">Tim Holman</a>.
+                </p>
+                <p>
+                    You can contact us at
+                    <a href="mailto:forecast-tools@jolicode.com">forecast-tools@jolicode.com</a>.
                 </p>
             </div>
 
