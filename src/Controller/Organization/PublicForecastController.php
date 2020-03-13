@@ -34,7 +34,11 @@ class PublicForecastController extends AbstractController
      */
     public function publicForecasts(ForecastAccount $forecastAccount, PublicForecastRepository $publicForecastRepository)
     {
-        $publicForecasts = $publicForecastRepository->findByForecastAccount($forecastAccount);
+        $publicForecasts = $publicForecastRepository->findBy([
+            'forecastAccount' => $forecastAccount,
+        ], [
+            'name' => 'ASC'
+        ]);
 
         return $this->render('organization/public_forecast/list.html.twig', [
             'publicForecasts' => $publicForecasts,
