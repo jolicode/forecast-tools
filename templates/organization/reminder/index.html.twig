@@ -39,9 +39,6 @@
 {% endblock %}
 
 {% block content %}
-    {% set saveButton %}
-        {{ form_widget(form.save) }}
-    {% endset %}
     {% for message in app.flashes('success') %}
         <div class="flash-notice">
             {{ message }}
@@ -138,15 +135,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer text-right">
-                        {% if forecastAccount.forecastReminder %}
-                            <small class="float-left mt-2">
-                                last updated by <code>{{ forecastAccount.forecastReminder.updatedBy.name }}</code>
-                                on <code>{{ forecastAccount.forecastReminder.updatedAt|date('F jS, Y, G:i')  }}</code>
-                            </small>
-                        {% endif %}
-                        {{ saveButton|raw }}
-                    </div>
                 </div>
 
                 <div class="tab-pane" id="nav-labels" role="tabpanel" aria-labelledby="labels-tab">
@@ -172,15 +160,6 @@
                             {{ form_help(form.timeOffActivityName) }}
                         </div>
                     </div>
-                    <div class="card-footer text-right">
-                        {% if forecastAccount.forecastReminder %}
-                            <small class="float-left mt-2">
-                                last updated by <code>{{ forecastAccount.forecastReminder.updatedBy.name }}</code>
-                                on <code>{{ forecastAccount.forecastReminder.updatedAt|date('F jS, Y, G:i')  }}</code>
-                            </small>
-                        {% endif %}
-                        {{ saveButton|raw }}
-                    </div>
                 </div>
 
                 <div class="tab-pane" id="nav-users" role="tabpanel" aria-labelledby="users-tab">
@@ -198,15 +177,6 @@
                             {{ form_help(form.exceptUsers)|raw }}
                         </div>
                     </div>
-                    <div class="card-footer text-right">
-                        {% if forecastAccount.forecastReminder %}
-                            <small class="float-left mt-2">
-                                last updated by <code>{{ forecastAccount.forecastReminder.updatedBy.name }}</code>
-                                on <code>{{ forecastAccount.forecastReminder.updatedAt|date('F jS, Y, G:i')  }}</code>
-                            </small>
-                        {% endif %}
-                        {{ saveButton|raw }}
-                    </div>
                 </div>
 
                 <div class="tab-pane" id="nav-project-overrides" role="tabpanel" aria-labelledby="project-overrides-tab">
@@ -219,15 +189,6 @@
                                 {{ form_widget(form.projectOverrides, { attr: { class: 'dynamic-form-container' }}) }}
                             </div>
                         </div>
-                    </div>
-                    <div class="card-footer text-right">
-                        {% if forecastAccount.forecastReminder %}
-                            <small class="float-left mt-2">
-                                last updated by <code>{{ forecastAccount.forecastReminder.updatedBy.name }}</code>
-                                on <code>{{ forecastAccount.forecastReminder.updatedAt|date('F jS, Y, G:i')  }}</code>
-                            </small>
-                        {% endif %}
-                        {{ saveButton|raw }}
                     </div>
                 </div>
 
@@ -242,16 +203,17 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer text-right">
-                        {% if forecastAccount.forecastReminder %}
-                            <small class="float-left mt-2">
-                                last updated by <code>{{ forecastAccount.forecastReminder.updatedBy.name }}</code>
-                                on <code>{{ forecastAccount.forecastReminder.updatedAt|date('F jS, Y, G:i')  }}</code>
-                            </small>
-                        {% endif %}
-                        {{ saveButton|raw }}
-                    </div>
                 </div>
+            </div>
+
+            <div class="card-footer text-right">
+                {% if forecastAccount.forecastReminder %}
+                    <small class="float-left mt-2">
+                        last updated by <code>{{ forecastAccount.forecastReminder.updatedBy.name }}</code>
+                        on <code>{{ forecastAccount.forecastReminder.updatedAt|date('F jS, Y, G:i')  }}</code>
+                    </small>
+                {% endif %}
+                {{ form_widget(form.save) }}
             </div>
         {{ form_end(form) }}
     </div>

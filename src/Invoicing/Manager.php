@@ -100,7 +100,7 @@ class Manager
                             'date' => $date,
                             'total' => 0,
                             'status' => ($skipErrors ? self::TIME_ENTRY_STATUS_SKIP . ' ' : '') . $this->getTimeEntryStatus($date, 0),
-                            'error' => $this->hasErrors($date, $total, '' !== $skipErrors) ? 1 : 0,
+                            'error' => $this->hasErrors($date, 0, '' !== $skipErrors) ? 1 : 0,
                         ];
                     }
                     $timeEntries[$user->getId()] = [
