@@ -1,9 +1,9 @@
 {
     "devDependencies": {
-        "@symfony/webpack-encore": "^0.22.0",
-        "node-sass": "^4.13.0",
+        "@symfony/webpack-encore": "^0.28.3",
+        "node-sass": "^4.13.1",
         "sass-loader": "^7.0.1",
-        "webpack-notifier": "^1.6.0"
+        "webpack-notifier": "^1.8.0"
     },
     "license": "MIT",
     "private": true,
@@ -14,11 +14,10 @@
         "build": "encore production --progress"
     },
     "dependencies": {
-        "bootstrap": "^4.2.1",
-        "chart.js": "^2.7.3",
-        "daterangepicker": "^3.0.3",
-        "jquery": "^3.3.1",
-        "popper.js": "^1.16.0",
-        "select2": "^4.0.6-rc.1"
+        "bootstrap": "^4.4.1",
+        "daterangepicker": "^3.0.5",
+        "jquery": "^3.4.1",
+        "popper.js": "^1.16.1",
+        "select2": "^4.0.13"
     }
 }
