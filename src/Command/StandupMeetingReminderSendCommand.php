@@ -39,9 +39,13 @@ class StandupMeetingReminderSendCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        $count = $this->standupMeetingReminderSender->send();
-
-        $io->success(sprintf('Sent %s reminders', $count));
+        if ((new \DateTime())->format('N') < 6) {
+            // only send this reminder during working days
+            $io->success(sprintf(
+                'Sent %s reminders',
+                $this->standupMeetingReminderSender->send())
+            );
+        }
 
         return 0;
     }
