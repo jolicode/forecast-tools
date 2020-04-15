@@ -1,5 +1,6 @@
 {
     "name": "jolicode/harvest-forecast-tools",
+    "description": "This project is a collection of tools for Harvest and Forecast: public sharable Forecasts, Slack Forecast reminders, Slack standup meeting reminders, and also a stronger invoicing process.",
     "type": "project",
     "license": "MIT",
     "require": {
