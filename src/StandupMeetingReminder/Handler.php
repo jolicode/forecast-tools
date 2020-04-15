@@ -213,12 +213,12 @@ class Handler
             foreach ($data['projects'] as $project) {
                 $clientName = isset($data['clients'][$project->getClientId()]) ? $data['clients'][$project->getClientId()]->getName() : '';
 
-                if (false !== strpos(mb_strtolower($project->getName()), $searched) || false !== strpos(mb_strtolower($project->getCode()), $searched) || false !== strpos(mb_strtolower($clientName), $searched)) {
+                if (false !== mb_strpos(mb_strtolower($project->getName()), $searched) || false !== mb_strpos(mb_strtolower($project->getCode()), $searched) || false !== mb_strpos(mb_strtolower($clientName), $searched)) {
                     $projectCode = $project->getCode() ? '[' . $project->getCode() . '] ' : '';
                     $accountProjects[] = [
                         'text' => [
                             'type' => 'plain_text',
-                            'text' => substr(sprintf('%s%s%s', $projectCode, $clientName ? $clientName . ' - ' : '', $project->getName()), 0, 75),
+                            'text' => mb_substr(sprintf('%s%s%s', $projectCode, $clientName ? $clientName . ' - ' : '', $project->getName()), 0, 75),
                         ],
                         'value' => (string) $project->getId(),
                     ];
