@@ -53,18 +53,38 @@ class Sender
 
     private function sendStandupMeetingReminder(StandupMeetingReminder $standupMeetingReminder)
     {
-        $body = $this->buildBody($standupMeetingReminder);
+        $participants = $this->findParticipants($standupMeetingReminder);
 
-        if (null !== $body) {
-            $client = \JoliCode\Slack\ClientFactory::create($standupMeetingReminder->getSlackTeam()->getAccessToken());
-            $client->chatPostMessage([
-                'channel' => $standupMeetingReminder->getChannelId(),
-                'blocks' => json_encode($body),
-            ]);
+        if (null === $participants) {
+            return;
         }
+
+        // format a string to ping the lucky winners
+        if (\count($participants) > 1) {
+            $lastParticipant = ' and ' . array_pop($participants);
+            $participants = implode(', ', $participants) . $lastParticipant;
+            $message = sprintf("🕘 It's time for the stand-up meeting!\nToday's participants: %s", $participants);
+        } else {
+            $message = sprintf('🕘 It should be time for the stand-up meeting, but %s is the only one working on the project today. Cheers up!', array_shift($participants));
+        }
+
+        $client = \JoliCode\Slack\ClientFactory::create($standupMeetingReminder->getSlackTeam()->getAccessToken());
+        $client->chatPostMessage([
+            'channel' => $standupMeetingReminder->getChannelId(),
+            'text' => $message,
+            'blocks' => json_encode([
+                [
+                    'type' => 'section',
+                    'text' => [
+                        'type' => 'mrkdwn',
+                        'text' => $message,
+                    ],
+                ],
+            ]),
+        ]);
     }
 
-    private function buildBody(StandupMeetingReminder $standupMeetingReminder)
+    private function findParticipants(StandupMeetingReminder $standupMeetingReminder)
     {
         $forecastAccounts = $this->forecastAccountRepository->findBySlackTeamId(
             $standupMeetingReminder->getSlackTeam()->getTeamId()
@@ -115,25 +135,6 @@ class Sender
             }
         }
 
-        // format a string to ping the lucky winners
-        $ping = array_unique($ping);
-
-        if (\count($ping) > 1) {
-            $lastPing = ' and ' . array_pop($ping);
-            $ping = implode(', ', $ping) . $lastPing;
-            $message = sprintf("🕘 It's time for the stand-up meeting!\nToday's participants: %s", $ping);
-        } else {
-            $message = sprintf('🕘 It should be time for the stand-up meeting, but %s is the only one working on the project today. Cheers up!', array_shift($ping));
-        }
-
-        return [
-            [
-                'type' => 'section',
-                'text' => [
-                    'type' => 'mrkdwn',
-                    'text' => $message,
-                ],
-            ],
-        ];
+        return array_unique($ping);
     }
 }
