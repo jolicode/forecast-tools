@@ -65,7 +65,7 @@ class Sender
             $participants = implode(', ', $participants) . $lastParticipant;
             $message = sprintf("🕘 It's time for the stand-up meeting!\nToday's participants: %s", $participants);
         } else {
-            $message = sprintf('🕘 It should be time for the stand-up meeting, but %s is the only one working on the project today. You should write your daily routine in this channel, your team will be pleased when she will come back. Cheers up!', array_shift($participants));
+            $message = sprintf('🕘 It should be time for the stand-up meeting, but %s is the only one working on the project today. You could write your daily routine in this channel, your team will be pleased when they will come back. Cheers up!', array_shift($participants));
         }
 
         $client = \JoliCode\Slack\ClientFactory::create($standupMeetingReminder->getSlackTeam()->getAccessToken());
