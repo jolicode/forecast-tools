@@ -28,12 +28,6 @@ class Builder
     {
         $days = $this->buildPrettyDays($start, $end);
         $forecastDataSelector = $this->getForecastDataSelector($publicForecast->getForecastAccount());
-
-        $options = [
-            'from' => $start,
-            'to' => $end,
-        ];
-
         $assignments = $forecastDataSelector->getAssignments($start, $end);
         $clients = $forecastDataSelector->getClientsById();
         $projects = $forecastDataSelector->getProjectsById();
@@ -102,6 +96,13 @@ class Builder
         $assignments = array_filter($assignments, function ($assignment) use ($allowedProjectIds) {
             return \in_array($assignment->getProjectId(), $allowedProjectIds, true);
         });
+
+        if (\count($publicForecast->getPeople()) + \count($publicForecast->getPlaceholders()) > 0) {
+            // filter by people
+            $assignments = array_filter($assignments, function ($assignment) use ($publicForecast) {
+                return \in_array($assignment->getPersonId(), $publicForecast->getPeople(), true) || \in_array($assignment->getPlaceholderId(), $publicForecast->getPlaceholders(), true);
+            });
+        }
 
         foreach ($assignments as $assignment) {
             $project = $projects[$assignment->getProjectId()];
