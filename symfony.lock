@@ -89,6 +89,9 @@
     "doctrine/reflection": {
         "version": "v1.0.0"
     },
+    "doctrine/sql-formatter": {
+        "version": "1.1.0"
+    },
     "dragonmantank/cron-expression": {
         "version": "v2.2.0"
     },
@@ -125,9 +128,6 @@
     "jane-php/open-api-runtime": {
         "version": "v4.5.4"
     },
-    "jdorn/sql-formatter": {
-        "version": "v1.2.17"
-    },
     "jolicode/forecast-php-api": {
         "version": "v1.0.0"
     },
@@ -158,23 +158,8 @@
     "league/uri": {
         "version": "5.3.0"
     },
-    "league/uri-components": {
-        "version": "1.8.2"
-    },
-    "league/uri-hostname-parser": {
-        "version": "1.1.1"
-    },
     "league/uri-interfaces": {
         "version": "1.1.1"
-    },
-    "league/uri-manipulations": {
-        "version": "1.5.0"
-    },
-    "league/uri-parser": {
-        "version": "1.4.1"
-    },
-    "league/uri-schemes": {
-        "version": "1.2.1"
     },
     "monolog/monolog": {
         "version": "1.24.0"
@@ -265,9 +250,6 @@
     },
     "psr/log": {
         "version": "1.1.0"
-    },
-    "psr/simple-cache": {
-        "version": "1.0.1"
     },
     "ralouphie/getallheaders": {
         "version": "2.0.5"
@@ -442,6 +424,9 @@
     },
     "symfony/polyfill-php73": {
         "version": "v1.13.1"
+    },
+    "symfony/polyfill-php80": {
+        "version": "v1.17.1"
     },
     "symfony/process": {
         "version": "v4.2.1"

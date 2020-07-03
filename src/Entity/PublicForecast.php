@@ -64,6 +64,16 @@ class PublicForecast
      */
     private $name;
 
+    /**
+     * @ORM\Column(type="array", nullable=true)
+     */
+    private $people = [];
+
+    /**
+     * @ORM\Column(type="array", nullable=true)
+     */
+    private $placeholders = [];
+
     public function getId(): ?int
     {
         return $this->id;
@@ -149,6 +159,30 @@ class PublicForecast
     public function setName(string $name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getPeople(): ?array
+    {
+        return $this->people;
+    }
+
+    public function setPeople(?array $people): self
+    {
+        $this->people = $people;
+
+        return $this;
+    }
+
+    public function getPlaceholders(): ?array
+    {
+        return $this->placeholders;
+    }
+
+    public function setPlaceholders(?array $placeholders): self
+    {
+        $this->placeholders = $placeholders;
 
         return $this;
     }

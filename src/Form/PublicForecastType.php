@@ -43,7 +43,19 @@ class PublicForecastType extends AbstractType
                 'choices' => $this->forecastDataSelector->getEnabledProjectsForChoice(),
                 'required' => false,
                 'multiple' => true,
-                'help' => 'Please select here the projects to be displayed in the forecast. If you have also selected clients in the field above, please note that only projects matching these clients will be displayed.',
+                'help' => 'You can select here the projects to be displayed in the forecast. If you do not select a project, all the projects for the selected client will be displayed. If you have also selected clients in the field above, please note that only projects matching these clients will be displayed.',
+            ])
+            ->add('people', ChoiceType::class, [
+                'choices' => $this->forecastDataSelector->getEnabledPeopleForChoice(),
+                'required' => false,
+                'multiple' => true,
+                'help' => 'You can filter the public forecast for one or more people, if you wish to.',
+            ])
+            ->add('placeholders', ChoiceType::class, [
+                'choices' => $this->forecastDataSelector->getEnabledPlaceholderForChoice(),
+                'required' => false,
+                'multiple' => true,
+                'help' => 'You can filter the public forecast for one or more placeholder, if you wish to.',
             ])
         ;
     }

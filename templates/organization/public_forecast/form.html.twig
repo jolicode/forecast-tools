@@ -44,6 +44,25 @@
                 </div>
                 {{ form_help(form.projects) }}
             </div>
+
+            <div class="form-group">
+                {{ form_label(form.people) }}
+                {{ form_errors(form.people) }}
+                <div>
+                    {{ form_widget(form.people, { attr: { class: 'form-control select2 multiple' }}) }}
+                </div>
+                {{ form_help(form.people) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.placeholders) }}
+                {{ form_errors(form.placeholders) }}
+                <div>
+                    {{ form_widget(form.placeholders, { attr: { class: 'form-control select2 multiple' }}) }}
+                </div>
+                {{ form_help(form.placeholders) }}
+            </div>
+
             {% if publicForecast is defined %}
                 <a class="float-right btn btn-danger" href="{{ organization_path('public_forecasts_delete', { publicForecastId: publicForecast.id })}}" role="button">Delete this public forecast</a>
             {% endif %}

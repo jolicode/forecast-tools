@@ -86,6 +86,20 @@ class ForecastDataSelector
         return $choices;
     }
 
+    public function getEnabledPlaceholderForChoice(): array
+    {
+        $choices = [];
+        $placeholders = $this->getPlaceholders();
+
+        foreach ($placeholders as $placeholder) {
+            $choices[$placeholder->getName()] = $placeholder->getId();
+        }
+
+        ksort($choices);
+
+        return $choices;
+    }
+
     public function getEnabledProjectsForChoice(): array
     {
         $choices = [];
