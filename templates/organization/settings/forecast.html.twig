@@ -1,0 +1,24 @@
+{% extends 'organization/base.html.twig' %}
+
+{% block title %}Public Forecast settings | {{ parent() }}{% endblock %}
+
+{% block content %}
+    {{ include('organization/settings/_menu.html.twig', {menu: 'forecast'}) }}
+    <div class="card border-top-0">
+        {{ form_start(form) }}
+            <div class="card-body">
+                {{ form_errors(form) }}
+
+                <div class="custom-control custom-switch">
+                    {{ form_widget(form.allowNonAdmins, { attr: { class: 'custom-control-input' }}) }}
+                    {{ form_label(form.allowNonAdmins, null, { label_attr: { class: 'custom-control-label' }}) }}
+                    {{ form_errors(form.allowNonAdmins) }}
+                    {{ form_help(form.allowNonAdmins) }}
+                </div>
+            </div>
+            <div class="card-footer text-right">
+                {{ form_widget(form.save) }}
+            </div>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

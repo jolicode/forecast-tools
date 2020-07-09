@@ -14,6 +14,7 @@ namespace App\Controller\Organization;
 use App\Entity\ForecastAccount;
 use App\Entity\ForecastAccountSlackTeam;
 use App\Entity\SlackTeam;
+use App\Form\ForecastSettingsType;
 use App\Form\HarvestSettingsType;
 use App\Repository\ForecastAccountSlackTeamRepository;
 use App\Repository\SlackTeamRepository;
@@ -46,6 +47,29 @@ class SettingsController extends AbstractController
         $this->router = $router;
         $this->slackClientId = $slackClientId;
         $this->slackClientSecret = $slackClientSecret;
+    }
+
+    /**
+     * @Route("/forecast", name="forecast")
+     * @IsGranted("admin", subject="forecastAccount")
+     */
+    public function forecast(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em)
+    {
+        $form = $this->createForm(ForecastSettingsType::class, $forecastAccount);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $forecastAccount = $form->getData();
+            $em->persist($forecastAccount);
+            $em->flush();
+
+            return $this->redirectToRoute('organization_settings_forecast', ['slug' => $forecastAccount->getSlug()]);
+        }
+
+        return $this->render('organization/settings/forecast.html.twig', [
+            'forecastAccount' => $forecastAccount,
+            'form' => $form->createView(),
+        ]);
     }
 
     /**
