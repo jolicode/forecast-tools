@@ -97,6 +97,11 @@ class ForecastAccount
      */
     private $forecastAccountSlackTeams;
 
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $allowNonAdmins = false;
+
     public function __construct()
     {
         $this->publicForecasts = new ArrayCollection();
@@ -355,6 +360,18 @@ class ForecastAccount
                 $forecastAccountSlackTeam->setForecastAccount(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getAllowNonAdmins(): ?bool
+    {
+        return $this->allowNonAdmins;
+    }
+
+    public function setAllowNonAdmins(?bool $allowNonAdmins): self
+    {
+        $this->allowNonAdmins = $allowNonAdmins;
 
         return $this;
     }
