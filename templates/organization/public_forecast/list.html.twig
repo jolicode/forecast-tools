@@ -36,7 +36,7 @@
             Adding a public forecast allows to share a part of your forecast publicly. Public forecasts are highly configurable, so you can share the forecast of a specific client, project or member.
         </p>
 
-        {% if is_granted('admin', forecastAccount) %}
+        {% if is_granted('admin', forecastAccount) or forecastAccount.getAllowNonAdmins() %}
             <p>
                 <a href="{{ organization_path('public_forecasts_create') }}" class="btn btn-primary">✨&nbsp;&nbsp;Add a public Forecast</a>
             </p>
