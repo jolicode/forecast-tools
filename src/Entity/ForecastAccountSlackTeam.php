@@ -34,7 +34,7 @@ class ForecastAccountSlackTeam
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
      */
     private $updatedBy;
 
@@ -56,7 +56,7 @@ class ForecastAccountSlackTeam
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\ForecastAccount", inversedBy="forecastAccountSlackTeams")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     private $forecastAccount;
 

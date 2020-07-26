@@ -27,13 +27,13 @@ class UserForecastAccount
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="userForecastAccounts")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     private $user;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\ForecastAccount", inversedBy="userForecastAccounts")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     private $forecastAccount;
 
