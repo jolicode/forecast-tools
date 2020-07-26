@@ -12,6 +12,7 @@
 namespace App\Repository;
 
 use App\Entity\ForecastAccount;
+use App\Entity\User;
 use App\Entity\UserForecastAccount;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -27,6 +28,35 @@ class UserForecastAccountRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, UserForecastAccount::class);
+    }
+
+    public function findForecastAccountsWithoutOtherAdmin(User $user)
+    {
+        $qb = $this->createQueryBuilder('uf');
+
+        return $this->_em->createQueryBuilder()
+            ->from('App:ForecastAccount', 'fa')
+            ->innerJoin('fa.userForecastAccounts', 'uf')
+            ->select('fa')
+            ->andWhere('uf.isAdmin = :isAdmin')
+            ->andWhere(
+                $qb->expr()->in(
+                    'uf.forecastAccount',
+                    $this->_em->createQueryBuilder()
+                        ->select('IDENTITY(ufa.forecastAccount)')
+                        ->from('App:UserForecastAccount', 'ufa')
+                        ->innerJoin('ufa.forecastAccount', 'faa')
+                        ->where('ufa.user = :user')
+                        ->getDQL()
+                )
+            )
+            ->groupBy('uf.forecastAccount')
+            ->having('COUNT(uf.id) = 1')
+            ->setParameter('isAdmin', true)
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     public function findOneByEmailAndForecastAccount(string $email, ForecastAccount $forecastAccount): ?UserForecastAccount

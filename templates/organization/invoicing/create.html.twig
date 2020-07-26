@@ -16,20 +16,8 @@
                     processes periods.
                 </p>
 
-                <div class="form-group">
-                    {{ form_label(form.billingPeriodStart) }}
-                    {{ form_errors(form.billingPeriodStart) }}
-                    {{ form_widget(form.billingPeriodStart, { attr: { class: 'form-control' }}) }}
-                    {{ form_help(form.billingPeriodStart) }}
-                </div>
-
-                <div class="form-group">
-                    {{ form_label(form.billingPeriodEnd) }}
-                    {{ form_errors(form.billingPeriodEnd) }}
-                    {{ form_widget(form.billingPeriodEnd, { attr: { class: 'form-control' }}) }}
-                    {{ form_help(form.billingPeriodEnd) }}
-                </div>
-
+                {{ form_row(form.billingPeriodStart) }}
+                {{ form_row(form.billingPeriodEnd) }}
                 {{ form_errors(form) }}
             </div>
 

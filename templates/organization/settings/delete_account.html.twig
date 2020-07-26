@@ -1,0 +1,41 @@
+{% extends 'organization/base.html.twig' %}
+
+{% block title %}Delete your account | {{ parent() }}{% endblock %}
+
+{% block content %}
+    {{ include('organization/settings/_menu.html.twig', {menu: 'delete_account'}) }}
+    <div class="card border-top-0">
+        {{ form_start(form) }}
+            <div class="card-body">
+                {{ form_errors(form) }}
+
+                <p>
+                    Please type "YOLO" in the field below to get your account deleted.
+                    <span class="text-danger">
+                        There is no way to recover the removed data, so please use with care.
+                    </span>
+                </p>
+
+                {{ form_row(form.yolo) }}
+
+                {% if forecastAccountsToDelete|length > 0 %}
+                    <p>
+                        The following accounts will also be deleted, as you are the last Forecast Admin subscribed.
+                        All the associated data will be removed (public forecasts, Slack standup reminders,
+                        Slack Forecast reminders, invoicing processes, etc.):
+                    </p>
+                    <ul>
+                        {% for forecastAccount in forecastAccountsToDelete %}
+                            <li>
+                                {{ forecastAccount.name }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            <div class="card-footer text-right">
+                {{ form_widget(form.save) }}
+            </div>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

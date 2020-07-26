@@ -11,13 +11,17 @@
 
 namespace App\Controller\Organization;
 
+use App\DataSelector\UserDataSelector;
 use App\Entity\ForecastAccount;
 use App\Entity\ForecastAccountSlackTeam;
 use App\Entity\SlackTeam;
+use App\Form\DeleteAccountFormType;
 use App\Form\ForecastSettingsType;
 use App\Form\HarvestSettingsType;
+use App\Form\UserSettingsType;
 use App\Repository\ForecastAccountSlackTeamRepository;
 use App\Repository\SlackTeamRepository;
+use App\Repository\UserForecastAccountRepository;
 use App\Repository\UserRepository;
 use App\Security\Provider\Slack;
 use Doctrine\ORM\EntityManagerInterface;
@@ -32,7 +36,6 @@ use Symfony\Component\Routing\RouterInterface;
 
 /**
  * @Route("/{slug}/settings", name="organization_settings_", defaults={"menu": "settings"})
- * @IsGranted("admin", subject="forecastAccount")
  */
 class SettingsController extends AbstractController
 {
@@ -47,6 +50,59 @@ class SettingsController extends AbstractController
         $this->router = $router;
         $this->slackClientId = $slackClientId;
         $this->slackClientSecret = $slackClientSecret;
+    }
+
+    /**
+     * @Route("/account", name="account")
+     */
+    public function account(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em, UserRepository $userRepository)
+    {
+        $user = $userRepository->findOneBy(['email' => $this->getUser()->getUsername()]);
+        $form = $this->createForm(UserSettingsType::class, $user);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $user = $form->getData();
+            $em->persist($user);
+            $em->flush();
+
+            return $this->redirectToRoute('organization_settings_account', ['slug' => $forecastAccount->getSlug()]);
+        }
+
+        return $this->render('organization/settings/account.html.twig', [
+            'forecastAccount' => $forecastAccount,
+            'form' => $form->createView(),
+        ]);
+    }
+
+    /**
+     * @Route("/account/delete", name="delete_account")
+     */
+    public function deleteAccount(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em, UserRepository $userRepository, UserForecastAccountRepository $userForecastAccountRepository)
+    {
+        $user = $userRepository->findOneBy(['email' => $this->getUser()->getUsername()]);
+        $forecastAccountsToDelete = $userForecastAccountRepository->findForecastAccountsWithoutOtherAdmin($user);
+        $form = $this->createForm(DeleteAccountFormType::class);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // delete the forecast accounts
+            foreach ($forecastAccountsToDelete as $forecastAccount) {
+                $em->remove($forecastAccount);
+            }
+
+            // delete the account
+            $em->remove($user);
+            $em->flush();
+
+            return $this->redirectToRoute('logout');
+        }
+
+        return $this->render('organization/settings/delete_account.html.twig', [
+            'forecastAccount' => $forecastAccount,
+            'form' => $form->createView(),
+            'forecastAccountsToDelete' => $forecastAccountsToDelete,
+        ]);
     }
 
     /**
@@ -74,6 +130,7 @@ class SettingsController extends AbstractController
 
     /**
      * @Route("/harvest", name="harvest")
+     * @IsGranted("admin", subject="forecastAccount")
      * @IsGranted("harvest_admin", subject="forecastAccount")
      */
     public function harvest(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em)
@@ -97,6 +154,7 @@ class SettingsController extends AbstractController
 
     /**
      * @Route("/slack", name="slack")
+     * @IsGranted("admin", subject="forecastAccount")
      */
     public function slack(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em, UserRepository $userRepository, SlackTeamRepository $slackTeamRepository, ForecastAccountSlackTeamRepository $forecastAccountSlackTeamRepository)
     {
@@ -159,6 +217,7 @@ class SettingsController extends AbstractController
 
     /**
      * @Route("/slack/delete/{forecastAccountSlackTeamId}", name="slack_delete")
+     * @IsGranted("admin", subject="forecastAccount")
      * @ParamConverter("forecastAccountSlackTeam", options={"id" = "forecastAccountSlackTeamId"})
      */
     public function slackDelete(ForecastAccount $forecastAccount, ForecastAccountSlackTeam $forecastAccountSlackTeam)
@@ -188,6 +247,7 @@ class SettingsController extends AbstractController
 
     /**
      * @Route("/slack/install", name="slack_install")
+     * @IsGranted("admin", subject="forecastAccount")
      */
     public function slackInstall(Request $request, ForecastAccount $forecastAccount)
     {

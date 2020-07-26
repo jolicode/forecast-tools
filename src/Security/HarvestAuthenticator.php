@@ -122,21 +122,26 @@ class HarvestAuthenticator extends SocialAuthenticator
             return $a['product'] > $b['product'];
         });
 
+        $forecastAccounts = [];
+        $harvestAccounts = [];
+
         foreach ($userData['accounts'] as $account) {
             if ('forecast' === $account['product']) {
-                $this->addForecastAccount($user, $account);
+                $forecastAccounts[] = $this->addForecastAccount($user, $account);
             } elseif ('harvest' === $account['product']) {
-                $this->addHarvestAccount($user, $account);
+                $harvestAccounts[] = $this->addHarvestAccount($user, $account);
             }
         }
 
         $this->em->flush();
+        $this->userRepository->cleanupExtraneousAccountsForUser($user, array_filter($forecastAccounts), array_filter($harvestAccounts));
 
         return new OAuthUser($email, ['ROLE_USER', 'ROLE_OAUTH_USER']);
     }
 
-    private function addForecastAccount(User $user, array $account)
+    private function addForecastAccount(User $user, array $account): ?ForecastAccount
     {
+        dump($account);
         $forecastAccount = $this->forecastAccountRepository->findOneBy(['forecastId' => $account['id']]);
 
         if (!$forecastAccount) {
@@ -177,9 +182,11 @@ class HarvestAuthenticator extends SocialAuthenticator
         $forecastAccount->setExpires($user->getExpires());
         $this->em->persist($forecastAccount);
         $this->em->persist($userForecastAccount);
+
+        return $forecastAccount;
     }
 
-    private function addHarvestAccount(User $user, array $account)
+    private function addHarvestAccount(User $user, array $account): ?HarvestAccount
     {
         $client = HarvestClientFactory::create(
             $user->getAccessToken(),
@@ -190,7 +197,7 @@ class HarvestAuthenticator extends SocialAuthenticator
 
         if ($company instanceof \JoliCode\Harvest\Api\Model\Error) {
             // The company requires Google signin, which seems to break Harvest API...
-            return;
+            return null;
         }
 
         $harvestAccount = $this->harvestAccountRepository->findOneBy(['harvestId' => $account['id']]);
@@ -227,6 +234,8 @@ class HarvestAuthenticator extends SocialAuthenticator
 
         $this->em->persist($harvestAccount);
         $this->em->persist($userHarvestAccount);
+
+        return $harvestAccount;
     }
 
     private function getHarvestClient(): OAuth2Client

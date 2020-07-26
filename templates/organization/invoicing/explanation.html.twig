@@ -19,7 +19,7 @@
             {{ form_help(form.explanation) }}
         </div>
         {% if invoiceExplanation.id %}
-            <small>Saved by <code>{{ invoiceExplanation.createdBy.name }}</code> on <code>{{ invoiceExplanation.createdAt|date('F jS, Y, G:i') }}</code>.</small>
+            <small>Saved by <code>{{ invoiceExplanation.createdBy | default('(deleted user)') }}</code> on <code>{{ invoiceExplanation.createdAt|date('F jS, Y, G:i') }}</code>.</small>
         {% endif %}
     </div>
     <div class="modal-footer">

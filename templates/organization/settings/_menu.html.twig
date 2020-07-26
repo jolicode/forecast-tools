@@ -1,12 +1,18 @@
 
 <nav>
     <div class="nav nav-tabs" id="nav-tab" role="tablist">
-        <a class="nav-item nav-link{% if menu == 'slack' %} active{% endif %}" href="{{ organization_path('settings_slack') }}" role="tab">Slack settings</a>
+        <a class="nav-item nav-link{% if menu == 'account' %} active{% endif %}" href="{{ organization_path('settings_account') }}" role="tab">Preferences</a>
 
-        <a class="nav-item nav-link{% if menu == 'forecast' %} active{% endif %}" href="{{ organization_path('settings_forecast') }}" role="tab">Public Forecasts settings</a>
+        {% if is_granted('admin', forecastAccount) %}
+            <a class="nav-item nav-link{% if menu == 'slack' %} active{% endif %}" href="{{ organization_path('settings_slack') }}" role="tab">Slack settings</a>
+
+            <a class="nav-item nav-link{% if menu == 'forecast' %} active{% endif %}" href="{{ organization_path('settings_forecast') }}" role="tab">Public Forecasts settings</a>
+        {% endif %}
 
         {% if is_granted('harvest_admin', forecastAccount) %}
             <a class="nav-item nav-link{% if menu == 'harvest' %} active{% endif %}" href="{{ organization_path('settings_harvest') }}">Invoicing settings</a>
         {% endif %}
+
+        <a class="nav-item nav-link ml-auto text-danger{% if menu == 'delete_account' %} active{% endif %}" href="{{ organization_path('settings_delete_account') }}" role="tab">Delete account</a>
     </div>
 </nav>

@@ -67,13 +67,7 @@
                 <div class="tab-pane show active" id="nav-workspaces" role="tabpanel" aria-labelledby="workspaces-tab">
                     <div class="card-body">
                         {{ form_errors(form) }}
-
-                        <div class="form-group">
-                            {{ form_label(form.cronExpression) }}
-                            {{ form_errors(form.cronExpression) }}
-                            {{ form_widget(form.cronExpression, { attr: { class: 'form-control' }}) }}
-                            {{ form_help(form.cronExpression) }}
-                        </div>
+                        {{ form_row(form.cronExpression) }}
 
                         {% if forecastAccount.forecastAccountSlackTeams|length == 0 %}
                             <div class="alert alert-danger mb-0 d-flex" role="alert">
@@ -97,7 +91,7 @@
                                                 </a>
                                                 <h5 class="card-title">{{ forecastAccountSlackTeam.slackTeam.teamName }}</h5>
                                                 <p class="card-text">
-                                                    Added by <code>{{ forecastAccountSlackTeam.updatedBy.name }}</code><br />
+                                                    Added by <code>{{ forecastAccountSlackTeam.updatedBy | default('(deleted user)') }}</code><br />
                                                     Added on <code>{{ forecastAccountSlackTeam.updatedAt|date('F jS, Y, G:i')  }}</code><br />
                                                     {% if forecastAccountSlackTeam.channel %}
                                                         Posts in <code>{{ forecastAccountSlackTeam.channel }}</code><br />
@@ -139,12 +133,7 @@
 
                 <div class="tab-pane" id="nav-labels" role="tabpanel" aria-labelledby="labels-tab">
                     <div class="card-body">
-                        <div class="form-group">
-                            {{ form_label(form.defaultActivityName) }}
-                            {{ form_errors(form.defaultActivityName) }}
-                            {{ form_widget(form.defaultActivityName, { attr: { class: 'form-control' }}) }}
-                            {{ form_help(form.defaultActivityName) }}
-                        </div>
+                        {{ form_row(form.defaultActivityName) }}
 
                         <div class="form-group">
                             {{ form_label(form.timeOffProjects) }}
@@ -153,12 +142,7 @@
                             {{ form_help(form.timeOffProjects) }}
                         </div>
 
-                        <div class="form-group">
-                            {{ form_label(form.timeOffActivityName) }}
-                            {{ form_errors(form.timeOffActivityName) }}
-                            {{ form_widget(form.timeOffActivityName, { attr: { class: 'form-control' }}) }}
-                            {{ form_help(form.timeOffActivityName) }}
-                        </div>
+                        {{ form_row(form.timeOffActivityName) }}
                     </div>
                 </div>
 
@@ -209,7 +193,7 @@
             <div class="card-footer text-right">
                 {% if forecastAccount.forecastReminder %}
                     <small class="float-left mt-2">
-                        last updated by <code>{{ forecastAccount.forecastReminder.updatedBy.name }}</code>
+                        last updated by <code>{{ forecastAccount.forecastReminder.updatedBy | default('(deleted user)') }}</code>
                         on <code>{{ forecastAccount.forecastReminder.updatedAt|date('F jS, Y, G:i')  }}</code>
                     </small>
                 {% endif %}

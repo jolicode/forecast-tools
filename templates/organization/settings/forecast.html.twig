@@ -8,13 +8,7 @@
         {{ form_start(form) }}
             <div class="card-body">
                 {{ form_errors(form) }}
-
-                <div class="custom-control custom-switch">
-                    {{ form_widget(form.allowNonAdmins, { attr: { class: 'custom-control-input' }}) }}
-                    {{ form_label(form.allowNonAdmins, null, { label_attr: { class: 'custom-control-label' }}) }}
-                    {{ form_errors(form.allowNonAdmins) }}
-                    {{ form_help(form.allowNonAdmins) }}
-                </div>
+                {{ form_row(form.allowNonAdmins) }}
             </div>
             <div class="card-footer text-right">
                 {{ form_widget(form.save) }}

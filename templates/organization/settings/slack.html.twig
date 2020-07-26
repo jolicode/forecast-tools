@@ -17,7 +17,7 @@
                         </a>
                         <h5 class="card-title">{{ forecastAccountSlackTeam.slackTeam.teamName }}</h5>
                         <p class="card-text">
-                            Added by <code>{{ forecastAccountSlackTeam.updatedBy.name }}</code><br />
+                            Added by <code>{{ forecastAccountSlackTeam.updatedBy | default('(deleted user)') }}</code><br />
                             Added on <code>{{ forecastAccountSlackTeam.updatedAt|date('F jS, Y, G:i')  }}</code>
                         </p>
                     </div>

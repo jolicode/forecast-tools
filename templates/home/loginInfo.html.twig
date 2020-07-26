@@ -16,12 +16,10 @@
                 </button>
                 <div class="dropdown-menu dropdown-menu-right text-right" aria-labelledby="dropdownMenuButton">
                     {% for forecastAccount in forecastAccounts %}
-                        {% if forecastAccount.forecastId != currentAccount.forecastId %}
-                            <a class="dropdown-item" href="{{ path('organization_homepage', {slug: forecastAccount.slug}) }}">{{ forecastAccount.name }}</a>
-                        {% endif %}
+                        <a class="dropdown-item{% if forecastAccount == currentAccount %} active{% endif %}" href="{{ path('organization_homepage', {slug: forecastAccount.slug}) }}">{{ forecastAccount.name }}</a>
                     {% endfor %}
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="{{ path('logout') }}">logout</a>
+                    <a class="dropdown-item" href="{{ path('logout') }}">logout 👋</a>
                 </div>
             </li>
         </ul>
