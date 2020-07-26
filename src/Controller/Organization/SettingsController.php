@@ -11,7 +11,6 @@
 
 namespace App\Controller\Organization;
 
-use App\DataSelector\UserDataSelector;
 use App\Entity\ForecastAccount;
 use App\Entity\ForecastAccountSlackTeam;
 use App\Entity\SlackTeam;
