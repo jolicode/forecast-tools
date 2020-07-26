@@ -16,22 +16,17 @@
                 </div>
 
                 <div class="form-group">
-                    Created on <strong>{{ publicForecast.createdAt|date('F jS \\a\\t G:i') }}</strong> by <strong>{{ publicForecast.createdBy }}</strong>
+                    Created on <strong>{{ publicForecast.createdAt|date('F jS \\a\\t G:i') }}</strong> by <strong>{{ publicForecast.createdBy | default('(deleted user)') }}</strong>
                 </div>
             {% endif %}
 
-            <div class="form-group">
-                {{ form_label(form.name) }}
-                {{ form_errors(form.name) }}
-                {{ form_widget(form.name, { attr: { class: 'form-control' }}) }}
-                {{ form_help(form.name) }}
-            </div>
+            {{ form_row(form.name) }}
 
             <div class="form-group">
                 {{ form_label(form.clients) }}
                 {{ form_errors(form.clients) }}
                 <div>
-                    {{ form_widget(form.clients, { attr: { class: 'form-control select2 multiple' }}) }}
+                    {{ form_widget(form.clients, { attr: { class: 'select2 multiple' }}) }}
                 </div>
                 {{ form_help(form.clients) }}
             </div>
@@ -40,7 +35,7 @@
                 {{ form_label(form.projects) }}
                 {{ form_errors(form.projects) }}
                 <div>
-                    {{ form_widget(form.projects, { attr: { class: 'form-control select2 multiple' }}) }}
+                    {{ form_widget(form.projects, { attr: { class: 'select2 multiple' }}) }}
                 </div>
                 {{ form_help(form.projects) }}
             </div>
@@ -49,7 +44,7 @@
                 {{ form_label(form.people) }}
                 {{ form_errors(form.people) }}
                 <div>
-                    {{ form_widget(form.people, { attr: { class: 'form-control select2 multiple' }}) }}
+                    {{ form_widget(form.people, { attr: { class: 'select2 multiple' }}) }}
                 </div>
                 {{ form_help(form.people) }}
             </div>
@@ -58,7 +53,7 @@
                 {{ form_label(form.placeholders) }}
                 {{ form_errors(form.placeholders) }}
                 <div>
-                    {{ form_widget(form.placeholders, { attr: { class: 'form-control select2 multiple' }}) }}
+                    {{ form_widget(form.placeholders, { attr: { class: 'select2 multiple' }}) }}
                 </div>
                 {{ form_help(form.placeholders) }}
             </div>

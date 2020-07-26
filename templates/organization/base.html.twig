@@ -27,13 +27,11 @@
                     </li>
                 {% endif %}
             </ul>
-            {% if is_granted('admin', forecastAccount) %}
-                <ul class="navbar-nav">
-                    <li class="nav-item{% if currentMenu == 'settings' %} active{% endif %}">
-                        <a class="nav-link" href="{{ organization_path('settings_slack') }}">⚙️ Settings</a>
-                    </li>
-                </ul>
-            {% endif %}
+            <ul class="navbar-nav">
+                <li class="nav-item{% if currentMenu == 'settings' %} active{% endif %}">
+                    <a class="nav-link" href="{{ organization_path('settings_account') }}">⚙️ Settings</a>
+                </li>
+            </ul>
         </div>
     </nav>
 

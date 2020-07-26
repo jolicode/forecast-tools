@@ -27,13 +27,13 @@ class UserHarvestAccount
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="userHarvestAccounts")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     private $user;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\HarvestAccount")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     private $harvestAccount;
 

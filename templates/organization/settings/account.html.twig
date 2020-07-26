@@ -1,14 +1,15 @@
 {% extends 'organization/base.html.twig' %}
 
-{% block title %}Public Forecast settings | {{ parent() }}{% endblock %}
+{% block title %}Account settings | {{ parent() }}{% endblock %}
 
 {% block content %}
-    {{ include('organization/settings/_menu.html.twig', {menu: 'forecast'}) }}
+    {{ include('organization/settings/_menu.html.twig', {menu: 'account'}) }}
     <div class="card border-top-0">
         {{ form_start(form) }}
             <div class="card-body">
                 {{ form_errors(form) }}
-                {{ form_row(form.allowNonAdmins) }}
+
+                {{ form_row(form.defaultForecastAccount) }}
             </div>
             <div class="card-footer text-right">
                 {{ form_widget(form.save) }}

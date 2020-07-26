@@ -94,6 +94,12 @@ class User
      */
     private $userHarvestAccounts;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=ForecastAccount::class)
+     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
+     */
+    private $defaultForecastAccount;
+
     public function __construct()
     {
         $this->forecastReminders = new ArrayCollection();
@@ -328,6 +334,18 @@ class User
                 $userHarvestAccount->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getDefaultForecastAccount(): ?ForecastAccount
+    {
+        return $this->defaultForecastAccount;
+    }
+
+    public function setDefaultForecastAccount(?ForecastAccount $defaultForecastAccount): self
+    {
+        $this->defaultForecastAccount = $defaultForecastAccount;
 
         return $this;
     }

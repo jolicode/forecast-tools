@@ -37,7 +37,7 @@ class InvoicingProcess
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
      */
     private $createdBy;
 
@@ -55,13 +55,13 @@ class InvoicingProcess
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\ForecastAccount", inversedBy="invoicingProcesses")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     private $forecastAccount;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\HarvestAccount")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     private $harvestAccount;
 

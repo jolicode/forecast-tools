@@ -59,7 +59,7 @@ class StandupMeetingReminder
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\SlackTeam", inversedBy="standupMeetingReminders")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     private $slackTeam;
 

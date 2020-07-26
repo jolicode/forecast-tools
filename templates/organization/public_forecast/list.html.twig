@@ -19,7 +19,7 @@
                         <a href="{{ url('public_forecast', { token: publicForecast.token }) }}" class="btn border mr-3">🔗 View</a>
                         <span class="d-inline-block align-middle" style="line-height: 1rem;">
                             {{ publicForecast.name }}<br />
-                            <small>created by <code>{{ publicForecast.createdBy.name }}</code> on <code>{{ publicForecast.createdAt|date('F jS, Y, G:i') }}</code></small>
+                            <small>created by <code>{{ publicForecast.createdBy | default('(deleted user)') }}</code> on <code>{{ publicForecast.createdAt|date('F jS, Y, G:i') }}</code></small>
                         </span>
                         <a href="{{ organization_path('public_forecasts_delete', { publicForecastId: publicForecast.id }) }}" class="btn btn-danger float-right ml-3">🗑️&nbsp;&nbsp;Delete</a>
                         <a href="{{ organization_path('public_forecasts_edit', { publicForecastId: publicForecast.id }) }}" class="btn btn-primary float-right">✏️&nbsp;&nbsp;Edit</a>

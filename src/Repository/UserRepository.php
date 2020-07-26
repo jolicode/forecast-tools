@@ -27,4 +27,38 @@ class UserRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, User::class);
     }
+
+    public function cleanupExtraneousAccountsForUser(User $user, array $forecastAccounts, array $harvestAccounts)
+    {
+        $this->cleanupExtraneousForecastAccountsForUser($user, $forecastAccounts);
+        $this->cleanupExtraneousHarvestAccountsForUser($user, $harvestAccounts);
+    }
+
+    public function cleanupExtraneousForecastAccountsForUser(User $user, array $forecastAccounts)
+    {
+        $qb = $this->createQueryBuilder('u');
+
+        return $qb
+            ->delete('App\Entity\UserForecastAccount', 'ufa')
+            ->andWhere('ufa.user = :user')
+            ->andWhere($qb->expr()->notIn('ufa.forecastAccount', ':forecastAccounts'))
+            ->setParameter('forecastAccounts', $forecastAccounts)
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->execute();
+    }
+
+    public function cleanupExtraneousHarvestAccountsForUser(User $user, array $harvestAccounts)
+    {
+        $qb = $this->createQueryBuilder('u');
+
+        return $qb
+            ->delete('App\Entity\UserHarvestAccount', 'uha')
+            ->andWhere('uha.user = :user')
+            ->andWhere($qb->expr()->notIn('uha.harvestAccount', ':harvestAccounts'))
+            ->setParameter('harvestAccounts', $harvestAccounts)
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->execute();
+    }
 }

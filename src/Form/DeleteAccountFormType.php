@@ -11,26 +11,30 @@
 
 namespace App\Form;
 
-use App\Entity\ForecastAccount;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\EqualTo;
 
-class ForecastSettingsType extends AbstractType
+class DeleteAccountFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('allowNonAdmins', null, [
-                'help' => 'Allow regular Forecast users to create, edit or delete public forecasts? In unset, only Forecast admins will be abllowed to do so.',
-                'label_attr' => [
-                    'class' => 'switch-custom',
+            ->add('yolo', null, [
+                'help' => 'Please type here "YOLO" to get your account and all your data deleted.',
+                'label_attr' => ['class' => 'd-none'],
+                'constraints' => [
+                    new EqualTo([
+                        'value' => 'YOLO',
+                        'message' => 'Please type "YOLO" to confirm the account deletion',
+                    ]),
                 ],
             ])
             ->add('save', SubmitType::class, [
-                'label' => 'Save settings',
-                'attr' => ['class' => 'btn btn-primary'],
+                'label' => 'Understood, delete my account',
+                'attr' => ['class' => 'btn btn-danger'],
             ])
         ;
     }
@@ -38,7 +42,7 @@ class ForecastSettingsType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => ForecastAccount::class,
+            // Configure your form options here
         ]);
     }
 }

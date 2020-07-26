@@ -28,7 +28,7 @@ class ClientOverride
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\ForecastReminder", inversedBy="clientOverrides", cascade={"persist"})
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     private $forecastReminder;
 
@@ -50,6 +50,7 @@ class ClientOverride
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User")
+     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
      */
     private $createdBy;
 

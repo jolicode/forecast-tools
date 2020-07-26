@@ -53,12 +53,7 @@
                     </div>
                     {{ form_help(form.doNotCheckTimesheetsFor) }}
                 </div>
-                <div class="custom-control custom-switch">
-                    {{ form_widget(form.hideSkippedUsers, { attr: { class: 'custom-control-input' }}) }}
-                    {{ form_label(form.hideSkippedUsers, null, { label_attr: { class: 'custom-control-label' }}) }}
-                    {{ form_errors(form.hideSkippedUsers) }}
-                    {{ form_help(form.hideSkippedUsers) }}
-                </div>
+                {{ form_row(form.hideSkippedUsers) }}
             </div>
             <div class="card-body">
                 <div class="container-fluid">

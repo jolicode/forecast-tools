@@ -49,7 +49,7 @@ class InvoiceNotesRequirement
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\HarvestAccount", inversedBy="invoiceNotesRequirements")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     private $harvestAccount;
 

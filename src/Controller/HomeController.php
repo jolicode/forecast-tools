@@ -31,11 +31,16 @@ class HomeController extends AbstractController
     {
         if (true === $authChecker->isGranted('ROLE_USER')) {
             $user = $userRepository->findOneBy(['email' => $this->getUser()->getUsername()]);
-            $forecastAccounts = $forecastAccountRepository->findForecastAccountsForUser($user);
+            $defaultForecastAccount = $user->getDefaultForecastAccount();
+
+            if (!$defaultForecastAccount) {
+                $forecastAccounts = $forecastAccountRepository->findForecastAccountsForUser($user);
+                $defaultForecastAccount = $forecastAccounts[0];
+            }
 
             return new RedirectResponse(
                 $this->generateUrl('organization_homepage', [
-                    'slug' => $forecastAccounts[0]->getSlug(),
+                    'slug' => $defaultForecastAccount->getSlug(),
                 ]),
                 Response::HTTP_TEMPORARY_REDIRECT
             );

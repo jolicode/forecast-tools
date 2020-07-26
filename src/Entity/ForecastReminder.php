@@ -37,7 +37,7 @@ class ForecastReminder
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="forecastReminders")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
      */
     private $updatedBy;
 
@@ -84,7 +84,7 @@ class ForecastReminder
 
     /**
      * @ORM\OneToOne(targetEntity="App\Entity\ForecastAccount", inversedBy="forecastReminder", cascade={"persist", "remove"})
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     private $forecastAccount;
 
