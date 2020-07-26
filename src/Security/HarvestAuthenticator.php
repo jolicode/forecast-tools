@@ -141,7 +141,6 @@ class HarvestAuthenticator extends SocialAuthenticator
 
     private function addForecastAccount(User $user, array $account): ?ForecastAccount
     {
-        dump($account);
         $forecastAccount = $this->forecastAccountRepository->findOneBy(['forecastId' => $account['id']]);
 
         if (!$forecastAccount) {
