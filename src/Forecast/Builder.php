@@ -73,7 +73,15 @@ class Builder
     {
         $allowedProjects = $projects;
         $allowedProjectIds = [];
-        $userAssignments = [];
+        $userAssignments = [
+            'total' => [
+                'firstDay' => null,
+                'users' => [],
+                'total' => [],
+                'total_days' => 0,
+                'weekly_total' => [],
+            ],
+        ];
 
         if (\count($publicForecast->getClients()) > 0) {
             // filter by clients
@@ -142,6 +150,14 @@ class Builder
                 ];
             }
 
+            if (!isset($userAssignments['total']['users'][$id])) {
+                $userAssignments['total']['users'][$id] = [
+                    'name' => $name,
+                    'days' => [],
+                    'total' => 0,
+                ];
+            }
+
             if (null !== $assignment->getPersonId()) {
                 $id = 'user_' . $assignment->getPersonId();
                 $user = $users[$assignment->getPersonId()];
@@ -158,18 +174,29 @@ class Builder
                     $userAssignments[$projectId]['users'][$id]['total'] += $duration;
                     $userAssignments[$projectId]['total_days'] += $duration;
                     $userAssignments[$projectId]['users'][$id]['days'][$assignmentDay] = $duration;
+                    $userAssignments['total']['users'][$id]['total'] += $duration;
+                    $userAssignments['total']['total_days'] += $duration;
+                    $userAssignments['total']['users'][$id]['days'][$assignmentDay] = $duration;
 
                     if (!isset($userAssignments[$projectId]['total'][$assignmentDay])) {
                         $userAssignments[$projectId]['total'][$assignmentDay] = 0;
                     }
+                    if (!isset($userAssignments['total']['total'][$assignmentDay])) {
+                        $userAssignments['total']['total'][$assignmentDay] = 0;
+                    }
 
                     $userAssignments[$projectId]['total'][$assignmentDay] += $duration;
+                    $userAssignments['total']['total'][$assignmentDay] += $duration;
 
                     if (!isset($userAssignments[$projectId]['weekly_total'][$assignmentWeek])) {
                         $userAssignments[$projectId]['weekly_total'][$assignmentWeek] = 0;
                     }
+                    if (!isset($userAssignments['total']['weekly_total'][$assignmentWeek])) {
+                        $userAssignments['total']['weekly_total'][$assignmentWeek] = 0;
+                    }
 
                     $userAssignments[$projectId]['weekly_total'][$assignmentWeek] += $duration;
+                    $userAssignments['total']['weekly_total'][$assignmentWeek] += $duration;
 
                     if (!isset($userAssignments[$projectId]['firstDay']) || $userAssignments[$projectId]['firstDay'] < $assignmentDay) {
                         $userAssignments[$projectId]['firstDay'] = $assignmentDay;
