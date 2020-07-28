@@ -26,5 +26,9 @@ jQuery(document).ready(function() {
     'mouseout': (event) => {
       jQuery(event.currentTarget).unbind('scroll');
     }
-  })
+  });
+
+  jQuery('.charts-switch').on('click', (event) => {
+    jQuery('.chart').toggleClass('d-none');
+  });
 });
