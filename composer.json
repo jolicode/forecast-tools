@@ -11,7 +11,7 @@
         "antishov/doctrine-extensions-bundle": "^1.4",
         "dragonmantank/cron-expression": "^2.3",
         "jolicode/forecast-php-api": "^2.1",
-        "jolicode/harvest-php-api": "^3.0",
+        "jolicode/harvest-php-api": "^4.0",
         "jolicode/slack-php-api": "^2.4",
         "knpuniversity/oauth2-client-bundle": "^1.26",
         "nilesuan/oauth2-harvest": "^1.2",
