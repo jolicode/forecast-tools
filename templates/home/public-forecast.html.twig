@@ -18,16 +18,16 @@
                 </div>
             </nav>
 
-            <div class="p-3 m-md-3">
+            <div class="pb-5">
                 {% if assignments|length > 1 %}
                     {% if assignments|length > 2 %}
                         {# when at least 2 projects, display the total #}
-                        {{ include('home/_project.html.twig', {project: assignments.total, title: 'Total'}) }}
+                        {{ include('home/_project.html.twig', {project: assignments.total, title: 'Total', slug: 'total'}) }}
                     {% endif %}
 
                     {% for key, project in assignments %}
                         {% if key != 'total' %}
-                            {{ include('home/_project.html.twig', {project: project, title: project.client ~ ' / ' ~ project.project.name}) }}
+                            {{ include('home/_project.html.twig', {project: project, title: project.client ~ ' / ' ~ project.project.name, slug: project.project.id}) }}
                         {% endif %}
                     {% endfor %}
                 {% else %}
