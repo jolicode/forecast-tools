@@ -17,8 +17,47 @@
   }
 }
 
+::-webkit-scrollbar {
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb {
+  background: #d0d0d0;
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #b8b8b8;
+}
+
+
+.flex-grow-1 table, .total-summary table {
+  background-color: white;
+}
+
+@keyframes blink {
+    from { background-color: white; }
+    to { background-color: #ddedff; }
+};
+
+.card {
+  &.selected {
+    animation-name: blink;
+    animation-direction: alternate;
+    animation-duration: 800ms;
+    animation-iteration-count: 8;
+  }
+
+  &:hover .days {
+    overflow-x: scroll;
+    padding-bottom: 0;
+  }
+}
+
 .card-title {
-  padding-left: 6.5em;
+  padding-left: 7.25em;
 }
 
 .names {
@@ -42,8 +81,9 @@
 }
 
 .days {
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: hidden;
+  padding-bottom: 10px;
 }
 
 table {

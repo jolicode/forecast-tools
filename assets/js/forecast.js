@@ -31,4 +31,22 @@ jQuery(document).ready(function() {
   jQuery('.charts-switch').on('click', (event) => {
     jQuery('.chart').toggleClass('d-none');
   });
+
+  jQuery(function () {
+    function analyseHash() {
+      var hash = window.location.hash;
+      var card = jQuery(hash).closest('.card');
+      card.addClass('selected');
+
+      setTimeout(function () {
+        card.removeClass('selected');
+      }, 5000);
+    }
+
+    jQuery('.permalink').click(function () {
+      setTimeout(analyseHash, 50);
+    });
+
+    setTimeout(analyseHash, 50);
+  });
 });
