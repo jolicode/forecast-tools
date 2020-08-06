@@ -59,6 +59,23 @@
                 </div>
             </div>
 
+            {% if is_granted('admin', forecastAccount) or is_granted('harvest_admin', forecastAccount) %}
+                <div class="col-md-6 col-lg-4 col-xl-3 p-2">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <img src="/images/zen.svg" class="card-img-top" alt="Mass insert entries">
+                            <h5 class="car-title">Mass insert entries</h2>
+                            <p class="card-text">
+                                Mass insert timesheet and forecast entries, for several people at once. This can be useful to schedule public holidays, for example.
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ organization_path('mass_insertion_index') }}" class="btn btn-primary">💯 Mass insert entries</a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
             {% if is_granted('admin', forecastAccount) and is_granted('harvest_admin', forecastAccount) %}
                 <div class="col-md-6 col-lg-4 col-xl-3 p-2">
                     <div class="card h-100">

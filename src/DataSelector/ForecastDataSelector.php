@@ -28,16 +28,46 @@ class ForecastDataSelector
         $this->client = $forecastClient;
     }
 
+    public function disableCache(): self
+    {
+        $this->client->__disableCache();
+
+        return $this;
+    }
+
+    public function disableCacheForNextRequestOnly(): self
+    {
+        $this->client->__disableCacheForNextRequestOnly();
+
+        return $this;
+    }
+
+    public function enableCache(): self
+    {
+        $this->client->__enableCache();
+
+        return $this;
+    }
+
+    public function enableCacheForNextRequestOnly(): self
+    {
+        $this->client->__enableCacheForNextRequestOnly();
+
+        return $this;
+    }
+
     /**
      * @return Assignment[]
      */
-    public function getAssignments(\DateTime $from, \DateTime $to)
+    public function getAssignments(\DateTime $from, \DateTime $to, array $options = []): array
     {
-        return $this->client->listAssignments([
+        $options = array_merge([
             'start_date' => $from->format('Y-m-d'),
             'end_date' => $to->format('Y-m-d'),
             'state' => 'active',
-        ], 'assignments')->getAssignments();
+        ], $options);
+
+        return $this->client->listAssignments($options, 'assignments')->getAssignments();
     }
 
     /**
@@ -134,11 +164,13 @@ class ForecastDataSelector
     }
 
     /**
+     * @param mixed|null $methodName
+     *
      * @return Person[]
      */
-    public function getPeopleById()
+    public function getPeopleById($methodName = null)
     {
-        return self::makeLookup($this->getPeople());
+        return self::makeLookup($this->getPeople(), $methodName);
     }
 
     /**
@@ -150,11 +182,13 @@ class ForecastDataSelector
     }
 
     /**
+     * @param mixed|null $methodName
+     *
      * @return Placeholder[]
      */
-    public function getPlaceholdersById()
+    public function getPlaceholdersById($methodName = null)
     {
-        return self::makeLookup($this->getPlaceholders());
+        return self::makeLookup($this->getPlaceholders(), $methodName);
     }
 
     /**
@@ -179,12 +213,13 @@ class ForecastDataSelector
 
     /**
      * @param mixed|null $enabled
+     * @param mixed|null $methodName
      *
      * @return Client[]
      */
-    public function getProjectsById($enabled = null)
+    public function getProjectsById($methodName = null, $enabled = null)
     {
-        return self::makeLookup($this->getProjects($enabled));
+        return self::makeLookup($this->getProjects($enabled), $methodName);
     }
 
     public function setForecastAccount(ForecastAccount $forecastAccount)
@@ -192,8 +227,9 @@ class ForecastDataSelector
         $this->client->setForecastAccount($forecastAccount);
     }
 
-    private static function makeLookup($struct, $methodName = 'getId')
+    private static function makeLookup($struct, $methodName = null)
     {
+        $methodName = $methodName ?: 'getId';
         $lookup = [];
 
         foreach ($struct as $data) {
