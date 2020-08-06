@@ -1,19 +1,17 @@
 framework:
     cache:
-        # Put the unique name of your app here: the prefix seed
-        # is used to compute stable namespaces for cache keys.
-        #prefix_seed: your_vendor_name/app_name
+        pools:
+            forecast_pool:
+                default_lifetime: 60
+                adapter: cache.adapter.redis
+                provider: app.harvest_redis_provider
 
-        # The app cache caches to the filesystem by default.
-        # Other options include:
+            harvest_pool:
+                default_lifetime: 1800
+                adapter: cache.adapter.redis
+                provider: app.harvest_redis_provider
 
-        # Redis
-        #app: cache.adapter.redis
-        #default_redis_provider: redis://localhost
-
-        # APCu (not recommended with heavy random-write workloads as memory fragmentation can cause perf issues)
-        #app: cache.adapter.apcu
-
-        # Namespaced pools use the above "app" backend by default
-        #pools:
-            #my.dedicated.cache: ~
+            slack_pool:
+                default_lifetime: 120
+                adapter: cache.adapter.redis
+                provider: app.harvest_redis_provider
