@@ -13,6 +13,7 @@ namespace App\Client;
 
 use App\Entity\ForecastAccount;
 use App\Repository\UserRepository;
+use JoliCode\Forecast\Api\Client;
 use JoliCode\Forecast\ClientFactory;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -26,6 +27,8 @@ class ForecastClient extends AbstractClient
     private $security;
     private $userRepository;
     private $forecastAccount = null;
+    private bool $cacheEnabled = true;
+    private $cacheStatusForNextRequestOnly = null;
 
     public function __construct(RequestStack $requestStack, AdapterInterface $pool, Security $security, UserRepository $userRepository)
     {
@@ -35,7 +38,27 @@ class ForecastClient extends AbstractClient
         $this->userRepository = $userRepository;
     }
 
-    protected function __client()
+    public function __disableCache()
+    {
+        $this->cacheEnabled = false;
+    }
+
+    public function __disableCacheForNextRequestOnly()
+    {
+        $this->cacheStatusForNextRequestOnly = false;
+    }
+
+    public function __enableCache()
+    {
+        $this->cacheEnabled = true;
+    }
+
+    public function __enableCacheForNextRequestOnly()
+    {
+        $this->cacheStatusForNextRequestOnly = true;
+    }
+
+    public function __client(): Client
     {
         $forecastAccount = $this->getForecastAccount();
 
@@ -71,14 +94,25 @@ class ForecastClient extends AbstractClient
     public function __call(string $name, array $arguments)
     {
         $nodeName = array_pop($arguments);
-        $cacheKey = sprintf('%s-%s-%s', $this->__namespace(), $name, md5(serialize($arguments)));
 
-        // The callable will only be executed on a cache miss.
-        $this->__addKey($cacheKey);
+        if ($this->cacheEnabled && false !== $this->cacheStatusForNextRequestOnly || true === $this->cacheStatusForNextRequestOnly) {
+            $cacheKey = sprintf('%s-%s-%s', $this->__namespace(), $name, md5(serialize($arguments)));
 
-        return $this->pool->get($cacheKey, function (ItemInterface $item) use ($name, $arguments, $nodeName) {
-            return $this->call($name, $arguments, $nodeName);
-        });
+            // The callable will only be executed on a cache miss.
+            $this->__addKey($cacheKey);
+
+            $response = $this->pool->get($cacheKey, function (ItemInterface $item) use ($name, $arguments, $nodeName) {
+                return $this->call($name, $arguments, $nodeName);
+            });
+        } else {
+            $response = $this->call($name, $arguments, $nodeName);
+        }
+
+        if (null !== $this->cacheStatusForNextRequestOnly) {
+            $this->cacheStatusForNextRequestOnly = null;
+        }
+
+        return $response;
     }
 
     public function getForecastAccount(): ForecastAccount
