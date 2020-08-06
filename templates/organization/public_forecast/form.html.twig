@@ -26,7 +26,7 @@
                 {{ form_label(form.clients) }}
                 {{ form_errors(form.clients) }}
                 <div>
-                    {{ form_widget(form.clients, { attr: { class: 'select2 multiple' }}) }}
+                    {{ form_widget(form.clients, { attr: { class: 'select2', multiple: 'multiple' }}) }}
                 </div>
                 {{ form_help(form.clients) }}
             </div>
@@ -35,7 +35,7 @@
                 {{ form_label(form.projects) }}
                 {{ form_errors(form.projects) }}
                 <div>
-                    {{ form_widget(form.projects, { attr: { class: 'select2 multiple' }}) }}
+                    {{ form_widget(form.projects, { attr: { class: 'select2', multiple: 'multiple' }}) }}
                 </div>
                 {{ form_help(form.projects) }}
             </div>
@@ -44,7 +44,7 @@
                 {{ form_label(form.people) }}
                 {{ form_errors(form.people) }}
                 <div>
-                    {{ form_widget(form.people, { attr: { class: 'select2 multiple' }}) }}
+                    {{ form_widget(form.people, { attr: { class: 'select2', multiple: 'multiple' }}) }}
                 </div>
                 {{ form_help(form.people) }}
             </div>
@@ -53,7 +53,7 @@
                 {{ form_label(form.placeholders) }}
                 {{ form_errors(form.placeholders) }}
                 <div>
-                    {{ form_widget(form.placeholders, { attr: { class: 'select2 multiple' }}) }}
+                    {{ form_widget(form.placeholders, { attr: { class: 'select2', multiple: 'multiple' }}) }}
                 </div>
                 {{ form_help(form.placeholders) }}
             </div>
