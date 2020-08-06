@@ -1,0 +1,53 @@
+{% extends 'organization/base.html.twig' %}
+
+{% block title %}Mass insert entries |
+	{{ parent() }}
+{% endblock %}
+
+{% block content %}
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success fade show mb-3" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    {% endfor %}
+
+    {{ form_start(form) }}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h2 class="card-title">Mass insert entries</h2>
+                <p>
+                    Mass inserting timesheet and forecast entries, for several people at once, can be useful in different
+                    situations: schedule public holidays, a company event, etc. Depending on your credentials, you can
+                    choose which people to assign to a project, for which duration, and if the assignment has to be saved
+                    in Harvest or in Forecast.
+                </p>
+
+                {{ form_errors(form) }}
+                {{ form_row(form.project) }}
+                {{ form_row(form.date) }}
+
+                <div class="form-group">
+                    {{ form_label(form.duration) }}
+                    <div class="input-group">
+                        {{ form_widget(form.duration, {'attr': { 'aria-describedby': 'duration-unit', 'style': 'max-width: 10rem' }}) }}
+                        <div class="input-group-append">
+                            <span class="input-group-text" id="duration-unit">hours</span>
+                        </div>
+                    </div>
+                    {{ form_help(form.duration) }}
+                </div>
+
+                {{ form_row(form.people) }}
+                {{ form_row(form.forecast) }}
+                {{ form_row(form.harvest) }}
+                {{ form_row(form.comment) }}
+            </div>
+            <div class="card-footer text-right">
+                {{ form_widget(form.save) }}
+            </div>
+        </div>
+    {{ form_end(form) }}
+{% endblock %}

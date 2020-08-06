@@ -15,6 +15,7 @@ use App\Client\HarvestClient;
 use JoliCode\Harvest\Api\Model\Client;
 use JoliCode\Harvest\Api\Model\Invoice;
 use JoliCode\Harvest\Api\Model\Project;
+use JoliCode\Harvest\Api\Model\TaskAssignment;
 use JoliCode\Harvest\Api\Model\TimeEntry;
 use JoliCode\Harvest\Api\Model\TimeEntryUser;
 use JoliCode\Harvest\Api\Model\UninvoicedReportResult;
@@ -26,6 +27,34 @@ class HarvestDataSelector
     public function __construct(HarvestClient $harvestClient)
     {
         $this->client = $harvestClient;
+    }
+
+    public function disableCache(): self
+    {
+        $this->client->__disableCache();
+
+        return $this;
+    }
+
+    public function disableCacheForNextRequestOnly(): self
+    {
+        $this->client->__disableCacheForNextRequestOnly();
+
+        return $this;
+    }
+
+    public function enableCache(): self
+    {
+        $this->client->__enableCache();
+
+        return $this;
+    }
+
+    public function enableCacheForNextRequestOnly(): self
+    {
+        $this->client->__enableCacheForNextRequestOnly();
+
+        return $this;
     }
 
     /**
@@ -179,14 +208,33 @@ class HarvestDataSelector
     }
 
     /**
+     * @param mixed $projectId
+     *
+     * @return TaskAssignment[]
+     */
+    public function getTaskAssignmentsForProjectId($projectId): array
+    {
+        $taskAssignmentsById = [];
+        $taskAssignments = $this->client->listTaskAssignmentsForSpecificProject((string) $projectId, 'taskAssignments')->getTaskAssignments();
+
+        foreach ($taskAssignments as $taskAssignment) {
+            $taskAssignmentsById[$taskAssignment->getId()] = $taskAssignment;
+        }
+
+        return $taskAssignmentsById;
+    }
+
+    /**
      * @return TimeEntry[]
      */
-    public function getTimeEntries(\DateTime $from, \DateTime $to)
+    public function getTimeEntries(\DateTime $from, \DateTime $to, array $options = []): array
     {
-        return $this->client->listTimeEntries([
+        $options = array_merge([
             'from' => $from->format('Y-m-d'),
             'to' => $to->format('Y-m-d'),
-        ], 'timeEntries')->getTimeEntries();
+        ], $options);
+
+        return $this->client->listTimeEntries($options, 'timeEntries')->getTimeEntries();
     }
 
     /**

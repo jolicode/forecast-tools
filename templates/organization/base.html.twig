@@ -21,6 +21,11 @@
                 <li class="nav-item{% if currentMenu == 'reminder' %} active{% endif %}">
                     <a class="nav-link" href="{{ organization_path('reminder_index') }}">📅 Forecast reminder</a>
                 </li>
+                {% if is_granted('admin', forecastAccount) or is_granted('harvest_admin', forecastAccount) %}
+                    <li class="nav-item{% if currentMenu == 'mass-insertion' %} active{% endif %}">
+                        <a class="nav-link" href="{{ organization_path('mass_insertion_index') }}">💯 Mass insert</a>
+                    </li>
+                {% endif %}
                 {% if is_granted('admin', forecastAccount) and is_granted('harvest_admin', forecastAccount) %}
                     <li class="nav-item{% if currentMenu == 'invoicing' %} active{% endif %}">
                         <a class="nav-link" href="{{ organization_path('invoicing_index') }}">💰 Invoicing</a>
