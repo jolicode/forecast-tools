@@ -28,7 +28,7 @@ class ForecastAccountSlackTeam
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\SlackTeam", inversedBy="forecastAccountSlackTeams")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     private $slackTeam;
 

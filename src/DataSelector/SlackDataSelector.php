@@ -13,6 +13,7 @@ namespace App\DataSelector;
 
 use App\Client\SlackClient;
 use App\Entity\SlackTeam;
+use JoliCode\Slack\Api\Model\ObjsUserProfile;
 
 class SlackDataSelector
 {
@@ -59,6 +60,15 @@ class SlackDataSelector
         return $choices;
     }
 
+    public function getUserProfile(SlackTeam $slackTeam, string $userId): ObjsUserProfile
+    {
+        $this->client->setSlackTeam($slackTeam);
+
+        return $this->client->usersInfo([
+            'user' => $userId,
+        ])->getUser()->getProfile();
+    }
+
     /**
      * @return \JoliCode\Slack\Api\Model\ObjsUser[]
      */
@@ -70,6 +80,20 @@ class SlackDataSelector
     }
 
     public function getUsersByEmail(SlackTeam $slackTeam): array
+    {
+        $users = $this->getUsers($slackTeam);
+        $emails = [];
+
+        foreach ($users as $user) {
+            if ($user->getProfile()->getEmail()) {
+                $emails[$user->getProfile()->getEmail()] = $user;
+            }
+        }
+
+        return $emails;
+    }
+
+    public function getUserIdsByEmail(SlackTeam $slackTeam): array
     {
         $users = $this->getUsers($slackTeam);
         $emails = [];

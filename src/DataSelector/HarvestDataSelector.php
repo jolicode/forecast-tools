@@ -12,6 +12,7 @@
 namespace App\DataSelector;
 
 use App\Client\HarvestClient;
+use App\Entity\HarvestAccount;
 use JoliCode\Harvest\Api\Model\Client;
 use JoliCode\Harvest\Api\Model\Invoice;
 use JoliCode\Harvest\Api\Model\Project;
@@ -19,6 +20,7 @@ use JoliCode\Harvest\Api\Model\TaskAssignment;
 use JoliCode\Harvest\Api\Model\TimeEntry;
 use JoliCode\Harvest\Api\Model\TimeEntryUser;
 use JoliCode\Harvest\Api\Model\UninvoicedReportResult;
+use JoliCode\Harvest\Api\Model\User;
 
 class HarvestDataSelector
 {
@@ -50,6 +52,13 @@ class HarvestDataSelector
         return $this;
     }
 
+    public function setHarvestAccount(HarvestAccount $harvestAccount): self
+    {
+        $this->client->__client($harvestAccount);
+
+        return $this;
+    }
+
     public function enableCacheForNextRequestOnly(): self
     {
         $this->client->__enableCacheForNextRequestOnly();
@@ -60,7 +69,7 @@ class HarvestDataSelector
     /**
      * @return Client[]
      */
-    public function getClients()
+    public function getClients(): array
     {
         return $this->client->listClients([], 'clients')->getClients();
     }
@@ -68,7 +77,7 @@ class HarvestDataSelector
     /**
      * @return Client[]
      */
-    public function getClientsById()
+    public function getClientsById(): array
     {
         $clientsById = [];
         $clients = $this->getClients();
@@ -83,14 +92,14 @@ class HarvestDataSelector
     /**
      * @return Client[]
      */
-    public function getEnabledClients()
+    public function getEnabledClients(): array
     {
         return array_filter($this->getClientsById(), function (Client $client) {
             return $client->getIsActive();
         });
     }
 
-    public function getEnabledClientsForChoice()
+    public function getEnabledClientsForChoice(): array
     {
         $choices = [];
         $clients = $this->getClients();
@@ -106,7 +115,10 @@ class HarvestDataSelector
         return $choices;
     }
 
-    public function getEnabledUsers()
+    /**
+     * @return User[]
+     */
+    public function getEnabledUsers(): array
     {
         $users = $this->client->listUsers(['is_active' => true], 'users')->getUsers();
 
@@ -127,7 +139,23 @@ class HarvestDataSelector
         return $users;
     }
 
-    public function getEnabledUsersAsTimeEntryUsers()
+    public function getUserByEmail(string $email): ?User
+    {
+        $users = array_filter($this->getEnabledUsers(), function (User $user) use ($email) {
+            return $email === $user->getEmail();
+        });
+
+        if (\count($users)) {
+            return array_pop($users);
+        }
+
+        return null;
+    }
+
+    /**
+     * @return TimeEntryUser[]
+     */
+    public function getEnabledUsersAsTimeEntryUsers(): array
     {
         $timeEntryUsers = [];
         $users = $this->getEnabledUsers();
@@ -142,7 +170,7 @@ class HarvestDataSelector
         return $timeEntryUsers;
     }
 
-    public function getEnabledUsersForChoice()
+    public function getEnabledUsersForChoice(): array
     {
         $choices = [];
         $users = $this->client->listUsers(['is_active' => true], 'users')->getUsers();
@@ -161,7 +189,7 @@ class HarvestDataSelector
     /**
      * @return Invoice[]
      */
-    public function getInvoices(\DateTime $from, \DateTime $to)
+    public function getInvoices(\DateTime $from, \DateTime $to): array
     {
         return $this->client->listInvoices([
             'from' => $from->format('Y-m-d'),
@@ -172,7 +200,7 @@ class HarvestDataSelector
     /**
      * @return Invoice[]
      */
-    public function getInvoicesById(\DateTime $from, \DateTime $to)
+    public function getInvoicesById(\DateTime $from, \DateTime $to): array
     {
         $invoicesById = [];
         $invoices = $this->getInvoices($from, $to);
@@ -187,7 +215,7 @@ class HarvestDataSelector
     /**
      * @return Project[]
      */
-    public function getProjects()
+    public function getProjects(): array
     {
         return $this->client->listProjects([], 'projects')->getProjects();
     }
@@ -195,7 +223,7 @@ class HarvestDataSelector
     /**
      * @return Project[]
      */
-    public function getProjectsById()
+    public function getProjectsById(): array
     {
         $projectsById = [];
         $projects = $this->getProjects();
@@ -253,26 +281,28 @@ class HarvestDataSelector
         return $uninvoiced;
     }
 
-    public function getUserTimeEntries(\DateTime $from, \DateTime $to)
+    public function getUserTimeEntries(\DateTime $from, \DateTime $to, array $options = []): array
     {
         $result = [];
-        $timeEntries = $this->getTimeEntries($from, $to);
+        $timeEntries = $this->getTimeEntries($from, $to, $options);
 
         foreach ($timeEntries as $timeEntry) {
             $day = $timeEntry->getSpentDate()->format('Y-m-d');
+            $user = $timeEntry->getUser();
+            $userId = $user->getId();
 
-            if (!isset($result[$timeEntry->getUser()->getId()])) {
-                $result[$timeEntry->getUser()->getId()] = [
+            if (!isset($result[$userId])) {
+                $result[$userId] = [
                     'entries' => [],
-                    'user' => $timeEntry->getUser(),
+                    'user' => $user,
                 ];
             }
 
-            if (!isset($result[$timeEntry->getUser()->getId()]['entries'][$day])) {
-                $result[$timeEntry->getUser()->getId()]['entries'][$day] = [];
+            if (!isset($result[$userId]['entries'][$day])) {
+                $result[$userId]['entries'][$day] = [];
             }
 
-            $result[$timeEntry->getUser()->getId()]['entries'][$day][] = $timeEntry;
+            $result[$userId]['entries'][$day][] = $timeEntry;
         }
 
         return $result;

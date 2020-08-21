@@ -92,6 +92,23 @@
                     </div>
                 </div>
             {% endif %}
+
+            {% if is_granted('admin', forecastAccount) and is_granted('harvest_admin', forecastAccount) %}
+                <div class="col-md-6 col-lg-4 col-xl-3 p-2">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <img src="/images/timesheet-reminders.svg" class="card-img-top" alt="Harvest timesheet Slack reminders">
+                            <h5 class="car-title">Timesheet reminders</h2>
+                            <p class="card-text">
+                                Automatically send a gentle Slack direct message to ask your team to fill the incomplete timesheets.
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ organization_path('settings_harvest_timesheets_reminder') }}" class="btn btn-primary">☝️ Set up Timesheets reminder</a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </div>
 {% endblock %}

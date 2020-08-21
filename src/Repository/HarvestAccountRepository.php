@@ -27,4 +27,31 @@ class HarvestAccountRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, HarvestAccount::class);
     }
+
+    /**
+     * @return HarvestAccount[]
+     */
+    public function findAllHavingTimesheetReminderSlackTeam()
+    {
+        return $this->createQueryBuilder('h')
+            ->andWhere('h.timesheetReminderSlackTeam IS NOT NULL')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    /**
+     * @return HarvestAccount[]
+     */
+    public function findBySlackTeamId(string $teamId)
+    {
+        return $this->createQueryBuilder('h')
+            ->select('h')
+            ->leftJoin('h.timesheetReminderSlackTeam', 'fast')
+            ->leftJoin('fast.slackTeam', 's')
+            ->andWhere('s.teamId = :teamId')
+            ->setParameter('teamId', $teamId)
+            ->getQuery()
+            ->getResult();
+    }
 }

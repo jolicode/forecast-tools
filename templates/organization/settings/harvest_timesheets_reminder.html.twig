@@ -1,0 +1,61 @@
+{% extends 'organization/base.html.twig' %}
+
+{% block title %}Timesheets reminder settings | {{ parent() }}{% endblock %}
+
+{% block content %}
+    {{ include('organization/settings/_menu.html.twig', {menu: 'timesheets-reminder'}) }}
+    <div class="card border-top-0">
+        {{ form_start(form) }}
+            <div class="card-body">
+                {% if forecastAccount.forecastAccountSlackTeams|length == 0 %}
+                    <div class="alert alert-danger d-flex" role="alert">
+                        <div class="flex-grow-1 py-1">This reminder cannot be executed, as no Slack workspace has been added to your account. <a href="{{ organization_path('settings_slack') }}">Add one now</a>.</div>
+                    </div>
+                {% endif %}
+
+                {{ form_errors(form) }}
+
+                <div class="form-group">
+                    {{ form_label(form.doNotSendTimesheetReminderFor) }}
+                    {{ form_errors(form.doNotSendTimesheetReminderFor) }}
+                    <div>
+                        {{ form_widget(form.doNotSendTimesheetReminderFor, { attr: { class: 'select2', multiple: 'multiple' }}) }}
+                    </div>
+                    {{ form_help(form.doNotSendTimesheetReminderFor) }}
+                </div>
+
+                {{ form_row(form.timesheetReminderSlackTeam) }}
+            </div>
+            <div class="card-footer text-right">
+                {{ form_widget(form.save) }}
+            </div>
+        {{ form_end(form) }}
+    </div>
+
+    {% if issues|length > 0 %}
+        <div class="card card-body mt-3">
+            <p>If we were to send the alerts now, these messages would be sent to the organization users:</p>
+
+            <div class="row">
+                {% for issue in issues %}
+                    <div class="col-md-6 col-lg-4 col-xl-3 p-2">
+                        <div class="card card-body">
+                            <h5 class="card-title">{{ issue.user.firstName }} {{ issue.user.lastName }}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">{{ issue.user.email }} / "{{ issue.slackUser.name }}" on Slack</h6>
+
+                            <code class="text-dark">
+                            {%- for blockContent in issue.blocks -%}
+                                {%- if blockContent.text is defined -%}
+                                    {{- blockContent.text.text | slack_mrkdwn -}}
+                                {%- elseif blockContent.type == 'divider' -%}
+                                    <hr />
+                                {%- endif -%}
+                            {%- endfor -%}
+                            </code>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
