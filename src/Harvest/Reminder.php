@@ -299,7 +299,7 @@ class Reminder
                             $day['day'],
                             $this->buildHoursDiffSuffix(
                                 $day['hours_expected'] - $day['hours_declared'],
-                                \count($day['add']) + \count($day['remove']) === 0
+                                0 === \count($day['add']) + \count($day['remove'])
                             )
                         );
 
@@ -371,7 +371,7 @@ class Reminder
                             'text' => 'reload',
                             'emoji' => true,
                         ],
-                        'value' => $currentMonth ? 'current' : 'previous',
+                        'value' => $currentMonth ? Handler::SLACK_COMMAND_OPTION_CURRENT : 'previous',
                         'action_id' => Handler::ACTION_PREFIX . '.' . Handler::ACTION_RELOAD,
                     ]],
                 ],
@@ -517,10 +517,10 @@ class Reminder
 
         return
             // the first day of the month is a working day
-            ($dayOfMonth === 1 && $dayOfWeek < 6)
+            (1 === $dayOfMonth && $dayOfWeek < 6)
 
             // the 2nd or 3rd day of the month is also the first day of a week
-            || ($dayOfMonth <= 3 && $dayOfWeek === 1)
+            || ($dayOfMonth <= 3 && 1 === $dayOfWeek)
         ;
     }
 }

@@ -78,7 +78,7 @@ class Handler
                         $harvestProperties['user'],
                         $request->request->get('trigger_id'),
                         $request->request->get('response_url'),
-                        $option === self::SLACK_COMMAND_OPTION_CURRENT
+                        self::SLACK_COMMAND_OPTION_CURRENT === $option
                     );
                 }
                 break;
@@ -108,7 +108,7 @@ class Handler
                             $harvestProperties['user'],
                             $payload['trigger_id'],
                             $payload['response_url'],
-                            $action['value'] === 'current'
+                            self::SLACK_COMMAND_OPTION_CURRENT === $action['value']
                         );
                     } catch (\Exception $e) {
                         // silence, the initial reminder might be sent since a long time

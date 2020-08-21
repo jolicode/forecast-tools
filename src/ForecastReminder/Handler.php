@@ -27,7 +27,7 @@ class Handler
     private SlackSender $slackSender;
     private WordToNumberConverter $wordToNumberConverter;
 
-    public function __construct(ForecastReminderRepository$forecastReminderRepository, SlackSender $slackSender, WordToNumberConverter $wordToNumberConverter)
+    public function __construct(ForecastReminderRepository $forecastReminderRepository, SlackSender $slackSender, WordToNumberConverter $wordToNumberConverter)
     {
         $this->forecastReminderRepository = $forecastReminderRepository;
         $this->slackSender = $slackSender;
