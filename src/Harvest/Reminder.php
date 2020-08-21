@@ -47,6 +47,11 @@ class Reminder
     public function send()
     {
         $timesheetRemindersCount = 0;
+
+        if (!$this->mustSend()) {
+            return $timesheetRemindersCount;
+        }
+
         $firstDayOfLastMonth = new \DateTime('first day of last month');
         $lastDayOfLastMonth = new \DateTime('last day of last month');
         $harvestAccounts = $this->harvestAccountRepository->findAllHavingTimesheetReminderSlackTeam();
@@ -502,5 +507,20 @@ class Reminder
     private function isSameProject(Assignment $assignment, TimeEntry $timeEntry, array $forecastProjects): bool
     {
         return $timeEntry->getProject()->getId() === $forecastProjects[$assignment->getProjectId()]->getHarvestId();
+    }
+
+    private function mustSend()
+    {
+        $today = new \DateTime();
+        $dayOfMonth = (int) $today->format('j');
+        $dayOfWeek = (int) $today->format('N');
+
+        return
+            // the first day of the month is a working day
+            ($dayOfMonth === 1 && $dayOfWeek < 6)
+
+            // the 2nd or 3rd day of the month is also the first day of a week
+            || ($dayOfMonth <= 3 && $dayOfWeek === 1)
+        ;
     }
 }
