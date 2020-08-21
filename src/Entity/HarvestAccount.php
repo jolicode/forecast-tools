@@ -87,6 +87,17 @@ class HarvestAccount
      */
     private $invoiceNotesRequirements;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=ForecastAccountSlackTeam::class, cascade={"persist"})
+     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
+     */
+    private $timesheetReminderSlackTeam;
+
+    /**
+     * @ORM\Column(type="array", nullable=true)
+     */
+    private $doNotSendTimesheetReminderFor = [];
+
     public function __construct()
     {
         $this->invoiceDueDelayRequirements = new ArrayCollection();
@@ -264,6 +275,30 @@ class HarvestAccount
                 $invoiceNotesRequirement->setHarvestAccount(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getTimesheetReminderSlackTeam(): ?ForecastAccountSlackTeam
+    {
+        return $this->timesheetReminderSlackTeam;
+    }
+
+    public function setTimesheetReminderSlackTeam(?ForecastAccountSlackTeam $timesheetReminderSlackTeam): self
+    {
+        $this->timesheetReminderSlackTeam = $timesheetReminderSlackTeam;
+
+        return $this;
+    }
+
+    public function getDoNotSendTimesheetReminderFor(): ?array
+    {
+        return $this->doNotSendTimesheetReminderFor;
+    }
+
+    public function setDoNotSendTimesheetReminderFor(array $doNotSendTimesheetReminderFor): self
+    {
+        $this->doNotSendTimesheetReminderFor = $doNotSendTimesheetReminderFor;
 
         return $this;
     }

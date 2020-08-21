@@ -21,7 +21,7 @@ use JoliCode\Forecast\Api\Model\Project;
 
 class ForecastDataSelector
 {
-    private $client;
+    private ForecastClient $client;
 
     public function __construct(ForecastClient $forecastClient)
     {
@@ -222,9 +222,11 @@ class ForecastDataSelector
         return self::makeLookup($this->getProjects($enabled), $methodName);
     }
 
-    public function setForecastAccount(ForecastAccount $forecastAccount)
+    public function setForecastAccount(ForecastAccount $forecastAccount): self
     {
         $this->client->setForecastAccount($forecastAccount);
+
+        return $this;
     }
 
     private static function makeLookup($struct, $methodName = null)

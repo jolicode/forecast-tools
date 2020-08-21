@@ -106,7 +106,6 @@ class ForecastAccount
     {
         $this->publicForecasts = new ArrayCollection();
         $this->userHarvestAccounts = new ArrayCollection();
-        $this->slackTeams = new ArrayCollection();
         $this->invoicingProcesses = new ArrayCollection();
         $this->forecastAccountSlackTeams = new ArrayCollection();
     }

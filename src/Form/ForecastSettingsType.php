@@ -23,7 +23,7 @@ class ForecastSettingsType extends AbstractType
     {
         $builder
             ->add('allowNonAdmins', null, [
-                'help' => 'Allow regular Forecast users to create, edit or delete public forecasts? In unset, only Forecast admins will be abllowed to do so.',
+                'help' => 'Allow regular Forecast users to create, edit or delete public forecasts? In unset, only Forecast admins will be allowed to do so.',
                 'label_attr' => [
                     'class' => 'switch-custom',
                 ],

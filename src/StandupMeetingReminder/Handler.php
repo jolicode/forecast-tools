@@ -17,6 +17,7 @@ use App\Entity\StandupMeetingReminder;
 use App\Repository\ForecastAccountRepository;
 use App\Repository\SlackTeamRepository;
 use App\Repository\StandupMeetingReminderRepository;
+use App\Slack\Sender as SlackSender;
 use Doctrine\ORM\EntityManagerInterface;
 use JoliCode\Slack\Exception\SlackErrorResponse;
 use Symfony\Component\HttpClient\HttpClient;
@@ -25,34 +26,57 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Handler
 {
-    private $em;
-    private $forecastAccountRepository;
-    private $forecastDataSelector;
-    private $slackDataSelector;
+    const ACTION_PREFIX = 'standup-reminder';
+    const ACTION_CHANGE = 'change';
+    const ACTION_CREATE = 'create';
 
-    /** @var SlackTeamRepository */
-    private $slackTeamRepository;
-    private $standupMeetingReminderRepository;
+    const SLACK_COMMAND_NAME = '/standup-reminder';
+    const SLACK_COMMAND_OPTION_HELP = 'help';
+    const SLACK_COMMAND_OPTION_LIST = 'list';
 
-    public function __construct(EntityManagerInterface $em, ForecastAccountRepository $forecastAccountRepository, SlackTeamRepository $slackTeamRepository, ForecastDataSelector $forecastDataSelector, SlackDataSelector $slackDataSelector, StandupMeetingReminderRepository $standupMeetingReminderRepository)
+    private EntityManagerInterface $em;
+    private ForecastAccountRepository $forecastAccountRepository;
+    private ForecastDataSelector $forecastDataSelector;
+    private SlackDataSelector $slackDataSelector;
+    private SlackSender $slackSender;
+    private SlackTeamRepository $slackTeamRepository;
+    private StandupMeetingReminderRepository $standupMeetingReminderRepository;
+
+    public function __construct(EntityManagerInterface $em, ForecastAccountRepository $forecastAccountRepository, ForecastDataSelector $forecastDataSelector, SlackDataSelector $slackDataSelector, SlackSender $slackSender, SlackTeamRepository $slackTeamRepository, StandupMeetingReminderRepository $standupMeetingReminderRepository)
     {
         $this->em = $em;
         $this->forecastAccountRepository = $forecastAccountRepository;
-        $this->slackTeamRepository = $slackTeamRepository;
         $this->forecastDataSelector = $forecastDataSelector;
         $this->slackDataSelector = $slackDataSelector;
+        $this->slackSender = $slackSender;
+        $this->slackTeamRepository = $slackTeamRepository;
         $this->standupMeetingReminderRepository = $standupMeetingReminderRepository;
     }
 
     public function handleRequest(Request $request)
     {
-        if ('help' === $request->request->get('text')) {
-            return $this->help($request->request->get('response_url'));
-        } elseif ('list' === $request->request->get('text')) {
-            return $this->listReminders($request);
-        }
+        $option = $request->request->get('text', '');
 
-        return $this->openModal($request);
+        switch ($option) {
+            case self::SLACK_COMMAND_OPTION_HELP:
+                $this->help(
+                    $request->request->get('response_url'),
+                    $request->request->get('trigger_id')
+                );
+                break;
+            case self::SLACK_COMMAND_OPTION_LIST:
+                $this->listReminders($request);
+
+                // try to preload available projects so that they're in cache
+                $this->loadProjects($request->request->get('team_id'));
+                break;
+            case '':
+                $this->openModal($request);
+                break;
+            default:
+                throw new \DomainException(sprintf('😱 The "%s" option is not valid.', $option));
+                break;
+        }
     }
 
     public function handleBlockAction(array $payload)
@@ -63,7 +87,7 @@ class Handler
 
         $action = $payload['actions'][0];
 
-        if ('change' === $action['action_id']) {
+        if (self::ACTION_PREFIX . '.' . self::ACTION_CHANGE === $action['action_id']) {
             $standupMeetingReminder = $this->standupMeetingReminderRepository->findOneBy([
                 'id' => $action['block_id'],
                 'slackTeam' => $slackTeam,
@@ -99,7 +123,7 @@ class Handler
                     $payload['trigger_id'],
                 );
             }
-        } elseif ('create' === $action['action_id']) {
+        } elseif (self::ACTION_PREFIX . '.' . self::ACTION_CREATE === $action['action_id']) {
             return $this->displayModalForm(
                 $payload['team']['id'],
                 $payload['channel']['id'],
@@ -280,32 +304,17 @@ class Handler
         return $projectsByAccount;
     }
 
-    private function help(string $responseUrl)
+    private function help(string $responseUrl, string $triggerId)
     {
-        $message = <<<'EOT'
-Use the `/standup-reminder` command to create or edit a stand-up reminder in the current channel.
-
-You can use `/standup-reminder list` to list all the existing stand-up reminders in the workspace.
-EOT;
-
-        $client = HttpClient::create();
-        $client->request('POST', $responseUrl, [
-            'headers' => [
-                'Content-Type' => 'application/json',
-            ],
-            'body' => json_encode([
-                'blocks' => [
-                    [
-                        'type' => 'section',
-                        'text' => [
-                            'type' => 'mrkdwn',
-                            'text' => $message,
-                        ],
-                    ],
-                ],
-                'replace_original' => true,
-            ]),
-        ]);
+        $message = sprintf(<<<'EOT'
+Use `%s` to create or edit a stand-up reminder.
+Use `%s %s` to list all the existing stand-up reminders in the workspace.
+EOT,
+            self::SLACK_COMMAND_NAME,
+            self::SLACK_COMMAND_NAME,
+            self::SLACK_COMMAND_OPTION_LIST
+        );
+        $this->slackSender->send($responseUrl, $triggerId, $message);
     }
 
     private function listReminders(Request $request)
@@ -536,7 +545,7 @@ EOT;
                             'value' => 'delete',
                         ],
                     ],
-                    'action_id' => 'change',
+                    'action_id' => self::ACTION_PREFIX . '.' . self::ACTION_CHANGE,
                 ],
             ];
         }
@@ -565,7 +574,7 @@ EOT;
                         'text' => 'Schedule a stand-up reminder',
                     ],
                     'value' => $responseUrl,
-                    'action_id' => 'create',
+                    'action_id' => self::ACTION_PREFIX . '.' . self::ACTION_CREATE,
                 ],
             ],
         ];

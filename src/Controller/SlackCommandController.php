@@ -11,7 +11,8 @@
 
 namespace App\Controller;
 
-use App\StandupMeetingReminder\Handler;
+use App\Harvest\Handler as HarvestReminderHandler;
+use App\StandupMeetingReminder\Handler as StandupMeetingReminderHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,7 +35,7 @@ class SlackCommandController extends AbstractController
     /**
      * @Route("/data-source", name="data_source")
      */
-    public function dataSource(Request $request, Handler $standupMeetingReminderHandler): JsonResponse
+    public function dataSource(Request $request, StandupMeetingReminderHandler $standupMeetingReminderHandler): JsonResponse
     {
         $payload = json_decode($request->request->get('payload'), true);
 
@@ -48,15 +49,29 @@ class SlackCommandController extends AbstractController
     /**
      * @Route("/interactive-endpoint", name="interactive_endpoint")
      */
-    public function interactiveEndpoint(Request $request, Handler $standupMeetingReminderHandler): JsonResponse
+    public function interactiveEndpoint(Request $request, StandupMeetingReminderHandler $standupMeetingReminderHandler, HarvestReminderHandler $harvestReminderHandler): JsonResponse
     {
         $payload = json_decode($request->request->get('payload'), true);
 
         if ('block_actions' === $payload['type']) {
-            $standupMeetingReminderHandler->handleBlockAction($payload);
+            // whenever a block kit interactive component is clicked
+            $action = explode('.', $payload['actions'][0]['action_id']);
+
+            switch ($action[0]) {
+                case StandupMeetingReminderHandler::ACTION_PREFIX:
+                    $standupMeetingReminderHandler->handleBlockAction($payload);
+                    break;
+                case HarvestReminderHandler::ACTION_PREFIX:
+                    $harvestReminderHandler->handleBlockAction($payload);
+                    break;
+                default:
+                    throw new \DomainException(sprintf('Could not understand the "%s" action type.', $action[0]));
+                    break;
+            }
         }
 
         if ('view_submission' === $payload['type']) {
+            // whenever a modal is submitted
             return $standupMeetingReminderHandler->handleSubmission($payload);
         }
 

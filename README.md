@@ -117,13 +117,25 @@ function.
 
 Checkout `fab -l` to have the list of available fabric tasks.
 
-## Cron jobs
+## Commands and cron jobs
 
-In order to send Slack alerts, add a crontab directive to run every minute the `./bin/console forecast:alert-send` task, and every 15 minutes the `./bin/console forecast:standup-meeting-reminder-send` task eg.
+### Commands
+
+The project provides 4 Symfony commands:
+
+ * `forecast:alert-send` has to be executed every minute. It sends Slack Forecast schedule reminders, according to their configuration in the organization settings ;
+ * `forecast:standup-meeting-reminder-send` has to be executed every 15 minutes. It sends Slack standup meeting reminders to Slack channels ;
+ * `forecast:timesheet-reminder` has to be executed once a day. It sends Slack private message reminders to users who have not filled their Harvest timesheets for the previous month ;
+ * `forecast:refresh-tokens` has to be executed once a day. It refreshes Harvest API tokens once per week, to that alerts can be sent even if a user did not connect since a long time.
+
+### Cron jobs setup
+
+In order to send Slack alerts, add a crontab directive to run every minute the `./bin/console forecast:alert-send` task, every 15 minutes the `./bin/console forecast:standup-meeting-reminder-send` task, and every day at 10am the `./bin/console forecast:timesheet-reminder` task eg.
 
 ```
 * * * * * /path/to/install/bin/console forecast:alert-send
 */15 * * * * /path/to/install/bin/console forecast:standup-meeting-reminder-send
+0 10 * * * /path/to/install/bin/console forecast:timesheet-reminder
 ```
 
 Harvest tokens need to be refreshed once in a while. They have a two-weeks duration, hence we try to refresh them when they will expire in less than 7 days. In order to force tokens to be refreshed once a day, please add this cron job:

@@ -39,9 +39,7 @@ class ForecastRefreshTokensCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $io = new SymfonyStyle($input, $output);
-
         $refreshed = $this->refresher->refresh();
-
         $io->success(sprintf('Refreshed %s tokens. %s errors occurred.', $refreshed[0], $refreshed[1]));
 
         return 0;

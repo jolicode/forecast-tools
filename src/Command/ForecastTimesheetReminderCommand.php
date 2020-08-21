@@ -11,20 +11,20 @@
 
 namespace App\Command;
 
-use App\ForecastReminder\Sender;
+use App\Harvest\Reminder;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-class ForecastReminderSendCommand extends Command
+class ForecastTimesheetReminderCommand extends Command
 {
-    protected static $defaultName = 'forecast:reminder-send';
-    private $forecastReminderSender;
+    protected static $defaultName = 'forecast:timesheet-reminder';
+    private $timesheetReminder;
 
-    public function __construct(Sender $forecastReminderSender)
+    public function __construct(Reminder $timesheetReminder)
     {
-        $this->forecastReminderSender = $forecastReminderSender;
+        $this->timesheetReminder = $timesheetReminder;
 
         parent::__construct();
     }
@@ -32,14 +32,14 @@ class ForecastReminderSendCommand extends Command
     protected function configure()
     {
         $this
-            ->setDescription('Sends Forecast Reminders')
+            ->setDescription('Send timesheet reminders, on the first worked day of each month')
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $count = $this->forecastReminderSender->send();
+        $count = $this->timesheetReminder->send();
         $io->success(sprintf('Sent %s reminders', $count));
 
         return 0;

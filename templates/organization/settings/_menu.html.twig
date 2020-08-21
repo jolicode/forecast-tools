@@ -10,6 +10,7 @@
         {% endif %}
 
         {% if is_granted('harvest_admin', forecastAccount) %}
+            <a class="nav-item nav-link{% if menu == 'timesheets-reminder' %} active{% endif %}" href="{{ organization_path('settings_harvest_timesheets_reminder') }}">Timesheets reminder settings</a>
             <a class="nav-item nav-link{% if menu == 'harvest' %} active{% endif %}" href="{{ organization_path('settings_harvest') }}">Invoicing settings</a>
         {% endif %}
 

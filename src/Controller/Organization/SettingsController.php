@@ -17,7 +17,9 @@ use App\Entity\SlackTeam;
 use App\Form\DeleteAccountFormType;
 use App\Form\ForecastSettingsType;
 use App\Form\HarvestSettingsType;
+use App\Form\HarvestTimesheetsReminderType;
 use App\Form\UserSettingsType;
+use App\Harvest\Reminder;
 use App\Repository\ForecastAccountSlackTeamRepository;
 use App\Repository\SlackTeamRepository;
 use App\Repository\UserForecastAccountRepository;
@@ -148,6 +150,31 @@ class SettingsController extends AbstractController
         return $this->render('organization/settings/harvest.html.twig', [
             'forecastAccount' => $forecastAccount,
             'form' => $form->createView(),
+        ]);
+    }
+
+    /**
+     * @Route("/harvest-timesheets-reminder", name="harvest_timesheets_reminder")
+     * @IsGranted("admin", subject="forecastAccount")
+     * @IsGranted("harvest_admin", subject="forecastAccount")
+     */
+    public function harvestTimesheetsReminder(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em, Reminder $harvestReminder)
+    {
+        $form = $this->createForm(HarvestTimesheetsReminderType::class, $forecastAccount->getHarvestAccount());
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $harvestAccount = $form->getData();
+            $em->persist($harvestAccount);
+            $em->flush();
+
+            return $this->redirectToRoute('organization_settings_harvest_timesheets_reminder', ['slug' => $forecastAccount->getSlug()]);
+        }
+
+        return $this->render('organization/settings/harvest_timesheets_reminder.html.twig', [
+            'forecastAccount' => $forecastAccount,
+            'form' => $form->createView(),
+            'issues' => $harvestReminder->buildForHarvestAccount($forecastAccount->getHarvestAccount()),
         ]);
     }
 
