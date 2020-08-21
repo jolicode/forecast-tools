@@ -11,6 +11,7 @@
 
 namespace App\Client;
 
+use App\Entity\HarvestAccount;
 use App\Repository\UserRepository;
 use JoliCode\Harvest\Api\Client;
 use JoliCode\Harvest\ClientFactory;
@@ -21,7 +22,8 @@ use Symfony\Contracts\Cache\ItemInterface;
 
 class HarvestClient extends AbstractClient
 {
-    private $client = null;
+    private $clients = [];
+    private $defaultClient = null;
     private $namespace = '';
     private $requestStack;
     private $security;
@@ -57,12 +59,22 @@ class HarvestClient extends AbstractClient
         $this->cacheStatusForNextRequestOnly = true;
     }
 
-    public function __client(): Client
+    public function __client(HarvestAccount $harvestAccount = null): Client
     {
-        if (null === $this->client) {
+        if (null !== $harvestAccount) {
+            if (!isset($this->clients[$harvestAccount->getHarvestId()])) {
+                $accessToken = $harvestAccount->getForecastAccount()->getAccessToken();
+                $this->__saveClient($accessToken, $harvestAccount);
+            }
+
+            $this->defaultClient = $this->clients[$harvestAccount->getHarvestId()];
+        }
+
+        if (null === $this->defaultClient) {
             $email = $this->security->getUser()->getUsername();
             $user = $this->userRepository->findOneBy(['email' => $email]);
             $forecastAccount = $this->requestStack->getCurrentRequest()->attributes->get('forecastAccount');
+            $harvestAccount = $forecastAccount->getHarvestAccount();
 
             if ($user) {
                 $accessToken = $user->getAccessToken();
@@ -70,13 +82,18 @@ class HarvestClient extends AbstractClient
                 $accessToken = $forecastAccount->getAccessToken();
             }
 
-            $this->client = ClientFactory::create(
-                $accessToken,
-                $forecastAccount->getHarvestAccount()->getHarvestId()
-            );
+            $this->__saveClient($accessToken, $harvestAccount);
+            $this->defaultClient = $this->clients[$harvestAccount->getHarvestId()];
         }
 
-        return $this->client;
+        return $this->defaultClient;
+    }
+
+    private function __saveClient(string $accessToken, HarvestAccount $harvestAccount)
+    {
+        $forecastAccount = $harvestAccount->getForecastAccount();
+        $this->clients[$harvestAccount->getHarvestId()] = ClientFactory::create($accessToken, $harvestAccount->getHarvestId());
+        $this->namespace = 'harvest-' . $forecastAccount->getId();
     }
 
     protected function __namespace()
