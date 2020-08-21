@@ -124,7 +124,7 @@ class Sender
         }
 
         // find people from Slack
-        $slackUsers = $this->slackDataSelector->getUsersByEmail($standupMeetingReminder->getSlackTeam());
+        $slackUsers = $this->slackDataSelector->getUserIdsByEmail($standupMeetingReminder->getSlackTeam());
         ksort($members);
 
         foreach ($members as $email => $memberName) {

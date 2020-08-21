@@ -39,9 +39,7 @@ class ForecastReminderSendCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $io = new SymfonyStyle($input, $output);
-
         $count = $this->forecastReminderSender->send();
-
         $io->success(sprintf('Sent %s reminders', $count));
 
         return 0;
