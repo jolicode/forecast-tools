@@ -215,7 +215,7 @@ class ForecastDataSelector
      * @param mixed|null $enabled
      * @param mixed|null $methodName
      *
-     * @return Client[]
+     * @return Project[]
      */
     public function getProjectsById($methodName = null, $enabled = null)
     {

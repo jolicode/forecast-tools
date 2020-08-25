@@ -57,14 +57,31 @@ class Reminder
         $harvestAccounts = $this->harvestAccountRepository->findAllHavingTimesheetReminderSlackTeam();
 
         foreach ($harvestAccounts as $harvestAccount) {
+            $missingProjectAssignmentsIssues = $this->buildMissingItemsSlackBlocks(
+                $this->buildMissingProjectAssignmentsIssues($harvestAccount, $firstDayOfLastMonth, $lastDayOfLastMonth),
+                $harvestAccount
+            );
             $issues = $this->buildSlackBlocks(
                 $this->buildIssues($harvestAccount, $firstDayOfLastMonth, $lastDayOfLastMonth)
             );
 
-            if (\count($issues) > 0) {
+            if (\count($issues) + \count($missingProjectAssignmentsIssues) > 0) {
                 $slackClient = \JoliCode\Slack\ClientFactory::create(
                     $harvestAccount->getTimesheetReminderSlackTeam()->getSlackTeam()->getAccessToken()
                 );
+
+                if (\count($missingProjectAssignmentsIssues)) {
+                    $adminUsers = $this->getHarvestAdminSlackIds($harvestAccount);
+
+                    foreach ($adminUsers as $adminUser) {
+                        $slackClient->chatPostMessage([
+                            'channel' => $adminUser,
+                            'username' => self::BOT_NAME,
+                            'text' => $missingProjectAssignmentsIssues[0]['text']['text'],
+                            'blocks' => json_encode($missingProjectAssignmentsIssues),
+                        ]);
+                    }
+                }
 
                 foreach ($issues as $issue) {
                     // send a Slack notification to this user
@@ -260,6 +277,141 @@ class Reminder
         }
 
         return $issues;
+    }
+
+    private function buildMissingProjectAssignmentsIssues(HarvestAccount $harvestAccount, \DateTime $firstDayOfLastMonth, \DateTime $lastDayOfLastMonth, HarvestUser $harvestUser = null): array
+    {
+        $issues = [
+            'no_harvest_project' => [],
+            'missing_harvest_user_assignment' => [],
+        ];
+        $slackTeam = $harvestAccount->getTimesheetReminderSlackTeam();
+
+        if (null === $slackTeam) {
+            return [];
+        }
+
+        $this->harvestDataSelector->setHarvestAccount($harvestAccount);
+        $this->forecastDataSelector->setForecastAccount($harvestAccount->getForecastAccount());
+        $forecastPeople = $this->forecastDataSelector->getPeopleById();
+        $forecastProjects = $this->forecastDataSelector->getProjectsById();
+        $harvestUserAssignments = $this->harvestDataSelector->getUserAssignments(['is_active' => true]);
+        $forecastAssignments = $this->forecastDataSelector->getAssignments($firstDayOfLastMonth, $lastDayOfLastMonth);
+
+        foreach ($forecastAssignments as $forecastAssignment) {
+            $forecastProject = $forecastProjects[$forecastAssignment->getProjectId()] ?? null;
+            $forecastPerson = $forecastPeople[$forecastAssignment->getPersonId()] ?? null;
+
+            if (!$forecastProject || !$forecastPerson || !$forecastPerson->getHarvestUserId()) {
+                continue;
+            }
+
+            if (!$forecastProject->getHarvestId()) {
+                $issues['no_harvest_project'][$forecastProject->getId()] = $forecastProject;
+            }
+
+            if (!isset($harvestUserAssignments[$forecastPerson->getHarvestUserId()])
+                || !isset($harvestUserAssignments[$forecastPerson->getHarvestUserId()][$forecastProject->getHarvestId()])) {
+                if (!isset($issues['missing_harvest_user_assignment'][$forecastPerson->getHarvestUserId()])) {
+                    $issues['missing_harvest_user_assignment'][$forecastPerson->getHarvestUserId()] = [
+                        'forecast_user' => $forecastPerson,
+                        'projects' => [],
+                    ];
+                }
+
+                $issues['missing_harvest_user_assignment'][$forecastPerson->getHarvestUserId()]['projects'][$forecastProject->getId()] = [
+                    'project' => $forecastProject,
+                    'assignment' => $forecastAssignment,
+                ];
+            }
+        }
+
+        return $issues;
+    }
+
+    private function buildMissingItemsSlackBlocks(array $issues, HarvestAccount $harvestAccount): array
+    {
+        $blocks = [];
+
+        if (\count($issues['no_harvest_project']) + \count($issues['missing_harvest_user_assignment']) > 0) {
+            $blocks = [
+                [
+                    'type' => 'section',
+                    'text' => [
+                        'type' => 'mrkdwn',
+                        'text' => 'There are some issues with in the Harvest projects configuration and assignments, that could prevent some of your users from filling their timesheets for last month.',
+                    ],
+                ], [
+                    'type' => 'divider',
+                ],
+            ];
+        }
+
+        if (\count($issues['no_harvest_project']) > 0) {
+            $blocks[] = [
+                'type' => 'section',
+                'text' => [
+                    'type' => 'mrkdwn',
+                    'text' => 'Projects that exist in Slack and do not exist in Harvest',
+                ],
+            ];
+
+            foreach ($issues['no_harvest_project'] as $forecastProject) {
+                $blocks[] = [
+                    'type' => 'section',
+                    'text' => [
+                        'type' => 'mrkdwn',
+                        'text' => sprintf('[%s] %s', $forecastProject->getCode(), $forecastProject->getName()),
+                    ],
+                ];
+            }
+
+            $blocks[] = [
+                'type' => 'divider',
+            ];
+        }
+
+        if (\count($issues['missing_harvest_user_assignment']) > 0) {
+            $blocks[] = [
+                'type' => 'section',
+                'text' => [
+                    'type' => 'mrkdwn',
+                    'text' => 'The following users are not assigned projects in Harvest, while they are in Forecast. They won\'t be able to fill their harvest timesheets:',
+                ],
+            ];
+
+            foreach ($issues['missing_harvest_user_assignment'] as $userIssues) {
+                $blocks[] = [
+                    'type' => 'section',
+                    'text' => [
+                        'type' => 'mrkdwn',
+                        'text' => sprintf('*%s %s*', $userIssues['forecast_user']->getFirstName(), $userIssues['forecast_user']->getLastName()),
+                    ],
+                ];
+
+                foreach ($userIssues['projects'] as $project) {
+                    $blocks[] = [
+                        'type' => 'section',
+                        'text' => [
+                            'type' => 'mrkdwn',
+                            'text' => sprintf(
+                                '<%s/projects/%s|[%s] %s>',
+                                $harvestAccount->getBaseUri(),
+                                $project['project']->getHarvestId(),
+                                $project['project']->getCode(),
+                                $project['project']->getName()
+                            ),
+                        ],
+                    ];
+                }
+            }
+
+            $blocks[] = [
+                'type' => 'divider',
+            ];
+        }
+
+        return $blocks;
     }
 
     private function buildSlackBlocks(array $issues, $currentMonth = false): array
@@ -466,6 +618,28 @@ class Reminder
 
             return 0 === \count($matchingAssignments);
         });
+    }
+
+    private function getHarvestAdminSlackIds(HarvestAccount $harvestAccount)
+    {
+        $ids = [];
+        $slackTeam = $harvestAccount->getTimesheetReminderSlackTeam();
+
+        if (null === $slackTeam) {
+            return $ids;
+        }
+
+        $slackUsers = $this->slackDataSelector->getUsersByEmail($slackTeam->getSlackTeam());
+        $this->harvestDataSelector->setHarvestAccount($harvestAccount);
+        $users = $this->harvestDataSelector->getEnabledUsers();
+
+        foreach ($users as $user) {
+            if ($user->getIsAdmin() && isset($slackUsers[$user->getEmail()])) {
+                $ids[] = $slackUsers[$user->getEmail()]->getId();
+            }
+        }
+
+        return $ids;
     }
 
     private function getClockEmoji($value)
