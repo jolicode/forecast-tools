@@ -333,7 +333,7 @@ class Reminder
     {
         $blocks = [];
 
-        if (count($issues['no_harvest_project']) + count($issues['missing_harvest_user_assignment']) > 0) {
+        if (\count($issues['no_harvest_project']) + \count($issues['missing_harvest_user_assignment']) > 0) {
             $blocks = [
                 [
                     'type' => 'section',
@@ -347,7 +347,7 @@ class Reminder
             ];
         }
 
-        if (count($issues['no_harvest_project']) > 0) {
+        if (\count($issues['no_harvest_project']) > 0) {
             $blocks[] = [
                 'type' => 'section',
                 'text' => [
@@ -371,7 +371,7 @@ class Reminder
             ];
         }
 
-        if (count($issues['missing_harvest_user_assignment']) > 0) {
+        if (\count($issues['missing_harvest_user_assignment']) > 0) {
             $blocks[] = [
                 'type' => 'section',
                 'text' => [
@@ -413,7 +413,6 @@ class Reminder
 
         return $blocks;
     }
-
 
     private function buildSlackBlocks(array $issues, $currentMonth = false): array
     {
