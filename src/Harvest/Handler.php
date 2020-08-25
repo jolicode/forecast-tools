@@ -132,11 +132,13 @@ class Handler
                 $value
             );
             try {
+                $current = (new \DateTime($value))->format('n') === (new \DateTime())->format('n');
                 $this->updateReminder(
                     $harvestProperties['account'],
                     $harvestProperties['user'],
                     $payload['trigger_id'],
-                    $payload['response_url']
+                    $payload['response_url'],
+                    $current
                 );
             } catch (\Exception $e) {
                 // silence, the initial reminder might be sent since a long time

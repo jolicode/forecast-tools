@@ -281,6 +281,25 @@ class HarvestDataSelector
         return $uninvoiced;
     }
 
+    public function getUserAssignments(array $options = []): array
+    {
+        $result = [];
+        $assignments = $this->client->listUserAssignments($options, 'userAssignments')->getUserAssignments();
+
+        foreach ($assignments as $assignment) {
+            $userId = $assignment->getUser()->getId();
+            $projectId = $assignment->getProject()->getId();
+
+            if (!isset($result[$userId])) {
+                $result[$userId] = [];
+            }
+
+            $result[$userId][$projectId] = $assignment;
+        }
+
+        return $result;
+    }
+
     public function getUserTimeEntries(\DateTime $from, \DateTime $to, array $options = []): array
     {
         $result = [];
