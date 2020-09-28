@@ -117,7 +117,6 @@ class Handler
                 break;
             default:
                 throw new \DomainException(sprintf('Could not understand the "%s" action type.', $action['action_id']));
-                break;
         }
     }
 
