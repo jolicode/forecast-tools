@@ -1,9 +1,8 @@
 security:
     # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
     providers:
-        in_memory: { memory: ~ }
         oauth:
-            id: knpu.oauth2.user_provider
+            id: App\Security\UserProvider\OAuthUserProvider
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|forecast|images|js)/
@@ -29,6 +28,6 @@ security:
         - { path: ^/connect, role: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/forecast/, role: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/slack, role: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/_admin, roles: ROLE_ADMIN }
         - { path: ^/, roles: ROLE_USER }
-        # - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }

@@ -100,6 +100,11 @@ class User
      */
     private $defaultForecastAccount;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $isSuperAdmin = false;
+
     public function __construct()
     {
         $this->forecastReminders = new ArrayCollection();
@@ -346,6 +351,18 @@ class User
     public function setDefaultForecastAccount(?ForecastAccount $defaultForecastAccount): self
     {
         $this->defaultForecastAccount = $defaultForecastAccount;
+
+        return $this;
+    }
+
+    public function getIsSuperAdmin(): ?bool
+    {
+        return $this->isSuperAdmin;
+    }
+
+    public function setIsSuperAdmin(bool $isSuperAdmin): self
+    {
+        $this->isSuperAdmin = $isSuperAdmin;
 
         return $this;
     }
