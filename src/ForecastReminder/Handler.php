@@ -15,7 +15,6 @@ use App\Converter\WordToNumberConverter;
 use App\Entity\ForecastReminder;
 use App\Repository\ForecastReminderRepository;
 use App\Slack\Sender as SlackSender;
-use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Request;
 
 class Handler
@@ -44,7 +43,7 @@ class Handler
                 $request->request->get('trigger_id')
             );
         } else {
-            $this->slackSender->send(
+            $this->slackSender->sendMessage(
                 $request->request->get('response_url'),
                 $request->request->get('trigger_id'),
                 '⌛ Computing the requested forecast...'
@@ -131,7 +130,7 @@ EOT,
             self::SLACK_COMMAND_NAME,
             self::SLACK_COMMAND_NAME
         );
-        $this->slackSender->send($responseUrl, $triggerId, $message);
+        $this->slackSender->sendMessage($responseUrl, $triggerId, $message);
     }
 
     private function sendForecastReminders(Request $request)
@@ -139,7 +138,7 @@ EOT,
         $forecastReminders = $this->forecastReminderRepository->findByTeamId($request->request->get('team_id'));
 
         if (0 === \count($forecastReminders)) {
-            $this->slackSender->send(
+            $this->slackSender->sendMessage(
                 $request->request->get('response_url'),
                 $request->request->get('trigger_id'),
                 'Your Slack team is not configured in Forecast tools, or the Slack reminder has not been enabled. Oh dear, why do you have our app installed? 🙃'
@@ -147,22 +146,11 @@ EOT,
         } else {
             foreach ($forecastReminders as $forecastReminder) {
                 $body = $this->buildReminder($forecastReminder, $request->request->get('text'));
-                $this->sendMessage(
+                $this->slackSender->send(
                     $request->request->get('response_url'),
                     $body
                 );
             }
         }
-    }
-
-    private function sendMessage(string $responseUrl, array $body)
-    {
-        $client = HttpClient::create();
-        $client->request('POST', $responseUrl, [
-            'headers' => [
-                'Content-Type' => 'application/json',
-            ],
-            'body' => json_encode($body),
-        ]);
     }
 }
