@@ -18,7 +18,6 @@ use App\Repository\HarvestAccountRepository;
 use App\Repository\SlackTeamRepository;
 use App\Slack\Sender as SlackSender;
 use JoliCode\Harvest\Api\Model\User as HarvestUser;
-use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Request;
 
 class Handler
@@ -61,7 +60,7 @@ class Handler
                 break;
             case self::SLACK_COMMAND_OPTION_CURRENT:
             case '':
-                $this->slackSender->send(
+                $this->slackSender->sendMessage(
                     $request->request->get('response_url'),
                     $request->request->get('trigger_id'),
                     '⌛ Wait a second, please, we are checking your timesheets',
@@ -80,7 +79,15 @@ class Handler
                         $request->request->get('response_url'),
                         self::SLACK_COMMAND_OPTION_CURRENT === $option
                     );
+                } else {
+                    $message = sprintf('Sorry, I could not identify you as a Harvest user from one of the Harvest accounts related to this Slack team. Please make sure that you use the same email address in Harvest and in Slack.');
+                    $this->slackSender->sendMessage(
+                        $request->request->get('response_url'),
+                        $request->request->get('trigger_id'),
+                        $message
+                    );
                 }
+
                 break;
             default:
                 throw new \DomainException(sprintf('😱 The "%s" option is not valid.', $option));
@@ -94,11 +101,11 @@ class Handler
 
         switch ($action['action_id']) {
             case self::ACTION_PREFIX . '.' . self::ACTION_COPY:
-                $this->slackSender->send($payload['response_url'], $payload['trigger_id'], '⌛ Okay, we are copying Forecast data to Harvest');
+                $this->slackSender->sendMessage($payload['response_url'], $payload['trigger_id'], '⌛ Okay, we are copying Forecast data to Harvest');
                 $this->handleCopy($payload, $action['value']);
                 break;
             case self::ACTION_PREFIX . '.' . self::ACTION_RELOAD:
-                $this->slackSender->send($payload['response_url'], $payload['trigger_id'], '⌛ Okay, we are checking your timesheet again');
+                $this->slackSender->sendMessage($payload['response_url'], $payload['trigger_id'], '⌛ Okay, we are checking your timesheet again');
                 $harvestProperties = $this->retrieveHarvestPropertiesFromSlackPayload($payload['user']['team_id'], $payload['user']['id']);
 
                 if ($harvestProperties) {
@@ -158,7 +165,7 @@ EOT,
             self::SLACK_COMMAND_NAME,
             self::SLACK_COMMAND_OPTION_CURRENT
         );
-        $this->slackSender->send($responseUrl, $triggerId, $message);
+        $this->slackSender->sendMessage($responseUrl, $triggerId, $message);
     }
 
     private function retrieveHarvestPropertiesFromSlackPayload(string $teamId, string $userId): ?array
@@ -185,6 +192,8 @@ EOT,
                 }
             }
         }
+
+        return null;
     }
 
     private function updateReminder(HarvestAccount $harvestAccount, HarvestUser $harvestUser, string $triggerId, string $responseUrl, $currentMonth = false)
@@ -192,21 +201,15 @@ EOT,
         $issues = $this->harvestTimesheetReminder->buildForHarvestAccountAndUser($harvestAccount, $harvestUser, $currentMonth);
 
         if (isset($issues[$harvestUser->getId()])) {
-            $client = HttpClient::create();
-            $client->request('POST', $responseUrl, [
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                ],
-                'body' => json_encode([
-                    'replace_original' => 'true',
-                    'trigger_id' => $triggerId,
-                    'text' => $issues[$harvestUser->getId()]['message'],
-                    'blocks' => $issues[$harvestUser->getId()]['blocks'],
-                ]),
+            $this->slackSender->send($responseUrl, [
+                'replace_original' => 'true',
+                'trigger_id' => $triggerId,
+                'text' => $issues[$harvestUser->getId()]['message'],
+                'blocks' => $issues[$harvestUser->getId()]['blocks'],
             ]);
         } else {
             $message = sprintf('🏆 %s, your timesheets are all good, thank you!', $harvestUser->getFirstName());
-            $this->slackSender->send($responseUrl, $triggerId, $message);
+            $this->slackSender->sendMessage($responseUrl, $triggerId, $message);
         }
     }
 }

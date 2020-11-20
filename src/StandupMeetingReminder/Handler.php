@@ -20,7 +20,6 @@ use App\Repository\StandupMeetingReminderRepository;
 use App\Slack\Sender as SlackSender;
 use Doctrine\ORM\EntityManagerInterface;
 use JoliCode\Slack\Exception\SlackErrorResponse;
-use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -314,7 +313,7 @@ EOT,
             self::SLACK_COMMAND_NAME,
             self::SLACK_COMMAND_OPTION_LIST
         );
-        $this->slackSender->send($responseUrl, $triggerId, $message);
+        $this->slackSender->sendMessage($responseUrl, $triggerId, $message);
     }
 
     private function listReminders(Request $request)
@@ -390,7 +389,7 @@ EOT,
                             $initialProjects[] = [
                                 'text' => [
                                     'type' => 'plain_text',
-                                    'text' => $projectCode . $project->getName(),
+                                    'text' => mb_substr($projectCode . $project->getName(), 0, 75),
                                 ],
                                 'value' => (string) $project->getId(),
                             ];
@@ -499,13 +498,8 @@ EOT,
                 'blocks' => $blocks,
             ],
         ];
-        $client = HttpClient::create();
-        $client->request('POST', 'https://slack.com/api/views.open', [
-            'headers' => [
-                'Authorization' => 'Bearer ' . $slackTeam->getAccessToken(),
-                'Content-Type' => 'application/json',
-            ],
-            'body' => json_encode($body),
+        $this->slackSender->send('https://slack.com/api/views.open', $body, [
+            'Authorization' => 'Bearer ' . $slackTeam->getAccessToken(),
         ]);
     }
 
@@ -582,12 +576,6 @@ EOT,
             'trigger_id' => $triggerId,
             'blocks' => $reminderBlocks,
         ];
-        $client = HttpClient::create();
-        $client->request('POST', $responseUrl, [
-            'headers' => [
-                'Content-Type' => 'application/json',
-            ],
-            'body' => json_encode($body),
-        ]);
+        $this->slackSender->send($responseUrl, $body);
     }
 }

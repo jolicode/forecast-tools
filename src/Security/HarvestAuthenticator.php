@@ -85,7 +85,13 @@ class HarvestAuthenticator extends SocialAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        return new RedirectResponse($this->urlGenerator->generate('homepage'));
+        $targetUrl = $this->getPreviousUrl($request, $providerKey);
+
+        if (null === $targetUrl) {
+            $targetUrl = $this->urlGenerator->generate('homepage');
+        }
+
+        return new RedirectResponse($targetUrl);
     }
 
     public function supports(Request $request)
@@ -105,9 +111,11 @@ class HarvestAuthenticator extends SocialAuthenticator
         $userData = $harvestUser->toArray();
         $email = $harvestUser->getEmail();
         $user = $this->userRepository->findOneBy(['email' => $email]);
+        $roles = ['ROLE_USER', 'ROLE_OAUTH_USER'];
 
         if (!$user) {
             $user = new User();
+            $this->em->persist($user);
             $user->setEmail($email);
             $user->setForecastId($userData['user']['id']);
         }
@@ -116,7 +124,6 @@ class HarvestAuthenticator extends SocialAuthenticator
         $user->setRefreshToken($credentials->getRefreshToken());
         $user->setExpires($credentials->getExpires());
         $user->setName($harvestUser->getName());
-        $this->em->persist($user);
 
         usort($userData['accounts'], function ($a, $b) {
             return $a['product'] > $b['product'];
@@ -136,7 +143,11 @@ class HarvestAuthenticator extends SocialAuthenticator
         $this->em->flush();
         $this->userRepository->cleanupExtraneousAccountsForUser($user, array_filter($forecastAccounts), array_filter($harvestAccounts));
 
-        return new OAuthUser($email, ['ROLE_USER', 'ROLE_OAUTH_USER']);
+        if ($user->getIsSuperAdmin()) {
+            $roles[] = 'ROLE_ADMIN';
+        }
+
+        return new OAuthUser($email, $roles);
     }
 
     private function addForecastAccount(User $user, array $account): ?ForecastAccount
