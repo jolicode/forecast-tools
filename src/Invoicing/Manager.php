@@ -596,16 +596,16 @@ class Manager
                 return sprintf('%s %s', self::TIME_ENTRY_STATUS_WEEKEND, self::TIME_ENTRY_STATUS_OVERFLOW);
             }
 
-            return  self::TIME_ENTRY_STATUS_WEEKEND;
+            return self::TIME_ENTRY_STATUS_WEEKEND;
         } elseif (0 === $total) {
-            return  self::TIME_ENTRY_STATUS_MISSING;
+            return self::TIME_ENTRY_STATUS_MISSING;
         } elseif ($total < 8) {
-            return  self::TIME_ENTRY_STATUS_INCOMPLETE;
+            return self::TIME_ENTRY_STATUS_INCOMPLETE;
         } elseif ($total > 8) {
-            return  self::TIME_ENTRY_STATUS_OVERFLOW;
+            return self::TIME_ENTRY_STATUS_OVERFLOW;
         }
 
-        return  self::TIME_ENTRY_STATUS_OK;
+        return self::TIME_ENTRY_STATUS_OK;
     }
 
     private function hasErrors(\DateTime $date, int $total, bool $skipErrors): bool
