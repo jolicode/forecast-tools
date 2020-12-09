@@ -72,7 +72,14 @@ class HomeController extends AbstractController
         }
 
         if ($start >= $end) {
-            throw new \DomainException('Please have the end date be after the start date.');
+            return $this->render('home/public-forecast.html.twig', [
+                'assignments' => [],
+                'error' => 'Please have the end date be after the start date.',
+                'start' => $start,
+                'end' => $end,
+                'today' => (new \DateTime())->format('Y-m-d'),
+                'publicForecast' => $publicForecast,
+            ]);
         }
 
         $assignments = $forecastBuilder->buildAssignments($publicForecast, $start, $end);

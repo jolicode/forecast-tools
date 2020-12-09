@@ -31,9 +31,14 @@
                         {% endif %}
                     {% endfor %}
                 {% else %}
-                    <p>
+                    {% if error is defined %}
+                        <div class="m-3 alert alert-danger" role="alert">
+                            {{ error }}
+                        </div>
+                    {% endif %}
+                    <div class="m-3 alert alert-secondary" role="alert">
                         There's no activity forecasted during this period.
-                    </p>
+                    </div>
                 {% endif %}
             </div>
             <script>
