@@ -80,7 +80,7 @@ class Handler
                         self::SLACK_COMMAND_OPTION_CURRENT === $option
                     );
                 } else {
-                    $message = sprintf('Sorry, I could not identify you as a Harvest user from one of the Harvest accounts related to this Slack team. Please make sure that you use the same email address in Harvest and in Slack.');
+                    $message = 'Sorry, I could not identify you as a Harvest user from one of the Harvest accounts related to this Slack team. Please make sure that you use the same email address in Harvest and in Slack.';
                     $this->slackSender->sendMessage(
                         $request->request->get('response_url'),
                         $request->request->get('trigger_id'),
