@@ -44,18 +44,18 @@ class Builder
         $months = [];
 
         foreach ($days as $day) {
-            if (!isset($weeks[$day['date']->format('W')])) {
-                $weeks[$day['date']->format('W')] = 1;
+            if (!isset($weeks[$day['date']->format('W Y')])) {
+                $weeks[$day['date']->format('W Y')] = 1;
             } else {
-                ++$weeks[$day['date']->format('W')];
+                ++$weeks[$day['date']->format('W Y')];
             }
         }
 
         foreach ($days as $day) {
-            if (!isset($months[$day['date']->format('F')])) {
-                $months[$day['date']->format('F')] = 1;
+            if (!isset($months[$day['date']->format('F Y')])) {
+                $months[$day['date']->format('F Y')] = 1;
             } else {
-                ++$months[$day['date']->format('F')];
+                ++$months[$day['date']->format('F Y')];
             }
         }
 
