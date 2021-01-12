@@ -94,7 +94,7 @@ class Sender
                             ]);
                             $forecastAccountSlackTeam->errorCount = 0;
                         } catch (SlackErrorResponse $e) {
-                            $forecastAccountSlackTeam->errorCount++;
+                            ++$forecastAccountSlackTeam->errorCount;
 
                             if ($forecastAccountSlackTeam->errorCount > ForecastAccountSlackTeam::MAX_ERRORS_ALLOWED) {
                                 $this->forecastAccountSlackTeamRepository->remove($forecastAccountSlackTeam);

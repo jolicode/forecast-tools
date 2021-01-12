@@ -145,7 +145,7 @@ class Builder
     {
         $users = $this->client->listPeople();
 
-        if (Error::class === get_class($users)) {
+        if (Error::class === \get_class($users)) {
             return false;
         }
 
@@ -182,13 +182,13 @@ class Builder
                 return $this->clientOverrides[$project->getClientId()];
             }
 
-            if ($project->getClientId() && array_key_exists($project->getClientId(), $this->clients)) {
+            if ($project->getClientId() && \array_key_exists($project->getClientId(), $this->clients)) {
                 $client = $this->clients[$project->getClientId()];
 
                 return $client->getName() . ' | ' . $project->getName();
-            } else {
-                return $project->getName();
             }
+
+            return $project->getName();
         }, $activities));
 
         if (\count($activities) > 1) {
