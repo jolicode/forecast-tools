@@ -19,6 +19,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
  */
 class ForecastAccountSlackTeam
 {
+    const MAX_ERRORS_ALLOWED = 3;
+
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
@@ -59,6 +61,11 @@ class ForecastAccountSlackTeam
      * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     private $forecastAccount;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $errorsCount = 0;
 
     public function __toString(): string
     {
@@ -138,6 +145,18 @@ class ForecastAccountSlackTeam
     public function setForecastAccount(?ForecastAccount $forecastAccount): self
     {
         $this->forecastAccount = $forecastAccount;
+
+        return $this;
+    }
+
+    public function getErrorsCount(): ?int
+    {
+        return $this->errorsCount;
+    }
+
+    public function setErrorsCount(int $errorsCount): self
+    {
+        $this->errorsCount = $errorsCount;
 
         return $this;
     }

@@ -27,4 +27,17 @@ class ForecastAccountSlackTeamRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, ForecastAccountSlackTeam::class);
     }
+
+    public function remove(ForecastAccountSlackTeam $forecastAccountSlackTeam)
+    {
+        $slackTeam = $forecastAccountSlackTeam->getSlackTeam();
+        $this->_em->remove($forecastAccountSlackTeam);
+
+        // if this is the last slackTeam with this workspace teamId, uninstall the app from the workspace
+        if (0 === \count($slackTeam->getForecastAccountSlackTeams())) {
+            // @TODO once slack-php-api releases a version using jane 5
+            // call https://api.slack.com/methods/apps.uninstall
+            $this->_em->remove($slackTeam);
+        }
+    }
 }

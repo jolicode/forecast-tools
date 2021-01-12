@@ -11,18 +11,29 @@
 
 namespace App\ForecastReminder;
 
+use App\Entity\ForecastAccountSlackTeam;
 use App\Entity\ForecastReminder;
+use App\Repository\ForecastAccountSlackTeamRepository;
 use App\Repository\ForecastReminderRepository;
 use Cron\CronExpression;
+use Doctrine\ORM\EntityManagerInterface;
 use JoliCode\Slack\ClientFactory;
+use JoliCode\Slack\Exception\SlackErrorResponse;
 
 class Sender
 {
-    private $forecastReminderRepository;
     private $botName;
+    private $em;
+    private $forecastAccountSlackTeamRepository;
+    private $forecastReminderRepository;
 
-    public function __construct(ForecastReminderRepository $forecastReminderRepository)
+    public function __construct(
+        EntityManagerInterface $em,
+        ForecastAccountSlackTeamRepository $forecastAccountSlackTeamRepository,
+        ForecastReminderRepository $forecastReminderRepository)
     {
+        $this->em = $em;
+        $this->forecastAccountSlackTeamRepository = $forecastAccountSlackTeamRepository;
         $this->forecastReminderRepository = $forecastReminderRepository;
     }
 
@@ -51,34 +62,50 @@ class Sender
         if (\count($forecastAccountSlackTeams) > 0) {
             $builder = new Builder($forecastReminder);
             $message = $builder->buildMessage();
-            $title = $builder->buildTitle();
 
-            foreach ($forecastAccountSlackTeams as $forecastAccountSlackTeam) {
-                if ($forecastAccountSlackTeam->getChannelId()) {
-                    $slackClient = ClientFactory::create(
-                        $forecastAccountSlackTeam->getSlackTeam()->getAccessToken()
-                    );
-                    $slackClient->chatPostMessage([
-                        'channel' => $forecastAccountSlackTeam->getChannelId(),
-                        'username' => $this->botName,
-                        'blocks' => json_encode([
-                            [
-                                'type' => 'section',
-                                'text' => [
-                                    'type' => 'mrkdwn',
-                                    'text' => $title,
-                                ],
-                            ],
-                            [
-                                'type' => 'section',
-                                'text' => [
-                                    'type' => 'mrkdwn',
-                                    'text' => $message,
-                                ],
-                            ],
-                        ]),
-                    ]);
+            if (false !== $message) {
+                $title = $builder->buildTitle();
+
+                foreach ($forecastAccountSlackTeams as $forecastAccountSlackTeam) {
+                    if ($forecastAccountSlackTeam->getChannelId()) {
+                        try {
+                            $slackClient = ClientFactory::create(
+                                $forecastAccountSlackTeam->getSlackTeam()->getAccessToken()
+                            );
+                            $slackClient->chatPostMessage([
+                                'channel' => $forecastAccountSlackTeam->getChannelId(),
+                                'username' => $this->botName,
+                                'blocks' => json_encode([
+                                    [
+                                        'type' => 'section',
+                                        'text' => [
+                                            'type' => 'mrkdwn',
+                                            'text' => $title,
+                                        ],
+                                    ],
+                                    [
+                                        'type' => 'section',
+                                        'text' => [
+                                            'type' => 'mrkdwn',
+                                            'text' => $message,
+                                        ],
+                                    ],
+                                ]),
+                            ]);
+                            $forecastAccountSlackTeam->errorCount = 0;
+                        } catch (SlackErrorResponse $e) {
+                            $forecastAccountSlackTeam->errorCount++;
+
+                            if ($forecastAccountSlackTeam->errorCount > ForecastAccountSlackTeam::MAX_ERRORS_ALLOWED) {
+                                $this->forecastAccountSlackTeamRepository->remove($forecastAccountSlackTeam);
+                            } else {
+                                $this->em->persist($forecastAccountSlackTeam);
+                            }
+                        }
+                    }
                 }
+
+                $this->em->flush();
             }
         }
     }

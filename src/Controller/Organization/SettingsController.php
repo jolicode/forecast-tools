@@ -246,25 +246,14 @@ class SettingsController extends AbstractController
      * @IsGranted("admin", subject="forecastAccount")
      * @ParamConverter("forecastAccountSlackTeam", options={"id" = "forecastAccountSlackTeamId"})
      */
-    public function slackDelete(ForecastAccount $forecastAccount, ForecastAccountSlackTeam $forecastAccountSlackTeam)
+    public function slackDelete(ForecastAccount $forecastAccount, ForecastAccountSlackTeam $forecastAccountSlackTeam, ForecastAccountSlackTeamRepository $forecastAccountSlackTeamRepository)
     {
-        $entityManager = $this->getDoctrine()->getManager();
-
         if ($forecastAccountSlackTeam->getForecastAccount() !== $forecastAccount) {
             throw new NotFoundHttpException('Could not find this Slack channel.');
         }
 
-        $slackTeam = $forecastAccountSlackTeam->getSlackTeam();
-        $entityManager->remove($forecastAccountSlackTeam);
-        $entityManager->flush();
-
-        // if this is the last slackTeam with this workspace teamId, uninstall the app from the workspace
-        if (0 === \count($slackTeam->getForecastAccountSlackTeams())) {
-            // @TODO once slack-php-api releases a version using jane 5
-            // call https://api.slack.com/methods/apps.uninstall
-            $entityManager->remove($slackTeam);
-            $entityManager->flush();
-        }
+        $forecastAccountSlackTeamRepository->remove($forecastAccountSlackTeam);
+        $this->getDoctrine()->getManager()->flush();
 
         return new RedirectResponse($this->router->generate('organization_settings_slack', [
             'slug' => $forecastAccount->getSlug(),
