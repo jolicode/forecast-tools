@@ -149,7 +149,7 @@ class ForecastAccountSlackTeam
         return $this;
     }
 
-    public function getErrorsCount(): ?int
+    public function getErrorsCount(): int
     {
         return $this->errorsCount;
     }
