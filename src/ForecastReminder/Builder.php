@@ -14,6 +14,7 @@ namespace App\ForecastReminder;
 use App\Entity\ForecastReminder;
 use JoliCode\Forecast\Api\Model\Assignment;
 use JoliCode\Forecast\Api\Model\Client;
+use JoliCode\Forecast\Api\Model\Error;
 use JoliCode\Forecast\Api\Model\Person;
 use JoliCode\Forecast\Api\Model\Project;
 
@@ -64,7 +65,11 @@ class Builder
             'start_date' => $start->format('Y-m-d'),
             'end_date' => $end->format('Y-m-d'),
         ];
-        $this->fetchData($options);
+
+        if (!$this->fetchData($options)) {
+            return false;
+        }
+
         $longuestNameLength = 0;
 
         foreach ($this->users as $user) {
@@ -136,9 +141,15 @@ class Builder
         return $lookup;
     }
 
-    private function fetchData($options)
+    private function fetchData($options): bool
     {
-        $users = $this->client->listPeople()->getPeople();
+        $users = $this->client->listPeople();
+
+        if (Error::class === get_class($users)) {
+            return false;
+        }
+
+        $users = $users->getPeople();
         $users = array_values(array_filter($users, function ($user) {
             return false === $user->getArchived();
         }));
@@ -154,6 +165,8 @@ class Builder
         $this->clients = self::makeLookup($this->client->listClients()->getClients());
         $this->projects = self::makeLookup($this->client->listProjects()->getProjects());
         $this->users = $users;
+
+        return true;
     }
 
     private function getActivitiesAsText($activities)
@@ -169,9 +182,13 @@ class Builder
                 return $this->clientOverrides[$project->getClientId()];
             }
 
-            $client = $this->clients[$project->getClientId()];
+            if ($project->getClientId() && array_key_exists($project->getClientId(), $this->clients)) {
+                $client = $this->clients[$project->getClientId()];
 
-            return $client->getName() . ' | ' . $project->getName();
+                return $client->getName() . ' | ' . $project->getName();
+            } else {
+                return $project->getName();
+            }
         }, $activities));
 
         if (\count($activities) > 1) {
