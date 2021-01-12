@@ -13,7 +13,7 @@ namespace App\Repository;
 
 use App\Entity\StandupMeetingReminder;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @method StandupMeetingReminder|null find($id, $lockMode = null, $lockVersion = null)

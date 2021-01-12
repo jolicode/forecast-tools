@@ -13,7 +13,7 @@ namespace App\Repository;
 
 use App\Entity\InvoiceExplanation;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @method InvoiceExplanation|null find($id, $lockMode = null, $lockVersion = null)

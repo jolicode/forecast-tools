@@ -14,7 +14,7 @@ namespace App\Repository;
 use App\Entity\HarvestAccount;
 use App\Entity\UserHarvestAccount;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @method UserHarvestAccount|null find($id, $lockMode = null, $lockVersion = null)

@@ -15,7 +15,7 @@ use App\Entity\ForecastAccount;
 use App\Entity\User;
 use App\Entity\UserForecastAccount;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @method UserForecastAccount|null find($id, $lockMode = null, $lockVersion = null)
