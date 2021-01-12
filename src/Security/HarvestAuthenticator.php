@@ -185,7 +185,6 @@ class HarvestAuthenticator extends SocialAuthenticator
         $userForecastAccount->setIsEnabled(
             'enabled' === $forecastUser->getLogin()
                 && !$forecastUser->getArchived()
-                && $forecastUser->getSubscribed()
         );
         $forecastAccount->setAccessToken($user->getAccessToken());
         $forecastAccount->setRefreshToken($user->getRefreshToken());
