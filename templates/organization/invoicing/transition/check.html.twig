@@ -263,7 +263,7 @@
 
             jQuery('#explanationModal form').on('submit', function(e) {
                 e.preventDefault();
-                var invoiceId = jQuery(this).find('#invoice_explanation_key').val();
+                var invoiceId = jQuery(this).find('#invoice_explanation_explanationKey').val();
                 var url = '{{ organization_path('invoicing_explain', { invoicingId: invoicingProcess.id, explanationKey: 'placeholder'}) }}'.replace('placeholder', invoiceId);
 
                 jQuery.post(url,

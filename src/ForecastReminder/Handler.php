@@ -52,12 +52,16 @@ class Handler
         }
     }
 
-    private function buildReminder(ForecastReminder $forecastReminder, ?string $text = ''): array
+    public function buildReminder(ForecastReminder $forecastReminder, ?string $text = ''): array
     {
         $startDate = $this->extractStartDateFromtext($text);
         $builder = new Builder($forecastReminder);
         $title = $builder->buildTitle($startDate);
         $message = $builder->buildMessage($startDate);
+
+        if (false === $message) {
+            $message = 'An error occured, could not compute the forecast.';
+        }
 
         return [
             'blocks' => [

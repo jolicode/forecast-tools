@@ -86,9 +86,6 @@
     "doctrine/persistence": {
         "version": "v1.1.0"
     },
-    "doctrine/reflection": {
-        "version": "v1.0.0"
-    },
     "doctrine/sql-formatter": {
         "version": "1.1.0"
     },
@@ -116,6 +113,9 @@
             "version": "2.2",
             "ref": "81dee417d2cc60cd1c9d6208dff2ec22a1103e93"
         }
+    },
+    "friendsofphp/proxy-manager-lts": {
+        "version": "v1.0.2"
     },
     "gedmo/doctrine-extensions": {
         "version": "v2.4.36"
@@ -197,9 +197,6 @@
     },
     "ocramius/package-versions": {
         "version": "1.5.1"
-    },
-    "ocramius/proxy-manager": {
-        "version": "2.1.1"
     },
     "php": {
         "version": "7.4"
@@ -396,6 +393,9 @@
             "ref": "fadbfe33303a76e25cb63401050439aa9b1a9c7f"
         }
     },
+    "symfony/mime": {
+        "version": "v5.1.10"
+    },
     "symfony/monolog-bridge": {
         "version": "v4.2.1"
     },
@@ -461,6 +461,9 @@
     },
     "symfony/property-info": {
         "version": "v4.2.1"
+    },
+    "symfony/proxy-manager-bridge": {
+        "version": "v5.1.10"
     },
     "symfony/routing": {
         "version": "4.2",
@@ -590,9 +593,6 @@
     },
     "twig/twig": {
         "version": "v2.6.0"
-    },
-    "webimpress/safe-writer": {
-        "version": "2.0.0"
     },
     "webmozart/assert": {
         "version": "1.4.0"
