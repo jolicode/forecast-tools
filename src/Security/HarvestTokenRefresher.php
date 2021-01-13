@@ -16,6 +16,7 @@ use App\Repository\ForecastAccountRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 use KnpU\OAuth2ClientBundle\Client\OAuth2Client;
+use Nilesuan\OAuth2\Client\Provider\Exception\HarvestIdentityProviderException;
 use Psr\Log\LoggerInterface;
 
 class HarvestTokenRefresher
@@ -42,8 +43,22 @@ class HarvestTokenRefresher
 
         foreach ($forecastAccounts as $forecastAccount) {
             try {
-                $this->refreshToken($forecastAccount);
-                ++$updated;
+                if ('' !== $forecastAccount->getRefreshToken()) {
+                    $this->refreshToken($forecastAccount);
+                    ++$updated;
+                }
+            } catch (HarvestIdentityProviderException $e) {
+                $response = json_decode($e->getResponseBody(), true);
+                $response['account_id'] = $forecastAccount->getId();
+                $this->logger->error(sprintf('Could not refresh token: "%s"', $e->getMessage()), $response);
+                ++$failed;
+
+                if ('invalid_grant' === $response['error']) {
+                    $forecastAccount->setRefreshToken('');
+                    $forecastAccount->setAccessToken('');
+
+                    // @TODO send a mail to the customer?
+                }
             } catch (\Exception $e) {
                 $this->logger->error(sprintf('Could not refresh token: "%s"', $e->getMessage()), [
                     'account_id' => $forecastAccount->getId(),
