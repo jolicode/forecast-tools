@@ -516,7 +516,7 @@ class Manager
                 return self::INVOICE_NON_RECONCILIABLE;
             }
 
-            if ($invoice['invoiceAmount'] !== $invoice['expectedTotal']) {
+            if (round($invoice['invoiceAmount'], 3) !== round($invoice['expectedTotal'], 3)) {
                 return self::INVOICE_WRONG;
             }
 
