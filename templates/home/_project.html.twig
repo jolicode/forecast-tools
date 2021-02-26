@@ -41,6 +41,11 @@
                                 Weekly total
                             </th>
                         </tr>
+                        <tr>
+                            <th class="total pr-1">
+                                Monthly total
+                            </th>
+                        </tr>
                     </table>
                 </div>
 
@@ -104,6 +109,16 @@
                             {% endfor %}
                         </tr>
 
+                        <tr>
+                            {% for month, columns in months %}
+                                <td class="assignement week" colspan="{{ columns }}">
+                                    {% if project.monthly_total[month] is defined %}
+                                        {{ project.monthly_total[month] }}
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+
                         {% set max = max(project.total) %}
 
                         {% if max %}
@@ -161,7 +176,7 @@
                         </tr>
 
                         <tr>
-                            <td class="monthly total totalDays double">
+                            <td class="monthly total totalDays triple">
                                 {{ project.total_days }}
                             </td>
                         </tr>

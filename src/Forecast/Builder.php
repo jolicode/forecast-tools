@@ -80,6 +80,7 @@ class Builder
                 'total' => [],
                 'total_days' => 0,
                 'weekly_total' => [],
+                'monthly_total' => [],
             ],
         ];
 
@@ -126,6 +127,7 @@ class Builder
                     'total' => [],
                     'total_days' => 0,
                     'weekly_total' => [],
+                    'monthly_total' => [],
                 ];
             }
 
@@ -168,7 +170,8 @@ class Builder
 
             foreach ($assignmentDays as $assignmentDate) {
                 $assignmentDay = $assignmentDate->format('Y-m-d');
-                $assignmentWeek = $assignmentDate->format('W');
+                $assignmentWeek = $assignmentDate->format('W Y');
+                $assignmentMonth = $assignmentDate->format('F Y');
 
                 if (\array_key_exists($assignmentDay, $days)) {
                     $userAssignments[$projectId]['users'][$id]['total'] += $duration;
@@ -188,6 +191,7 @@ class Builder
                     $userAssignments[$projectId]['total'][$assignmentDay] += $duration;
                     $userAssignments['total']['total'][$assignmentDay] += $duration;
 
+                    // weekly_total
                     if (!isset($userAssignments[$projectId]['weekly_total'][$assignmentWeek])) {
                         $userAssignments[$projectId]['weekly_total'][$assignmentWeek] = 0;
                     }
@@ -197,6 +201,17 @@ class Builder
 
                     $userAssignments[$projectId]['weekly_total'][$assignmentWeek] += $duration;
                     $userAssignments['total']['weekly_total'][$assignmentWeek] += $duration;
+
+                    // monthly_total
+                    if (!isset($userAssignments[$projectId]['monthly_total'][$assignmentMonth])) {
+                        $userAssignments[$projectId]['monthly_total'][$assignmentMonth] = 0;
+                    }
+                    if (!isset($userAssignments['total']['monthly_total'][$assignmentMonth])) {
+                        $userAssignments['total']['monthly_total'][$assignmentMonth] = 0;
+                    }
+
+                    $userAssignments[$projectId]['monthly_total'][$assignmentMonth] += $duration;
+                    $userAssignments['total']['monthly_total'][$assignmentMonth] += $duration;
 
                     if (!isset($userAssignments[$projectId]['firstDay']) || $userAssignments[$projectId]['firstDay'] < $assignmentDay) {
                         $userAssignments[$projectId]['firstDay'] = $assignmentDay;
