@@ -1,34 +1,37 @@
 ARG PROJECT_NAME
 
-FROM ${PROJECT_NAME}_basephp
+FROM ${PROJECT_NAME}_php-base
 
-RUN wget -q -O - https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - \
-    && wget -q -O - https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
-    && echo "deb https://deb.nodesource.com/node_13.x buster main" | tee /etc/apt/sources.list.d/nodejs.list \
-    && echo "deb-src https://deb.nodesource.com/node_13.x buster main" | tee /etc/apt/sources.list.d/nodejs-src.list \
-    && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
-    && apt-get update \
-    && apt-get -y install --no-install-recommends \
+ARG NODEJS_VERSION=14.x
+RUN echo "deb https://deb.nodesource.com/node_${NODEJS_VERSION} buster main" > /etc/apt/sources.list.d/nodejs.list \
+    && apt-key adv --fetch-keys https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+
+# Default toys
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
         curl \
-        g++ \
         git \
         make \
-        mariadb-client \
         nodejs \
-        php7.4-phar \
-        python-pip \
-        python \
-        yarn
+        sudo \
+        unzip \
+    && apt-get clean \
+    && npm install -g yarn \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 
-RUN pip install pycodestyle
+# Config
+COPY etc/. /etc/
+ARG PHP_VERSION
+COPY php-configuration /etc/php/${PHP_VERSION}
+RUN adduser app sudo \
+    && mkdir /var/log/php \
+    && chmod 777 /var/log/php \
+    && phpenmod app-default \
+    && phpenmod app-builder
 
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Composer
+COPY --from=composer/composer:2.0.11 /usr/bin/composer /usr/bin/composer
+RUN mkdir -p "/home/app/.composer/cache" \
+    && chown app: /home/app/.composer -R
 
-RUN mkdir -p ~/.composer
-
-ENV PATH $PATH:/home/app/.composer/vendor/bin/
-ENV TERM xterm
-
-WORKDIR /home/app/app
-
-CMD ["echo"]
+WORKDIR /home/app/application

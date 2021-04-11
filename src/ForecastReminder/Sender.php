@@ -44,7 +44,7 @@ class Sender
         $forecastRemindersCount = 0;
 
         foreach ($forecastReminders as $forecastReminder) {
-            $cron = CronExpression::factory($forecastReminder->getCronExpression());
+            $cron = new CronExpression($forecastReminder->getCronExpression());
 
             if ($cron->isDue()) {
                 $this->sendForecastReminder($forecastReminder);

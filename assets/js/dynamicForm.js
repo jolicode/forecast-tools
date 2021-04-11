@@ -4,7 +4,7 @@ import jQuery from 'jquery';
 import 'select2';
 
 export default(label = 'Add a new item') => {
-  jQuery(document).ready(() => {
+  jQuery(() => {
     jQuery('.dynamic-form-container').each((index, container) => {
       container = jQuery(container);
 

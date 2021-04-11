@@ -1,4 +1,5 @@
-var Encore = require('@symfony/webpack-encore');
+const path = require('path');
+const Encore = require('@symfony/webpack-encore');
 
 Encore
   // directory where compiled assets will be stored
@@ -52,4 +53,10 @@ Encore
   //.addEntry('admin', './assets/js/admin.js')
   ;
 
-module.exports = Encore.getWebpackConfig();
+let config = Encore.getWebpackConfig();
+
+config.resolve.alias = {
+  'jquery': path.join(__dirname, 'node_modules/jquery/src/jquery')
+};
+
+module.exports = config;

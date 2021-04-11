@@ -15,15 +15,15 @@ Forecast tools improves the overall experience with Harvest & Harvest Forecast, 
 A Docker environment is provided and requires you to have these tools available:
 
  * Docker
- * pipenv
+ * pipenv (see [these instructions](https://pipenv.readthedocs.io/en/latest/install/) for how to install)
 
 Install and run `pipenv` to install the required tools:
 
 ```bash
-pipenv install
+pipenv --three install
 ```
 
-You can configure your current shell to be able to use fabric commands directly
+You can configure your current shell to be able to use Invoke commands directly
 (without having to prefix everything by `pipenv run`)
 
 ```bash
@@ -77,7 +77,7 @@ Using dinghy? Run `dinghy ip` to get the IP of the VM.
 Launch the stack by running this command:
 
 ```sh
-$ fab start
+$ inv start
 ```
 
 > Note: the first start of the stack should take a few minutes.
@@ -90,13 +90,13 @@ The site is now accessible at the hostnames your have configured over HTTPS
 Watch for changes:
 
 ```sh
-$ fab watch
+$ inv watch
 ```
 
 ### CS fix
 
 ```sh
-$ fab cs
+$ inv cs
 ```
 
 ### Builder
@@ -106,16 +106,24 @@ Start the builder which will give you access to a container with all these
 tools available:
 
 ```sh
-$ fab builder
+$ inv builder
 ```
 
-Note: You can add as many fabric command as you want. But the command should be
-ran by the builder, don't forget to add `@with_builder` annotation to the
-function.
+Note: You can add as many Invoke commands as you want. If a command should be
+ran by the builder, don't forget to use `with Builder(c):`:
+```
+@task
+def mycommand(c):
+    """
+    My documentation
+    """
+    with Builder(c):
+        docker_compose_run(c, 'echo "HelloWorld")
+```
 
 ### Other tasks
 
-Checkout `fab -l` to have the list of available fabric tasks.
+Checkout `inv -l` to have the list of available Invoke tasks.
 
 ## Commands and cron jobs
 
