@@ -1,50 +1,49 @@
-version: '3'
+version: '3.7'
 
 volumes:
     mysql-data: {}
+    redis-data: {}
 
 services:
     router:
         build: services/router
-        ports:
-            - "80:80"
-            - "443:443"
-            - "8080:8080"
         volumes:
             - "/var/run/docker.sock:/var/run/docker.sock"
-        # # Use network alias if you need to access a container via a specific
-        # # host by using the routing from another container
-        # networks:
-        #     default:
-        #         aliases:
-        #             - api.app.test
-        labels:
-            - "traefik.enable=false"
+        network_mode: host
 
     frontend:
         build: services/frontend
         depends_on:
             - mysql
-            - redis
         volumes:
-            - "../${PROJECT_DIRECTORY}:/var/www:cached"
+            - "../${PROJECT_DIRECTORY}:/home/app/application:cached"
+        environment:
+            - "PHP_VERSION=${PHP_VERSION}"
         labels:
-            - "traefik.port=80"
-            - "traefik.frontend.entryPoints=https"
-            - "traefik.frontend.rule=Host:${PROJECT_HOSTNAMES}"
+            - "traefik.enable=true"
+            - "traefik.http.routers.${PROJECT_NAME}-frontend.rule=Host(${PROJECT_DOMAINS})"
+            - "traefik.http.routers.${PROJECT_NAME}-frontend.tls=true"
+            - "traefik.http.routers.${PROJECT_NAME}-frontend-unsecure.rule=Host(${PROJECT_DOMAINS})"
+            # Comment the next line to be able to access frontend via HTTP instead of HTTPS
+            - "traefik.http.routers.${PROJECT_NAME}-frontend-unsecure.middlewares=redirect-to-https@file"
 
     mysql:
         build: services/mysql
         volumes:
-            - "mysql-data:/var/lib/mysql"
+            - mysql-data:/var/lib/mysql
+
+    encore:
+        build: services/builder
+        volumes:
+            - "../${PROJECT_DIRECTORY}:/home/app/application:cached"
+        command: "yarn run dev-server --host 0.0.0.0 --port 9999 --hot --public https://encore.${PROJECT_ROOT_DOMAIN}/ --disable-host-check"
         labels:
-            - "traefik.enable=false"
-        ports:
-          - "3306:3306"
+            - "traefik.enable=true"
+            - "traefik.http.routers.${PROJECT_NAME}-encore.rule=Host(`encore.${PROJECT_ROOT_DOMAIN}`)"
+            - "traefik.http.routers.${PROJECT_NAME}-encore.tls=true"
+            - "traefik.http.services.encore.loadbalancer.server.port=9999"
 
     redis:
-        build: services/redis
-        labels:
-            - "traefik.enable=false"
-        ports:
-          - "6379:6379"
+        image: redis:5
+        volumes:
+            - "redis-data:/data"

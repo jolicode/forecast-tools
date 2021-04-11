@@ -8,8 +8,11 @@ verify_ssl = true
 [packages]
 docker-compose = ">=1.23.0"
 docker = "*"
-pyaml = "==16.12.2"
-Fabric = ">=1.13.1,<2.0"
+invoke = ">=1.4"
+# https://github.com/docker/compose/issues/6839
+colorama = {version = ">=0.4, <1"}
+pypiwin32 = {version = "*", sys_platform = "== 'win32'"}
+pywin32 = {version = "*", sys_platform = "== 'win32'"}
 
 [requires]
-python_version = "2.7"
+python_version = "3"
