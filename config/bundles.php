@@ -1,14 +1,5 @@
 <?php
 
-/*
- * This file is part of JoliCode's Forecast Tools project.
- *
- * (c) JoliCode <coucou@jolicode.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 return [
     Symfony\Bundle\FrameworkBundle\FrameworkBundle::class => ['all' => true],
     Sensio\Bundle\FrameworkExtraBundle\SensioFrameworkExtraBundle::class => ['all' => true],
@@ -24,4 +15,5 @@ return [
     Symfony\WebpackEncoreBundle\WebpackEncoreBundle::class => ['all' => true],
     Stof\DoctrineExtensionsBundle\StofDoctrineExtensionsBundle::class => ['all' => true],
     EasyCorp\Bundle\EasyAdminBundle\EasyAdminBundle::class => ['all' => true],
+    Bugsnag\BugsnagBundle\BugsnagBundle::class => ['all' => true],
 ];

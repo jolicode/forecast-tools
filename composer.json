@@ -9,6 +9,7 @@
         "ext-iconv": "*",
         "adam-paterson/oauth2-slack": "^1.1",
         "antishov/doctrine-extensions-bundle": "^1.4",
+        "bugsnag/bugsnag-symfony": "^1.9",
         "dragonmantank/cron-expression": "^3.1",
         "easycorp/easyadmin-bundle": "^3.2",
         "jolicode/forecast-php-api": "^5.0",

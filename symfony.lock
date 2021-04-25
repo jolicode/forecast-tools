@@ -17,8 +17,17 @@
     "behat/transliterator": {
         "version": "v1.2.0"
     },
+    "bugsnag/bugsnag": {
+        "version": "v3.26.0"
+    },
+    "bugsnag/bugsnag-symfony": {
+        "version": "v1.9.0"
+    },
     "clue/stream-filter": {
         "version": "v1.4.0"
+    },
+    "composer/ca-bundle": {
+        "version": "1.2.9"
     },
     "composer/semver": {
         "version": "1.4.2"
