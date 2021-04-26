@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a265d11a5ac0b3bae6bfe5748379bc8c",
+    "content-hash": "4b6fc41043a90a78b7c83bd6dc9f374b",
     "packages": [
         {
             "name": "adam-paterson/oauth2-slack",
@@ -2341,16 +2341,16 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "1.8.1",
+            "version": "1.8.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "35ea11d335fd638b5882ff1725228b3d35496ab1"
+                "reference": "dc960a912984efb74d0a90222870c72c87f10c91"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/35ea11d335fd638b5882ff1725228b3d35496ab1",
-                "reference": "35ea11d335fd638b5882ff1725228b3d35496ab1",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/dc960a912984efb74d0a90222870c72c87f10c91",
+                "reference": "dc960a912984efb74d0a90222870c72c87f10c91",
                 "shasum": ""
             },
             "require": {
@@ -2410,9 +2410,9 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/psr7/issues",
-                "source": "https://github.com/guzzle/psr7/tree/1.8.1"
+                "source": "https://github.com/guzzle/psr7/tree/1.8.2"
             },
-            "time": "2021-03-21T16:25:00+00:00"
+            "time": "2021-04-26T09:17:50+00:00"
         },
         {
             "name": "ircmaxell/random-lib",
@@ -2650,16 +2650,16 @@
         },
         {
             "name": "jolicode/forecast-php-api",
-            "version": "v5.0.0",
+            "version": "v5.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jolicode/forecast-php-api.git",
-                "reference": "84922832a6e05891e2a14f97a41b612ba3d9deec"
+                "reference": "84a107951d4a18da6507490d0bb7440908ecccd7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jolicode/forecast-php-api/zipball/84922832a6e05891e2a14f97a41b612ba3d9deec",
-                "reference": "84922832a6e05891e2a14f97a41b612ba3d9deec",
+                "url": "https://api.github.com/repos/jolicode/forecast-php-api/zipball/84a107951d4a18da6507490d0bb7440908ecccd7",
+                "reference": "84a107951d4a18da6507490d0bb7440908ecccd7",
                 "shasum": ""
             },
             "require": {
@@ -2703,9 +2703,9 @@
             ],
             "support": {
                 "issues": "https://github.com/jolicode/forecast-php-api/issues",
-                "source": "https://github.com/jolicode/forecast-php-api/tree/v5.0.0"
+                "source": "https://github.com/jolicode/forecast-php-api/tree/v5.1.0"
             },
-            "time": "2021-04-11T15:44:08+00:00"
+            "time": "2021-04-26T11:17:02+00:00"
         },
         {
             "name": "jolicode/harvest-php-api",

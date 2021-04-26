@@ -12,7 +12,7 @@
         "bugsnag/bugsnag-symfony": "^1.9",
         "dragonmantank/cron-expression": "^3.1",
         "easycorp/easyadmin-bundle": "^3.2",
-        "jolicode/forecast-php-api": "^5.0",
+        "jolicode/forecast-php-api": "^5.1",
         "jolicode/harvest-php-api": "^5.0",
         "jolicode/slack-php-api": "^4.1",
         "knpuniversity/oauth2-client-bundle": "^2",
