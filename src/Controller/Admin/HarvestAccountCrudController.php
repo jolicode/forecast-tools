@@ -35,7 +35,9 @@ class HarvestAccountCrudController extends AbstractCrudController
             IntegerField::new('harvestId'),
             UrlField::new('baseUri'),
             AssociationField::new('forecastAccount'),
-            AssociationField::new('timesheetReminderSlackTeam', 'Send timesheet reminders to'),
+            AssociationField::new('timesheetReminderSlackTeam', 'Send timesheet reminders to')
+                ->setTemplatePath('admin/fields/timesheet_reminder_slack_team.html.twig')
+            ,
         ];
     }
 
