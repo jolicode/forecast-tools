@@ -24,3 +24,8 @@ yarn-error.log
 
 *.pyc
 docker/services/router/etc/ssl/certs/*.pem
+
+###> phpunit/phpunit ###
+/phpunit.xml
+.phpunit.result.cache
+###< phpunit/phpunit ###

@@ -14,6 +14,7 @@ namespace App\Client;
 use App\Entity\ForecastAccount;
 use App\Repository\UserRepository;
 use JoliCode\Forecast\Api\Client;
+use JoliCode\Forecast\Api\Model\Error;
 use JoliCode\Forecast\ClientFactory;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -138,6 +139,12 @@ class ForecastClient extends AbstractClient
 
         $getter = sprintf('get%s', ucfirst($nodeName));
         $setter = sprintf('set%s', ucfirst($nodeName));
+        $expectedClass = sprintf('JoliCode\Forecast\Api\Model\%s', ucfirst($nodeName));
+
+        if (Error::class === \get_class($response)) {
+            return $responseToUpdate ?: (new $expectedClass())->$setter([]);
+        }
+
         $data = $response->$getter();
         $ids = array_map(function ($a) {
             return $a->getId();

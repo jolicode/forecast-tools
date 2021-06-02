@@ -17,6 +17,7 @@ use App\DataSelector\HarvestDataSelector;
 use App\DataSelector\SlackDataSelector;
 use App\Entity\HarvestAccount;
 use App\Repository\HarvestAccountRepository;
+use Bugsnag\Client;
 use JoliCode\Forecast\Api\Model\Assignment;
 use JoliCode\Harvest\Api\Model\TimeEntriesPostBody;
 use JoliCode\Harvest\Api\Model\TimeEntry;
@@ -34,14 +35,16 @@ class Reminder
     private HarvestClient $harvestClient;
     private HarvestDataSelector $harvestDataSelector;
     private SlackDataSelector $slackDataSelector;
+    private Client $bugsnagClient;
 
-    public function __construct(HarvestAccountRepository $harvestAccountRepository, HarvestClient $harvestClient, ForecastDataSelector $forecastDataSelector, HarvestDataSelector $harvestDataSelector, SlackDataSelector $slackDataSelector)
+    public function __construct(HarvestAccountRepository $harvestAccountRepository, HarvestClient $harvestClient, ForecastDataSelector $forecastDataSelector, HarvestDataSelector $harvestDataSelector, SlackDataSelector $slackDataSelector, Client $bugsnagClient)
     {
         $this->harvestAccountRepository = $harvestAccountRepository;
         $this->harvestClient = $harvestClient;
         $this->forecastDataSelector = $forecastDataSelector;
         $this->harvestDataSelector = $harvestDataSelector;
         $this->slackDataSelector = $slackDataSelector;
+        $this->bugsnagClient = $bugsnagClient;
     }
 
     public function send()
@@ -57,42 +60,55 @@ class Reminder
         $harvestAccounts = $this->harvestAccountRepository->findAllHavingTimesheetReminderSlackTeam();
 
         foreach ($harvestAccounts as $harvestAccount) {
-            $missingProjectAssignmentsIssues = $this->buildMissingItemsSlackBlocks(
-                $this->buildMissingProjectAssignmentsIssues($harvestAccount, $firstDayOfLastMonth, $lastDayOfLastMonth),
-                $harvestAccount
-            );
-            $issues = $this->buildSlackBlocks(
-                $this->buildIssues($harvestAccount, $firstDayOfLastMonth, $lastDayOfLastMonth)
-            );
-
-            if (\count($issues) + \count($missingProjectAssignmentsIssues) > 0) {
-                $slackClient = \JoliCode\Slack\ClientFactory::create(
-                    $harvestAccount->getTimesheetReminderSlackTeam()->getSlackTeam()->getAccessToken()
+            try {
+                $missingProjectAssignmentsIssues = $this->buildMissingItemsSlackBlocks(
+                    $this->buildMissingProjectAssignmentsIssues($harvestAccount, $firstDayOfLastMonth, $lastDayOfLastMonth),
+                    $harvestAccount
+                );
+                $issues = $this->buildSlackBlocks(
+                    $this->buildIssues($harvestAccount, $firstDayOfLastMonth, $lastDayOfLastMonth)
                 );
 
-                if (\count($missingProjectAssignmentsIssues)) {
-                    $adminUsers = $this->getHarvestAdminSlackIds($harvestAccount);
+                if (\count($issues) + \count($missingProjectAssignmentsIssues) > 0) {
+                    $slackClient = \JoliCode\Slack\ClientFactory::create(
+                        $harvestAccount->getTimesheetReminderSlackTeam()->getSlackTeam()->getAccessToken()
+                    );
 
-                    foreach ($adminUsers as $adminUser) {
+                    if (\count($missingProjectAssignmentsIssues)) {
+                        $adminUsers = $this->getHarvestAdminSlackIds($harvestAccount);
+
+                        foreach ($adminUsers as $adminUser) {
+                            $slackClient->chatPostMessage([
+                                'channel' => $adminUser,
+                                'username' => self::BOT_NAME,
+                                'text' => $missingProjectAssignmentsIssues[0]['text']['text'],
+                                'blocks' => json_encode($missingProjectAssignmentsIssues),
+                            ]);
+                        }
+                    }
+
+                    foreach ($issues as $issue) {
+                        // send a Slack notification to this user
                         $slackClient->chatPostMessage([
-                            'channel' => $adminUser,
+                            'channel' => $issue['slackUser']->getId(),
                             'username' => self::BOT_NAME,
-                            'text' => $missingProjectAssignmentsIssues[0]['text']['text'],
-                            'blocks' => json_encode($missingProjectAssignmentsIssues),
+                            'text' => $issue['message'],
+                            'blocks' => json_encode($issue['blocks']),
                         ]);
+                        ++$timesheetRemindersCount;
                     }
                 }
-
-                foreach ($issues as $issue) {
-                    // send a Slack notification to this user
-                    $slackClient->chatPostMessage([
-                        'channel' => $issue['slackUser']->getId(),
-                        'username' => self::BOT_NAME,
-                        'text' => $issue['message'],
-                        'blocks' => json_encode($issue['blocks']),
+            } catch (\Exception $e) {
+                $this->bugsnagClient->notifyException($e, function ($report) use ($harvestAccount, $firstDayOfLastMonth, $lastDayOfLastMonth) {
+                    $report->setMetaData([
+                        'harvestAccount' => [
+                            'id' => $harvestAccount->getId(),
+                            'name' => $harvestAccount->getName(),
+                        ],
+                        'firstDayOfLastMonth' => $firstDayOfLastMonth,
+                        'lastDayOfLastMonth' => $lastDayOfLastMonth,
                     ]);
-                    ++$timesheetRemindersCount;
-                }
+                });
             }
         }
 

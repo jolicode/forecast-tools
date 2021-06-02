@@ -9,15 +9,19 @@
 {% block body %}
     <div class="homepage container">
         <div class="jumbotron text-center">
-            <h1><a href="{{ path('homepage') }}">⛅&nbsp;Harvest,&nbsp;Forecast&nbsp;&amp;&nbsp;Slack&nbsp;extra&nbsp;tools</a></h1>
+            <h1><a href="{{ path('homepage') }}">⛅&nbsp;Harvest, Forecast &amp; Slack extra tools</a></h1>
 
             <p>
-                Some tools to improve the use of ⛅ <a href="https://www.getharvest.com/forecast">Forecast</a> and <a href="https://www.getharvest.com/">Harvest</a>,<br/> and connect them to <a href="https://slack.com/">Slack</a>.
+                Some tools to improve the use of ⛅ <a href="https://www.getharvest.com/forecast">Forecast</a> and <a href="https://www.getharvest.com/">Harvest</a>, and connect them to <a href="https://slack.com/">Slack</a>.
             </p>
 
             <p>
                 <a href="{{ path('connect_harvest') }}" class="btn btn-primary">🔓&nbsp;&nbsp;Connect with Forecast</a>
             </p>
+
+            {% if forecast_account_required is defined %}
+                <p class="alert alert-warning mt-2">😅 Doh, you need at least a Forecast account to use this tool!</p>
+            {% endif %}
 
             <a class="scroll-down" href="#features"></a>
         </div>
@@ -26,7 +30,7 @@
 
         <div class="container content-row pb-5">
             <div class="row">
-                <div class="col-md-4 p-sm-2">
+                <div class="col-md-4 py-2 p-sm-2">
                     <div class="card card-body h-100 bg-light">
                         <img src="/images/reminder.svg" class="card-img-top" alt="Forecast reminder">
                         <h5 class="car-title">Slack Forecast reminder</h2>
@@ -37,7 +41,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-4 p-sm-2">
+                <div class="col-md-4 py-2 p-sm-2">
                     <div class="card card-body h-100 bg-light">
                         <img src="/images/public-forecast.svg" class="card-img-top" alt="Public Forecast">
                         <h5 class="car-title">Public Forecast</h2>
@@ -49,7 +53,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-4 p-sm-2">
+                <div class="col-md-4 py-2 p-sm-2">
                     <div class="card card-body h-100 bg-light">
                         <img src="/images/standup-reminder.svg" class="card-img-top" alt="Stand-up meeting reminder">
                         <h5 class="car-title">Stand-up meeting reminder</h2>
@@ -60,7 +64,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-4 p-sm-2">
+                <div class="col-md-4 py-2 p-sm-2">
                     <div class="card card-body h-100 bg-light">
                         <img src="/images/invoicing.svg" class="card-img-top" alt="Invoicing process">
                         <h5 class="car-title">Strong invoicing process</h2>
@@ -71,7 +75,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-4 p-sm-2">
+                <div class="col-md-4 py-2 p-sm-2">
                     <div class="card card-body h-100 bg-light">
                         <img src="/images/zen.svg" class="card-img-top" alt="Mass imports">
                         <h5 class="car-title">Mass insert time entries</h2>
@@ -83,7 +87,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-4 p-sm-2">
+                <div class="col-md-4 py-2 p-sm-2">
                     <div class="card card-body h-100 bg-light">
                         <img src="/images/timesheet-reminders.svg" class="card-img-top" alt="Harvest timesheet Slack reminders">
                         <h5 class="car-title">Slack Timesheets reminders</h2>

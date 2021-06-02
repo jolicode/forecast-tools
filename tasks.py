@@ -110,7 +110,7 @@ def cs(c):
     """
     with Builder(c):
         #docker_compose_run('./node_modules/.bin/prettier --write "assets/scripts/**/*.js"', no_deps=True)
-        docker_compose_run('php ./vendor/bin/php-cs-fixer fix', no_deps=True)
+        docker_compose_run(c, 'php ./vendor/bin/php-cs-fixer fix', no_deps=True)
 
 
 @task

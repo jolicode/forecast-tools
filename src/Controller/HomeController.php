@@ -39,6 +39,11 @@ class HomeController extends AbstractController
                 $defaultForecastAccount = $forecastAccounts[0];
             }
 
+            if (!$defaultForecastAccount) {
+                // no forecast account?
+                return $this->render('home/index.html.twig', ['forecast_account_required' => true]);
+            }
+
             return new RedirectResponse(
                 $this->generateUrl('organization_homepage', [
                     'slug' => $defaultForecastAccount->getSlug(),
