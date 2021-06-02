@@ -53,7 +53,7 @@ class PublicForecastController extends AbstractController
     public function create(Request $request, ForecastAccount $forecastAccount, UserRepository $userRepository, EntityManagerInterface $em)
     {
         $publicForecast = new PublicForecast();
-        $publicForecast->setToken(bin2hex(random_bytes(120)));
+        $publicForecast->setToken(bin2hex(random_bytes(80)));
         $user = $userRepository->findOneBy(['email' => $this->getUser()->getUsername()]);
         $publicForecast->setCreatedBy($user);
         $publicForecast->setForecastAccount($forecastAccount);
