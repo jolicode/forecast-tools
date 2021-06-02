@@ -14,6 +14,7 @@ namespace App\Client;
 use App\Entity\HarvestAccount;
 use App\Repository\UserRepository;
 use JoliCode\Harvest\Api\Client;
+use JoliCode\Harvest\Api\Model\Error;
 use JoliCode\Harvest\ClientFactory;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -176,6 +177,7 @@ class HarvestClient extends AbstractClient
     {
         $getter = sprintf('get%s', ucfirst($nodeName));
         $setter = sprintf('set%s', ucfirst($nodeName));
+        $expectedClass = sprintf('JoliCode\Harvest\Api\Model\%s', ucfirst($nodeName));
         $nextPage = 1;
         $page = 0;
         $accumulator = [];
@@ -190,6 +192,10 @@ class HarvestClient extends AbstractClient
                 $this->__client(),
                 $name,
             ], $arguments);
+
+            if (Error::class === \get_class($response)) {
+                return $responseToUpdate ?: (new $expectedClass())->$setter([]);
+            }
 
             $toAccumulate = $response->$getter();
             $ids = array_map(function ($a) {
