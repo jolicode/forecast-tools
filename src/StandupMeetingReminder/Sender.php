@@ -16,20 +16,23 @@ use App\DataSelector\SlackDataSelector;
 use App\Entity\StandupMeetingReminder;
 use App\Repository\ForecastAccountRepository;
 use App\Repository\StandupMeetingReminderRepository;
+use Bugsnag\Client;
 
 class Sender
 {
-    private $forecastAccountRepository;
-    private $forecastDataSelector;
-    private $slackDataSelector;
-    private $standupMeetingReminderRepository;
+    private ForecastAccountRepository $forecastAccountRepository;
+    private ForecastDataSelector $forecastDataSelector;
+    private SlackDataSelector $slackDataSelector;
+    private StandupMeetingReminderRepository $standupMeetingReminderRepository;
+    private Client $bugsnagClient;
 
-    public function __construct(StandupMeetingReminderRepository $standupMeetingReminderRepository, ForecastAccountRepository $forecastAccountRepository, ForecastDataSelector $forecastDataSelector, SlackDataSelector $slackDataSelector)
+    public function __construct(StandupMeetingReminderRepository $standupMeetingReminderRepository, ForecastAccountRepository $forecastAccountRepository, ForecastDataSelector $forecastDataSelector, SlackDataSelector $slackDataSelector, Client $bugsnagClient)
     {
         $this->standupMeetingReminderRepository = $standupMeetingReminderRepository;
         $this->forecastAccountRepository = $forecastAccountRepository;
         $this->forecastDataSelector = $forecastDataSelector;
         $this->slackDataSelector = $slackDataSelector;
+        $this->bugsnagClient = $bugsnagClient;
     }
 
     public function send()
@@ -43,6 +46,11 @@ class Sender
                 $this->sendStandupMeetingReminder($standupMeetingReminder);
             } catch (\Exception $e) {
                 // silence
+                $this->bugsnagClient->notifyException($e, function ($report) use ($standupMeetingReminder) {
+                    $report->setMetaData([
+                        'standupMeetingReminder' => $standupMeetingReminder->getId(),
+                    ]);
+                });
             }
 
             ++$standupMeetingRemindersCount;

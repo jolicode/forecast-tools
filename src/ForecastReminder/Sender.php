@@ -15,6 +15,7 @@ use App\Entity\ForecastAccountSlackTeam;
 use App\Entity\ForecastReminder;
 use App\Repository\ForecastAccountSlackTeamRepository;
 use App\Repository\ForecastReminderRepository;
+use Bugsnag\Client;
 use Cron\CronExpression;
 use Doctrine\ORM\EntityManagerInterface;
 use JoliCode\Slack\ClientFactory;
@@ -23,18 +24,21 @@ use JoliCode\Slack\Exception\SlackErrorResponse;
 class Sender
 {
     private $botName;
-    private $em;
-    private $forecastAccountSlackTeamRepository;
-    private $forecastReminderRepository;
+    private EntityManagerInterface $em;
+    private ForecastAccountSlackTeamRepository $forecastAccountSlackTeamRepository;
+    private ForecastReminderRepository $forecastReminderRepository;
+    private Client $bugsnagClient;
 
     public function __construct(
         EntityManagerInterface $em,
         ForecastAccountSlackTeamRepository $forecastAccountSlackTeamRepository,
-        ForecastReminderRepository $forecastReminderRepository)
+        ForecastReminderRepository $forecastReminderRepository,
+        Client $bugsnagClient)
     {
         $this->em = $em;
         $this->forecastAccountSlackTeamRepository = $forecastAccountSlackTeamRepository;
         $this->forecastReminderRepository = $forecastReminderRepository;
+        $this->bugsnagClient = $bugsnagClient;
     }
 
     public function send()
@@ -47,7 +51,17 @@ class Sender
             $cron = new CronExpression($forecastReminder->getCronExpression());
 
             if ($cron->isDue()) {
-                $this->sendForecastReminder($forecastReminder);
+                try {
+                    $this->sendForecastReminder($forecastReminder);
+                } catch (\Exception $e) {
+                    $this->bugsnagClient->notifyException($e, function ($report) use ($forecastReminder) {
+                        $report->setMetaData([
+                            'forecastReminder' => $forecastReminder->getId(),
+                            'forecastAccount' => $forecastReminder->getForecastAccount()->getName(),
+                        ]);
+                    });
+                }
+
                 ++$forecastRemindersCount;
             }
         }
@@ -110,7 +124,7 @@ class Sender
         }
     }
 
-    private function getFunnyBotName()
+    private function getFunnyBotName(): string
     {
         $adjectives = [
             'adorable',
