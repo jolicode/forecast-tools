@@ -78,23 +78,56 @@ class Reminder
                         $adminUsers = $this->getHarvestAdminSlackIds($harvestAccount);
 
                         foreach ($adminUsers as $adminUser) {
-                            $slackClient->chatPostMessage([
+                            $payload = [
                                 'channel' => $adminUser,
                                 'username' => self::BOT_NAME,
                                 'text' => $missingProjectAssignmentsIssues[0]['text']['text'],
                                 'blocks' => json_encode($missingProjectAssignmentsIssues),
-                            ]);
+                            ];
+
+                            try {
+                                $slackClient->chatPostMessage($payload);
+                            } catch (\Exception $e) {
+                                $this->bugsnagClient->notifyException($e, function ($report) use ($harvestAccount, $firstDayOfLastMonth, $lastDayOfLastMonth, $payload) {
+                                    $report->setMetaData([
+                                        'harvestAccount' => [
+                                            'id' => $harvestAccount->getId(),
+                                            'name' => $harvestAccount->getName(),
+                                        ],
+                                        'firstDayOfLastMonth' => $firstDayOfLastMonth,
+                                        'lastDayOfLastMonth' => $lastDayOfLastMonth,
+                                        'payload' => $payload,
+                                    ]);
+                                });
+                            }
                         }
                     }
 
                     foreach ($issues as $issue) {
                         // send a Slack notification to this user
-                        $slackClient->chatPostMessage([
+                        $payload = [
                             'channel' => $issue['slackUser']->getId(),
                             'username' => self::BOT_NAME,
                             'text' => $issue['message'],
                             'blocks' => json_encode($issue['blocks']),
-                        ]);
+                        ];
+
+                        try {
+                            $slackClient->chatPostMessage($payload);
+                        } catch (\Exception $e) {
+                            $this->bugsnagClient->notifyException($e, function ($report) use ($harvestAccount, $firstDayOfLastMonth, $lastDayOfLastMonth, $payload) {
+                                $report->setMetaData([
+                                    'harvestAccount' => [
+                                        'id' => $harvestAccount->getId(),
+                                        'name' => $harvestAccount->getName(),
+                                    ],
+                                    'firstDayOfLastMonth' => $firstDayOfLastMonth,
+                                    'lastDayOfLastMonth' => $lastDayOfLastMonth,
+                                    'payload' => $payload,
+                                ]);
+                            });
+                        }
+
                         ++$timesheetRemindersCount;
                     }
                 }
@@ -324,9 +357,7 @@ class Reminder
 
             if (!$forecastProject->getHarvestId()) {
                 $issues['no_harvest_project'][$forecastProject->getId()] = $forecastProject;
-            }
-
-            if (!isset($harvestUserAssignments[$forecastPerson->getHarvestUserId()])
+            } elseif (!isset($harvestUserAssignments[$forecastPerson->getHarvestUserId()])
                 || !isset($harvestUserAssignments[$forecastPerson->getHarvestUserId()][$forecastProject->getHarvestId()])) {
                 if (!isset($issues['missing_harvest_user_assignment'][$forecastPerson->getHarvestUserId()])) {
                     $issues['missing_harvest_user_assignment'][$forecastPerson->getHarvestUserId()] = [
@@ -368,7 +399,7 @@ class Reminder
                 'type' => 'section',
                 'text' => [
                     'type' => 'mrkdwn',
-                    'text' => 'Projects that exist in Slack and do not exist in Harvest',
+                    'text' => 'Projects that are used in Forecast and are not linked to a Harvest project',
                 ],
             ];
 
@@ -424,6 +455,18 @@ class Reminder
 
             $blocks[] = [
                 'type' => 'divider',
+            ];
+        }
+
+        if (\count($blocks) > 50) {
+            $remainingIssuesCount = \count($blocks) - 49;
+            $blocks = \array_slice($blocks, 0, 49);
+            $blocks[] = [
+                'type' => 'section',
+                'text' => [
+                    'type' => 'mrkdwn',
+                    'text' => sprintf('There are %s such other issues that are not displayed', $remainingIssuesCount),
+                ],
             ];
         }
 
