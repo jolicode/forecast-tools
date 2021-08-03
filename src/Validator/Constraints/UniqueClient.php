@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace  App\Validator\Constraints;
+namespace App\Validator\Constraints;
 
 use Symfony\Component\Validator\Constraints\Unique;
 
