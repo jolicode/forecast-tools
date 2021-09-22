@@ -13,7 +13,7 @@ namespace App\Slack;
 
 class SignatureComputer
 {
-    const VERSION = 'v0';
+    public const VERSION = 'v0';
     private string $signingSecret;
 
     public function __construct(string $signingSecret)

@@ -40,7 +40,7 @@ use Symfony\Component\Routing\RouterInterface;
  */
 class SettingsController extends AbstractController
 {
-    const SESSION_STATE_KEY = 'slack.state';
+    public const SESSION_STATE_KEY = 'slack.state';
 
     private $slackClientId;
     private $slackClientSecret;

@@ -21,7 +21,7 @@ use Psr\Log\LoggerInterface;
 
 class HarvestTokenRefresher
 {
-    const DELAY = 7 * 86400;
+    public const DELAY = 7 * 86400;
     private $clientRegistry;
     private $em;
     private $logger;

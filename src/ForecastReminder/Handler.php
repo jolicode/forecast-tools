@@ -19,8 +19,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Handler
 {
-    const SLACK_COMMAND_NAME = '/forecast';
-    const SLACK_COMMAND_OPTION_HELP = 'help';
+    public const SLACK_COMMAND_NAME = '/forecast';
+    public const SLACK_COMMAND_OPTION_HELP = 'help';
 
     private ForecastReminderRepository $forecastReminderRepository;
     private SlackSender $slackSender;

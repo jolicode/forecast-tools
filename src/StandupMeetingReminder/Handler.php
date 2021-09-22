@@ -25,13 +25,13 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Handler
 {
-    const ACTION_PREFIX = 'standup-reminder';
-    const ACTION_CHANGE = 'change';
-    const ACTION_CREATE = 'create';
+    public const ACTION_PREFIX = 'standup-reminder';
+    public const ACTION_CHANGE = 'change';
+    public const ACTION_CREATE = 'create';
 
-    const SLACK_COMMAND_NAME = '/standup-reminder';
-    const SLACK_COMMAND_OPTION_HELP = 'help';
-    const SLACK_COMMAND_OPTION_LIST = 'list';
+    public const SLACK_COMMAND_NAME = '/standup-reminder';
+    public const SLACK_COMMAND_OPTION_HELP = 'help';
+    public const SLACK_COMMAND_OPTION_LIST = 'list';
 
     private EntityManagerInterface $em;
     private ForecastAccountRepository $forecastAccountRepository;
