@@ -208,16 +208,7 @@ class HarvestAuthenticator extends SocialAuthenticator
         if ($company instanceof \JoliCode\Harvest\Api\Model\Error) {
             // The company requires Google signin, which seems to break Harvest API...
             // redirect the user to the Harvest authentication page requiring Google auth
-            throw new RedirectException(
-                sprintf(
-                    'https://id.getharvest.com/accounts/%s/google',
-                    $account['id']
-                ),
-                sprintf(
-                    'The "%s" harvest organization requires Google signin and the user did not signin that way.',
-                    $account['name']
-                )
-            );
+            throw new RedirectException(sprintf('https://id.getharvest.com/accounts/%s/google', $account['id']), sprintf('The "%s" harvest organization requires Google signin and the user did not signin that way.', $account['name']));
         }
 
         $harvestAccount = $this->harvestAccountRepository->findOneBy(['harvestId' => $account['id']]);
