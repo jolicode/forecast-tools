@@ -16,8 +16,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
-use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
@@ -37,8 +37,8 @@ class UserCrudController extends AbstractCrudController
             IdField::new('id')->hideOnForm(),
             TextField::new('name')
                 ->setFormTypeOptions(['disabled' => 'disabled']),
-            AssociationField::new('userForecastAccounts', 'Forecast')->hideOnForm(),
-            AssociationField::new('userHarvestAccounts', 'Harvest')->hideOnForm(),
+            CollectionField::new('userForecastAccounts', 'Forecast')->onlyOnDetail(),
+            CollectionField::new('userHarvestAccounts', 'Harvest')->onlyOnDetail(),
             IntegerField::new('forecastId')->hideOnForm(),
             EmailField::new('email')
                 ->setFormTypeOptions(['disabled' => 'disabled']),

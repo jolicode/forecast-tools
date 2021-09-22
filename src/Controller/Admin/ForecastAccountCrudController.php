@@ -14,9 +14,11 @@ namespace App\Controller\Admin;
 use App\Entity\ForecastAccount;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
@@ -34,17 +36,34 @@ class ForecastAccountCrudController extends AbstractCrudController
         return [
             IdField::new('id'),
             TextField::new('name'),
-            IntegerField::new('forecastId'),
+            IntegerField::new('forecastId')->onlyOnDetail(),
             AssociationField::new('userForecastAccounts', 'Users')->onlyOnIndex(),
             AssociationField::new('publicForecasts', 'Public forecasts')->onlyOnIndex(),
             AssociationField::new('invoicingProcesses', 'Invoicing processes')->onlyOnIndex(),
             AssociationField::new('forecastAccountSlackTeams', 'Slack teams')->onlyOnIndex(),
+            CollectionField::new('userForecastAccounts', 'Users')
+                ->onlyOnDetail()
+                ->formatValue(function ($value, $entity) {
+                    $formattedValue = [];
+                    $users = $entity->getUserForecastAccounts();
+
+                    foreach ($users as $user) {
+                        $formattedValue[] = sprintf(
+                            '%s%s%',
+                            $user->getUser()->getName(),
+                            $user->getIsAdmin() ? ' (admin)' : '',
+                            !$user->getIsEnabled() ? ' (disabled)' : ''
+                        );
+                    }
+
+                    return implode(', ', $formattedValue);
+                }),
             DateTimeField::new('createdAt')->onlyOnIndex(),
-            BooleanField::new('allowNonAdmins', 'Allow non admins to create public forecasts')->onlyOnForms(),
-            TextField::new('accessToken')->onlyOnForms(),
-            TextField::new('refreshToken')->onlyOnForms(),
+            BooleanField::new('allowNonAdmins', 'Allow non admins to create public forecasts')->hideOnIndex(),
+            TextField::new('accessToken')->onlyOnDetail(),
+            TextField::new('refreshToken')->onlyOnDetail(),
             IntegerField::new('expires', 'token expiration')
-            ->onlyOnIndex()
+                ->onlyOnDetail()
                 ->formatValue(function ($value) {
                     $interval = ((new \DateTime())->setTimestamp($value))->diff(new \DateTime());
                     $mapping = [
@@ -71,6 +90,7 @@ class ForecastAccountCrudController extends AbstractCrudController
     public function configureActions(Actions $actions): Actions
     {
         return $actions
+            ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->disable(Action::NEW, Action::EDIT);
     }
 }

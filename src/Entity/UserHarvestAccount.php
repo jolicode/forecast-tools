@@ -32,7 +32,7 @@ class UserHarvestAccount
     private $user;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\HarvestAccount")
+     * @ORM\ManyToOne(targetEntity="App\Entity\HarvestAccount", inversedBy="userHarvestAccounts")
      * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     private $harvestAccount;
@@ -51,6 +51,15 @@ class UserHarvestAccount
      * @ORM\Column(type="boolean")
      */
     private $isEnabled;
+
+    public function __toString()
+    {
+        return sprintf('%s%s%s',
+            $this->harvestAccount->getName(),
+            $this->isAdmin ? ' (admin)' : '',
+            !$this->isEnabled ? ' (disabled)' : ''
+        );
+    }
 
     public function getId(): ?int
     {

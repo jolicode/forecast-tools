@@ -52,6 +52,15 @@ class UserForecastAccount
      */
     private $forecastId;
 
+    public function __toString()
+    {
+        return sprintf('%s%s%s',
+            $this->forecastAccount->getName(),
+            $this->isAdmin ? ' (admin)' : '',
+            !$this->isEnabled ? ' (disabled)' : ''
+        );
+    }
+
     public function getId(): ?int
     {
         return $this->id;
