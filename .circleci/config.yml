@@ -21,7 +21,7 @@ jobs:
             - run:
                 name: Check coding standards
                 command: |
-                    php ./vendor/bin/php-cs-fixer fix --config=.php_cs --dry-run --diff
+                    php ./vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --dry-run --diff
             - run:
                 name: Lints twig and yaml files
                 command: |
