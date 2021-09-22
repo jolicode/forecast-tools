@@ -60,6 +60,11 @@ class HarvestAccount
     private $forecastAccount;
 
     /**
+     * @ORM\OneToMany(targetEntity="App\Entity\UserHarvestAccount", mappedBy="harvestAccount", orphanRemoval=true)
+     */
+    private $userHarvestAccounts;
+
+    /**
      * @ORM\Column(type="string", length=255)
      */
     private $baseUri;
@@ -182,6 +187,37 @@ class HarvestAccount
     public function setForecastAccount(?ForecastAccount $forecastAccount): self
     {
         $this->forecastAccount = $forecastAccount;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|UserHarvestAccount[]
+     */
+    public function getUserHarvestAccounts(): Collection
+    {
+        return $this->userHarvestAccounts;
+    }
+
+    public function addUserHarvestAccount(UserHarvestAccount $userHarvestAccount): self
+    {
+        if (!$this->userHarvestAccounts->contains($userHarvestAccount)) {
+            $this->userHarvestAccounts[] = $userHarvestAccount;
+            $userHarvestAccount->setHarvestAccount($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserHarvestAccount(UserHarvestAccount $userHarvestAccount): self
+    {
+        if ($this->userHarvestAccounts->contains($userHarvestAccount)) {
+            $this->userHarvestAccounts->removeElement($userHarvestAccount);
+            // set the owning side to null (unless already changed)
+            if ($userHarvestAccount->getHarvestAccount() === $this) {
+                $userHarvestAccount->setHarvestAccount(null);
+            }
+        }
 
         return $this;
     }

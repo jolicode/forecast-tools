@@ -14,8 +14,10 @@ namespace App\Controller\Admin;
 use App\Entity\HarvestAccount;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
@@ -32,17 +34,37 @@ class HarvestAccountCrudController extends AbstractCrudController
         return [
             IntegerField::new('id'),
             TextField::new('name'),
-            IntegerField::new('harvestId'),
+            IntegerField::new('harvestId')->hideOnIndex(),
             UrlField::new('baseUri'),
             AssociationField::new('forecastAccount'),
+            AssociationField::new('userHarvestAccounts', 'Users')->onlyOnIndex(),
+            CollectionField::new('userHarvestAccounts', 'Users')
+                ->onlyOnDetail()
+                ->formatValue(function ($value, $entity) {
+                    $formattedValue = [];
+                    $users = $entity->getUserHarvestAccounts();
+
+                    foreach ($users as $user) {
+                        $formattedValue[] = sprintf(
+                            '%s%s%',
+                            $user->getUser()->getName(),
+                            $user->getIsAdmin() ? ' (admin)' : '',
+                            !$user->getIsEnabled() ? ' (disabled)' : ''
+                        );
+                    }
+
+                    return implode(', ', $formattedValue);
+                }),
             AssociationField::new('timesheetReminderSlackTeam', 'Send timesheet reminders to')
-                ->setTemplatePath('admin/fields/timesheet_reminder_slack_team.html.twig'),
+                ->setTemplatePath('admin/fields/timesheet_reminder_slack_team.html.twig')
+                ->hideOnIndex(),
         ];
     }
 
     public function configureActions(Actions $actions): Actions
     {
         return $actions
+            ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->disable(Action::NEW, Action::EDIT);
     }
 }
