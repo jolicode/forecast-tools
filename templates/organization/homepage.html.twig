@@ -59,7 +59,7 @@
                 </div>
             </div>
 
-            {% if is_granted('admin', forecastAccount) or is_granted('harvest_admin', forecastAccount) %}
+            {% if is_granted('admin', forecastAccount) and is_granted('harvest_admin', forecastAccount) %}
                 <div class="col-md-6 col-lg-4 col-xl-3 p-2">
                     <div class="card h-100">
                         <div class="card-body">
