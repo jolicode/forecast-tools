@@ -22,13 +22,13 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Handler
 {
-    const ACTION_PREFIX = 'timesheet-reminder';
-    const ACTION_COPY = 'copy';
-    const ACTION_RELOAD = 'reload';
+    public const ACTION_PREFIX = 'timesheet-reminder';
+    public const ACTION_COPY = 'copy';
+    public const ACTION_RELOAD = 'reload';
 
-    const SLACK_COMMAND_NAME = '/check-timesheets';
-    const SLACK_COMMAND_OPTION_HELP = 'help';
-    const SLACK_COMMAND_OPTION_CURRENT = 'current';
+    public const SLACK_COMMAND_NAME = '/check-timesheets';
+    public const SLACK_COMMAND_OPTION_HELP = 'help';
+    public const SLACK_COMMAND_OPTION_CURRENT = 'current';
 
     private HarvestAccountRepository $harvestAccountRepository;
     private HarvestDataSelector $harvestDataSelector;

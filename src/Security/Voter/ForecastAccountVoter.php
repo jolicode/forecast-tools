@@ -20,8 +20,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class ForecastAccountVoter extends Voter
 {
-    const ADMIN = 'admin';
-    const HARVEST_ADMIN = 'harvest_admin';
+    public const ADMIN = 'admin';
+    public const HARVEST_ADMIN = 'harvest_admin';
 
     private $userForecastAccountRepository;
     private $userHarvestAccountRepository;

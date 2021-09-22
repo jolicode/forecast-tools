@@ -25,10 +25,10 @@ use JoliCode\Harvest\Api\Model\User as HarvestUser;
 
 class Reminder
 {
-    const BOT_NAME = 'Your personnal Harvest timesheet assistant';
-    const DAILY_EXPECTED_TOTAL = 8;
-    const MESSAGE_TEMPLATE_LAST_MONTH = '👋 Hello %s! It is time to fill your missing timesheets for the last month. Could you please check the missing information below?';
-    const MESSAGE_TEMPLATE_CURRENT_MONTH = '👋 Hello %s! Here is your timesheets report for the current month.';
+    public const BOT_NAME = 'Your personnal Harvest timesheet assistant';
+    public const DAILY_EXPECTED_TOTAL = 8;
+    public const MESSAGE_TEMPLATE_LAST_MONTH = '👋 Hello %s! It is time to fill your missing timesheets for the last month. Could you please check the missing information below?';
+    public const MESSAGE_TEMPLATE_CURRENT_MONTH = '👋 Hello %s! Here is your timesheets report for the current month.';
 
     private ForecastDataSelector $forecastDataSelector;
     private HarvestAccountRepository $harvestAccountRepository;

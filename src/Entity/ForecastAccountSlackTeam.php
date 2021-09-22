@@ -19,7 +19,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  */
 class ForecastAccountSlackTeam
 {
-    const MAX_ERRORS_ALLOWED = 3;
+    public const MAX_ERRORS_ALLOWED = 3;
 
     /**
      * @ORM\Id()

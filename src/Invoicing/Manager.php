@@ -18,18 +18,18 @@ use App\Repository\InvoiceExplanationRepository;
 
 class Manager
 {
-    const TIME_ENTRY_STATUS_INCOMPLETE = 'incomplete';
-    const TIME_ENTRY_STATUS_MISSING = 'missing';
-    const TIME_ENTRY_STATUS_OK = 'ok';
-    const TIME_ENTRY_STATUS_OVERFLOW = 'overflow';
-    const TIME_ENTRY_STATUS_SKIP = 'skip';
-    const TIME_ENTRY_STATUS_WEEKEND = 'weekend';
+    public const TIME_ENTRY_STATUS_INCOMPLETE = 'incomplete';
+    public const TIME_ENTRY_STATUS_MISSING = 'missing';
+    public const TIME_ENTRY_STATUS_OK = 'ok';
+    public const TIME_ENTRY_STATUS_OVERFLOW = 'overflow';
+    public const TIME_ENTRY_STATUS_SKIP = 'skip';
+    public const TIME_ENTRY_STATUS_WEEKEND = 'weekend';
 
-    const INVOICE_EXPLAINED = 'explained';
-    const INVOICE_OK = 'ok';
-    const INVOICE_OTHER_MONTH = 'notice';
-    const INVOICE_NON_RECONCILIABLE = 'notice';
-    const INVOICE_WRONG = 'wrong';
+    public const INVOICE_EXPLAINED = 'explained';
+    public const INVOICE_OK = 'ok';
+    public const INVOICE_OTHER_MONTH = 'notice';
+    public const INVOICE_NON_RECONCILIABLE = 'notice';
+    public const INVOICE_WRONG = 'wrong';
 
     private $forecastDataSelector;
     private $harvestDataSelector;

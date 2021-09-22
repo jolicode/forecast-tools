@@ -19,7 +19,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class HarvestAccountVoter extends Voter
 {
-    const ADMIN = 'admin';
+    public const ADMIN = 'admin';
 
     private $userHarvestAccountRepository;
 
