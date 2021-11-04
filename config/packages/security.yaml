@@ -12,6 +12,7 @@ security:
             pattern: ^/(privacy-policy|terms-of-service)$
             security: false
         main:
+            entry_point: App\Security\AuthenticationEntryPoint
             pattern: ^/
             logout:
                 path: /logout
