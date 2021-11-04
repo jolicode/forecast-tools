@@ -3,20 +3,20 @@
 {% block content %}
     <div class="card">
         {{ form_start(form) }}
-            <div class="card-body">
+            <div class="card-header">
                 {% if publicForecast is defined %}
-                    <h1>Edit the public forecast "{{ publicForecast.name }}"</h1>
+                    <a class="float-right btn btn-primary" href="{{ url('public_forecast', { token: publicForecast.tokenValue })}}" role="button">🔗 Display this public forecast</a>
+                    <h2 class="mb-0">Edit the public forecast "{{ publicForecast.name }}"</h2>
                 {% else %}
-                    <h1>Create a new public forecast</h1>
+                    <h2 class="mb-0">Create a new public forecast</h2>
                 {% endif %}
+            </div>
+            <div class="card-body">
 
                 {{ form_errors(form) }}
 
                 {% if publicForecast is defined %}
-
-                    <div class="alert alert-primary pt-3 pb-1 mt-4" role="alert">
-                        <a class="float-right btn btn-primary" href="{{ url('public_forecast', { token: publicForecast.tokenValue })}}" role="button">🔗 Display this public forecast</a>
-
+                    <div class="alert alert-primary pt-3 pb-1" role="alert">
                         <p>
                             This public Forecast is available at <a href="{{ url('public_forecast', { token: publicForecast.tokenValue }) }}">{{ url('public_forecast', { token: publicForecast.tokenValue }) }}</a>
                         </p>
