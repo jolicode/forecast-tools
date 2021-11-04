@@ -83,18 +83,7 @@ class Builder
 
             $name = $user->getFirstName() . ' ' . $user->getLastName();
             $activities = $this->getActivity($user, $start);
-
-            if (0 === \count($activities)) {
-                $activitiesAsText = $this->forecastReminder->getDefaultActivityName() ?: 'not set';
-            } elseif (1 === \count($activities) && $this->isTimeOffActivity($activities[0])) {
-                $endDate = $this->getTimeOffEndDate($user);
-                $timeOffActivityName = $this->forecastReminder->getTimeOffActivityName() ?: 'holidays (until %s)';
-                $activitiesAsText = sprintf($timeOffActivityName, $endDate->format('Y-m-d'));
-            } else {
-                $activitiesAsText = $this->getActivitiesAsText($activities);
-            }
-
-            $report[$name] = $activitiesAsText;
+            $report[$name] = $this->getActivitiesAsText($activities, $user);
 
             if (mb_strlen($name) > $longuestNameLength) {
                 $longuestNameLength = mb_strlen($name);
@@ -169,8 +158,23 @@ class Builder
         return true;
     }
 
-    private function getActivitiesAsText($activities)
+    private function getActivitiesAsText($activities, Person $user)
     {
+        if (0 === \count($activities)) {
+            return $this->forecastReminder->getDefaultActivityName() ?: 'not set';
+        }
+
+        if (1 === \count($activities) && $this->isTimeOffActivity($activities[0])) {
+            $endDate = $this->getTimeOffEndDate($user);
+            $timeOffActivityName = $this->forecastReminder->getTimeOffActivityName() ?: 'holidays (until %s)';
+
+            if ($this->forecastReminder->getDefaultActivityName() && $activities[0]->getAllocation() < 8 * 3600) {
+                $timeOffActivityName .= ' and ' . $this->forecastReminder->getDefaultActivityName();
+            }
+
+            return sprintf($timeOffActivityName, $endDate->format('Y-m-d'));
+        }
+
         $activities = array_unique(array_map(function ($activity) {
             if (isset($this->projectOverrides[$activity->getProjectId()])) {
                 return $this->projectOverrides[$activity->getProjectId()];
