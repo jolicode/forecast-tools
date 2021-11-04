@@ -166,6 +166,11 @@ class InvoicingController extends AbstractController
             'invoicingProcess' => $invoicingProcess,
             'explanationKey' => $explanationKey,
         ]);
+
+        if (!$invoiceExplanation) {
+            throw $this->createNotFoundException(sprintf('Could not find the explanation "%s" for the invoicing process "%s".', $explanationKey, $invoicingProcess->getId()));
+        }
+
         $this->em->remove($invoiceExplanation);
         $this->em->flush();
 
