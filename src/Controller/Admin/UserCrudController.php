@@ -63,6 +63,10 @@ class UserCrudController extends AbstractCrudController
                         }
                     }
 
+                    if (0 === $interval->invert) {
+                        $tmp[] = 'ago';
+                    }
+
                     return implode(' ', $tmp);
                 }),
             BooleanField::new('isSuperAdmin'),

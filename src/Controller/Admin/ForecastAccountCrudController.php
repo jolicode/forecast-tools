@@ -63,7 +63,6 @@ class ForecastAccountCrudController extends AbstractCrudController
             TextField::new('accessToken')->onlyOnDetail(),
             TextField::new('refreshToken')->onlyOnDetail(),
             IntegerField::new('expires', 'token expiration')
-                ->onlyOnDetail()
                 ->formatValue(function ($value) {
                     $interval = ((new \DateTime())->setTimestamp($value))->diff(new \DateTime());
                     $mapping = [
@@ -80,6 +79,10 @@ class ForecastAccountCrudController extends AbstractCrudController
                         if ($interval->format('%' . $format) > 0) {
                             $tmp[] = sprintf('%s%s', $interval->format("%$format"), $toDisplay);
                         }
+                    }
+
+                    if (0 === $interval->invert) {
+                        $tmp[] = 'ago';
                     }
 
                     return implode(' ', $tmp);

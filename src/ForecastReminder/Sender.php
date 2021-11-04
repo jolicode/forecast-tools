@@ -107,6 +107,8 @@ class Sender
                                 ]),
                             ]);
                             $forecastAccountSlackTeam->errorCount = 0;
+                            $forecastReminder->setLastTimeSentAt(new \DateTime());
+                            $this->em->persist($forecastReminder);
                         } catch (SlackErrorResponse $e) {
                             ++$forecastAccountSlackTeam->errorCount;
 

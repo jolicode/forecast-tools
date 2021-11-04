@@ -46,19 +46,20 @@ class ReminderController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $forecastReminder = $form->getData();
+            $forecastReminder->setUpdatedAt(new \DateTime());
+            $user = $userRepository->findOneBy(['email' => $this->getUser()->getUserIdentifier()]);
+            $forecastReminder->setUpdatedBy($user);
+
             $uow = $em->getUnitOfWork();
             $uow->computeChangeSets();
             $changeset = $uow->getEntityChangeSet($forecastReminder);
 
-            if (\count($changeset)) {
+            if (\count(array_diff_key($changeset, ['updatedAt' => 1, 'updatedBy' => 1]))) {
                 // prevent reminder modification from non-forecast admins
                 // however, allow forecast simple users to edit the overrides
                 $this->denyAccessUnlessGranted('admin', $forecastAccount);
             }
 
-            $user = $userRepository->findOneBy(['email' => $this->getUser()->getUsername()]);
-            $forecastReminder->setUpdatedBy($user);
-            $em->persist($forecastReminder);
             $em->flush();
 
             return $this->redirectToRoute('organization_reminder_index', ['slug' => $forecastAccount->getSlug()]);
