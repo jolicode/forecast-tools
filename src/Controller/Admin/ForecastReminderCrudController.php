@@ -33,6 +33,7 @@ class ForecastReminderCrudController extends AbstractCrudController
             TextField::new('CronExpression')->onlyOnIndex(),
             AssociationField::new('updatedBy')->onlyOnIndex(),
             DateTimeField::new('updatedAt')->onlyOnIndex(),
+            DateTimeField::new('lastTimeSentAt')->onlyOnIndex(),
             AssociationField::new('clientOverrides')->onlyOnIndex(),
             AssociationField::new('projectOverrides')->onlyOnIndex(),
         ];

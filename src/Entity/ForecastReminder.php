@@ -15,7 +15,6 @@ use App\Validator\Constraints as AppAssert;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\ForecastReminderRepository")
@@ -43,9 +42,13 @@ class ForecastReminder
 
     /**
      * @ORM\Column(type="datetime")
-     * @Gedmo\Timestampable(on="update")
      */
     private $updatedAt;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $lastTimeSentAt = null;
 
     /**
      * @ORM\Column(type="string", length=255)
@@ -136,6 +139,18 @@ class ForecastReminder
     public function setUpdatedAt(\DateTimeInterface $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getLastTimeSentAt(): ?\DateTimeInterface
+    {
+        return $this->lastTimeSentAt;
+    }
+
+    public function setLastTimeSentAt(\DateTimeInterface $lastTimeSentAt): self
+    {
+        $this->lastTimeSentAt = $lastTimeSentAt;
 
         return $this;
     }
