@@ -72,7 +72,7 @@ class HarvestClient extends AbstractClient
         }
 
         if (null === $this->defaultClient) {
-            $email = $this->security->getUser()->getUsername();
+            $email = $this->security->getUser()->getUserIdentifier();
             $user = $this->userRepository->findOneBy(['email' => $email]);
             $forecastAccount = $this->requestStack->getCurrentRequest()->attributes->get('forecastAccount');
             $harvestAccount = $forecastAccount->getHarvestAccount();

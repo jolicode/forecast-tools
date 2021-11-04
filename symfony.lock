@@ -459,13 +459,23 @@
         "version": "v4.2.1"
     },
     "symfony/framework-bundle": {
-        "version": "4.2",
+        "version": "5.3",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "master",
-            "version": "4.2",
-            "ref": "99d0a737bb3a14a25530fc8c528aa2a632f43079"
-        }
+            "version": "5.3",
+            "ref": "414ba00ad43fa71be42c7906a551f1831716b03c"
+        },
+        "files": [
+            "config/services.yaml",
+            "config/routes/framework.yaml",
+            "config/preload.php",
+            "config/packages/cache.yaml",
+            "config/packages/framework.yaml",
+            "public/index.php",
+            "src/Kernel.php",
+            "src/Controller/.gitignore"
+        ]
     },
     "symfony/http-client": {
         "version": "v5.0.2"
@@ -508,6 +518,9 @@
     },
     "symfony/options-resolver": {
         "version": "v4.2.1"
+    },
+    "symfony/password-hasher": {
+        "version": "v5.3.8"
     },
     "symfony/phpunit-bridge": {
         "version": "4.1",

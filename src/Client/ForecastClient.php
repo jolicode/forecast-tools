@@ -68,7 +68,7 @@ class ForecastClient extends AbstractClient
             $forecastAccount = $this->getForecastAccount();
 
             if ($this->security->getUser()) {
-                $email = $this->security->getUser()->getUsername();
+                $email = $this->security->getUser()->getUserIdentifier();
                 $user = $this->userRepository->findOneBy(['email' => $email]);
             }
 

@@ -48,7 +48,7 @@ class HarvestAccountVoter extends Voter
 
         switch ($attribute) {
             case self::ADMIN:
-                $userHarvestAccount = $this->userHarvestAccountRepository->findOneByEmailAndForecastAccount($user->getUsername(), $harvestAccount);
+                $userHarvestAccount = $this->userHarvestAccountRepository->findOneByEmailAndForecastAccount($user->getUserIdentifier(), $harvestAccount);
 
                 return $userHarvestAccount && $userHarvestAccount->getIsAdmin();
                 break;
