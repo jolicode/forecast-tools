@@ -77,7 +77,7 @@ class InvoicingController extends AbstractController
     public function create(Request $request, ForecastAccount $forecastAccount, UserRepository $userRepository)
     {
         $invoicingProcess = new InvoicingProcess();
-        $user = $userRepository->findOneBy(['email' => $this->getUser()->getUsername()]);
+        $user = $userRepository->findOneBy(['email' => $this->getUser()->getUserIdentifier()]);
         $invoicingProcess->setCreatedBy($user);
         $invoicingProcess->setForecastAccount($forecastAccount);
         $invoicingProcess->setHarvestAccount($forecastAccount->getHarvestAccount());
@@ -126,7 +126,7 @@ class InvoicingController extends AbstractController
         ]);
 
         if (!$invoiceExplanation) {
-            $user = $userRepository->findOneBy(['email' => $this->getUser()->getUsername()]);
+            $user = $userRepository->findOneBy(['email' => $this->getUser()->getUserIdentifier()]);
             $invoiceExplanation = new InvoiceExplanation();
             $invoiceExplanation->setInvoicingProcess($invoicingProcess);
             $invoiceExplanation->setCreatedBy($user);

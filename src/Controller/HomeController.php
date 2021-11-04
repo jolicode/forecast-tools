@@ -31,7 +31,7 @@ class HomeController extends AbstractController
     public function index(Request $request, AuthorizationCheckerInterface $authChecker, ForecastAccountRepository $forecastAccountRepository, UserRepository $userRepository)
     {
         if (true === $authChecker->isGranted('ROLE_USER')) {
-            $user = $userRepository->findOneBy(['email' => $this->getUser()->getUsername()]);
+            $user = $userRepository->findOneBy(['email' => $this->getUser()->getUserIdentifier()]);
             $defaultForecastAccount = $user->getDefaultForecastAccount();
 
             if (!$defaultForecastAccount) {
@@ -104,8 +104,8 @@ class HomeController extends AbstractController
 
     public function loginInfo(ForecastAccountRepository $forecastAccountRepository, RequestStack $requestStack)
     {
-        $forecastAccounts = $forecastAccountRepository->findForecastAccountsForEmail($this->getUser()->getUsername());
-        $request = $requestStack->getMasterRequest();
+        $forecastAccounts = $forecastAccountRepository->findForecastAccountsForEmail($this->getUser()->getUserIdentifier());
+        $request = $requestStack->getMainRequest();
 
         return $this->render('home/loginInfo.html.twig', [
             'forecastAccounts' => $forecastAccounts,

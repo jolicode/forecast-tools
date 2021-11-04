@@ -58,7 +58,7 @@ class SettingsController extends AbstractController
      */
     public function account(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em, UserRepository $userRepository)
     {
-        $user = $userRepository->findOneBy(['email' => $this->getUser()->getUsername()]);
+        $user = $userRepository->findOneBy(['email' => $this->getUser()->getUserIdentifier()]);
         $form = $this->createForm(UserSettingsType::class, $user);
         $form->handleRequest($request);
 
@@ -81,7 +81,7 @@ class SettingsController extends AbstractController
      */
     public function deleteAccount(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em, UserRepository $userRepository, UserForecastAccountRepository $userForecastAccountRepository)
     {
-        $user = $userRepository->findOneBy(['email' => $this->getUser()->getUsername()]);
+        $user = $userRepository->findOneBy(['email' => $this->getUser()->getUserIdentifier()]);
         $forecastAccountsToDelete = $userForecastAccountRepository->findForecastAccountsWithoutOtherAdmin($user);
         $form = $this->createForm(DeleteAccountFormType::class);
         $form->handleRequest($request);
@@ -220,7 +220,7 @@ class SettingsController extends AbstractController
                     $forecastAccountSlackTeam->setSlackTeam($slackTeam);
                 }
 
-                $user = $userRepository->findOneBy(['email' => $this->getUser()->getUsername()]);
+                $user = $userRepository->findOneBy(['email' => $this->getUser()->getUserIdentifier()]);
                 $slackTeam->setAccessToken($token->getToken());
                 $slackTeam->setTeamName($values['team']['name']);
                 $forecastAccountSlackTeam->setUpdatedBy($user);

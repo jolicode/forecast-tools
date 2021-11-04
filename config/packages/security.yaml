@@ -1,5 +1,6 @@
 security:
-    # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
+    enable_authenticator_manager: true
+
     providers:
         oauth:
             id: App\Security\UserProvider\OAuthUserProvider
@@ -15,19 +16,15 @@ security:
             logout:
                 path: /logout
                 target: /
-            anonymous: true
-            guard:
-                provider: oauth
-                authenticators:
-                    - App\Security\HarvestAuthenticator
+            custom_authenticators:
+                - App\Security\HarvestAuthenticator
 
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        - { path: ^/$, role: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/connect, role: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/forecast/, role: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/slack, role: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/$, roles: PUBLIC_ACCESS }
+        - { path: ^/connect, roles: PUBLIC_ACCESS }
+        - { path: ^/forecast/, roles: PUBLIC_ACCESS }
+        - { path: ^/slack, roles: PUBLIC_ACCESS }
         - { path: ^/_admin, roles: ROLE_ADMIN }
         - { path: ^/, roles: ROLE_USER }
-        # - { path: ^/profile, roles: ROLE_USER }

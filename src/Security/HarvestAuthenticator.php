@@ -22,22 +22,24 @@ use App\Repository\HarvestAccountRepository;
 use App\Repository\UserForecastAccountRepository;
 use App\Repository\UserHarvestAccountRepository;
 use App\Repository\UserRepository;
+use App\Security\User\OAuthUser;
 use Doctrine\ORM\EntityManagerInterface;
 use JoliCode\Forecast\ClientFactory as ForecastClientFactory;
 use JoliCode\Harvest\ClientFactory as HarvestClientFactory;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 use KnpU\OAuth2ClientBundle\Client\OAuth2Client;
-use KnpU\OAuth2ClientBundle\Security\Authenticator\SocialAuthenticator;
-use KnpU\OAuth2ClientBundle\Security\User\OAuthUser;
+use KnpU\OAuth2ClientBundle\Security\Authenticator\OAuth2Authenticator;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Symfony\Component\Security\Core\User\UserProviderInterface;
+use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
+use Symfony\Component\Security\Http\Authenticator\Passport\PassportInterface;
+use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 
-class HarvestAuthenticator extends SocialAuthenticator
+class HarvestAuthenticator extends OAuth2Authenticator
 {
     private $clientRegistry;
     private $em;
@@ -77,14 +79,14 @@ class HarvestAuthenticator extends SocialAuthenticator
         );
     }
 
-    public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
+    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
         $message = strtr($exception->getMessageKey(), $exception->getMessageData());
 
         return new Response($message, Response::HTTP_FORBIDDEN);
     }
 
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey): ?Response
     {
         $targetUrl = $this->getPreviousUrl($request, $providerKey);
 
@@ -95,7 +97,7 @@ class HarvestAuthenticator extends SocialAuthenticator
         return new RedirectResponse($targetUrl);
     }
 
-    public function supports(Request $request)
+    public function supports(Request $request): ?bool
     {
         return 'connect_harvest_check' === $request->attributes->get('_route');
     }
@@ -105,50 +107,58 @@ class HarvestAuthenticator extends SocialAuthenticator
         return $this->fetchAccessToken($this->getHarvestClient());
     }
 
-    public function getUser($credentials, UserProviderInterface $userProvider)
+    public function authenticate(Request $request): PassportInterface
     {
-        /** @var Nilesuan\OAuth2\Client\Provider\HarvestResourceOwner $harvestUser */
-        $harvestUser = $this->getHarvestClient()->fetchUserFromToken($credentials);
-        $userData = $harvestUser->toArray();
-        $email = $harvestUser->getEmail();
-        $user = $this->userRepository->findOneBy(['email' => $email]);
-        $roles = ['ROLE_USER', 'ROLE_OAUTH_USER'];
+        $client = $this->clientRegistry->getClient('harvest');
+        $accessToken = $this->fetchAccessToken($client);
 
-        if (!$user) {
-            $user = new User();
-            $this->em->persist($user);
-            $user->setEmail($email);
-            $user->setForecastId($userData['user']['id']);
-        }
+        return new SelfValidatingPassport(
+            new UserBadge($accessToken->getToken(), function () use ($accessToken, $client) {
+                /** @var Nilesuan\OAuth2\Client\Provider\HarvestResourceOwner $harvestUser */
+                $harvestUser = $client->fetchUserFromToken($accessToken);
 
-        $user->setAccessToken($credentials->getToken());
-        $user->setRefreshToken($credentials->getRefreshToken());
-        $user->setExpires($credentials->getExpires());
-        $user->setName($harvestUser->getName());
+                $userData = $harvestUser->toArray();
+                $email = $harvestUser->getEmail();
+                $user = $this->userRepository->findOneBy(['email' => $email]);
+                $roles = ['ROLE_USER', 'ROLE_OAUTH_USER'];
 
-        usort($userData['accounts'], function ($a, $b) {
-            return $a['product'] > $b['product'];
-        });
+                if (!$user) {
+                    $user = new User();
+                    $this->em->persist($user);
+                    $user->setEmail($email);
+                    $user->setForecastId($userData['user']['id']);
+                }
 
-        $forecastAccounts = [];
-        $harvestAccounts = [];
+                $user->setAccessToken($accessToken->getToken());
+                $user->setRefreshToken($accessToken->getRefreshToken());
+                $user->setExpires($accessToken->getExpires());
+                $user->setName($harvestUser->getName());
 
-        foreach ($userData['accounts'] as $account) {
-            if ('forecast' === $account['product']) {
-                $forecastAccounts[] = $this->addForecastAccount($user, $account);
-            } elseif ('harvest' === $account['product']) {
-                $harvestAccounts[] = $this->addHarvestAccount($user, $account);
-            }
-        }
+                usort($userData['accounts'], function ($a, $b) {
+                    return $a['product'] > $b['product'];
+                });
 
-        $this->em->flush();
-        $this->userRepository->cleanupExtraneousAccountsForUser($user, array_filter($forecastAccounts), array_filter($harvestAccounts));
+                $forecastAccounts = [];
+                $harvestAccounts = [];
 
-        if ($user->getIsSuperAdmin()) {
-            $roles[] = 'ROLE_ADMIN';
-        }
+                foreach ($userData['accounts'] as $account) {
+                    if ('forecast' === $account['product']) {
+                        $forecastAccounts[] = $this->addForecastAccount($user, $account);
+                    } elseif ('harvest' === $account['product']) {
+                        $harvestAccounts[] = $this->addHarvestAccount($user, $account);
+                    }
+                }
 
-        return new OAuthUser($email, $roles);
+                $this->em->flush();
+                $this->userRepository->cleanupExtraneousAccountsForUser($user, array_filter($forecastAccounts), array_filter($harvestAccounts));
+
+                if ($user->getIsSuperAdmin()) {
+                    $roles[] = 'ROLE_ADMIN';
+                }
+
+                return new OAuthUser($email, $roles);
+            })
+        );
     }
 
     private function addForecastAccount(User $user, array $account): ?ForecastAccount

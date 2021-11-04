@@ -38,7 +38,7 @@ class PublicForecastRepository extends ServiceEntityRepository
             ->leftJoin('f.userForecastAccounts', 'ufa')
             ->leftJoin('ufa.user', 'u')
             ->andWhere('u.email = :email')
-            ->setParameter('email', $user->getUsername())
+            ->setParameter('email', $user->getUserIdentifier())
             ->orderBy('p.name', 'ASC')
             ->getQuery()
             ->getResult()

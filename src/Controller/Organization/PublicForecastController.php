@@ -54,7 +54,7 @@ class PublicForecastController extends AbstractController
     {
         $publicForecast = new PublicForecast();
         $publicForecast->setToken(bin2hex(random_bytes(80)));
-        $user = $userRepository->findOneBy(['email' => $this->getUser()->getUsername()]);
+        $user = $userRepository->findOneBy(['email' => $this->getUser()->getUserIdentifier()]);
         $publicForecast->setCreatedBy($user);
         $publicForecast->setForecastAccount($forecastAccount);
         $form = $this->createForm(PublicForecastType::class, $publicForecast);
