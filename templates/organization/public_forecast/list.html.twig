@@ -4,8 +4,11 @@
 
 {% block content %}
     {% for message in app.flashes('success') %}
-        <div class="flash-notice">
-            {{ message }}
+        <div class="alert alert-success fade show mb-3" role="alert">
+            {{ message | raw }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
         </div>
     {% endfor %}
 
@@ -16,7 +19,7 @@
             {% for publicForecast in publicForecasts %}
                 <div class="card card-body">
                     <p class="card-text">
-                        <a href="{{ url('public_forecast', { token: publicForecast.token }) }}" class="btn border mr-3">🔗 View</a>
+                        <a href="{{ url('public_forecast', { token: publicForecast.tokenValue }) }}" class="btn border mr-3">🔗 View</a>
                         <span class="d-inline-block align-middle" style="line-height: 1rem;">
                             {{ publicForecast.name }}<br />
                             <small>created by <code>{{ publicForecast.createdBy | default('(deleted user)') }}</code> on <code>{{ publicForecast.createdAt|date('F jS, Y, G:i') }}</code></small>
@@ -29,21 +32,23 @@
         </div>
     {% endif %}
 
-    <div class="card card-body">
-        <h1>Add a public forecast</h1>
+    <div class="card">
+        <div class="card-body">
+            <h1>Add a public forecast</h1>
 
-        <p>
-            Adding a public forecast allows to share a part of your forecast publicly. Public forecasts are highly configurable, so you can share the forecast of a specific client, project or member.
-        </p>
-
-        {% if is_granted('admin', forecastAccount) or forecastAccount.getAllowNonAdmins() %}
             <p>
+                Adding a public forecast allows to share a part of your forecast publicly. Public forecasts are highly configurable,
+                so you can share the forecast for a specific client, project or member. Once a public forecast has been created, you
+                get a link with a unique and complicated URL that can be shared with your customer so they are aware of the schedule
+                for their project.
+            </p>
+        </div>
+        <div class="card-footer">
+            {% if is_granted('admin', forecastAccount) or forecastAccount.getAllowNonAdmins() %}
                 <a href="{{ organization_path('public_forecasts_create') }}" class="btn btn-primary">✨&nbsp;&nbsp;Add a public Forecast</a>
-            </p>
-        {% else %}
-            <p>
+            {% else %}
                 <a class="btn btn-primary disabled">✨&nbsp;&nbsp;Add a public Forecast</a> You must be a Forecast admin to add a public Forecast.
-            </p>
-        {% endif %}
+            {% endif %}
+        </div>
     </div>
 {% endblock %}
