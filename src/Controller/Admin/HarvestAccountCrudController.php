@@ -46,7 +46,7 @@ class HarvestAccountCrudController extends AbstractCrudController
 
                     foreach ($users as $user) {
                         $formattedValue[] = sprintf(
-                            '%s%s%',
+                            '%s%s%s',
                             $user->getUser()->getName(),
                             $user->getIsAdmin() ? ' (admin)' : '',
                             !$user->getIsEnabled() ? ' (disabled)' : ''

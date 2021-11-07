@@ -627,7 +627,7 @@ class Reminder
 
         $duplicates = $timeEntries;
         usort($timeEntries, function ($a, $b) {
-            return $b->getUpdatedAt() > $a->getUpdatedAt();
+            return ($b->getUpdatedAt() > $a->getUpdatedAt()) ? 1 : -1;
         });
 
         foreach ($timeEntries as $i => $timeEntry) {

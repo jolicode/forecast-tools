@@ -154,6 +154,7 @@ class Builder
 
             if (!isset($userAssignments['total']['users'][$id])) {
                 $userAssignments['total']['users'][$id] = [
+                    /* @phpstan-ignore-next-line */
                     'name' => $name,
                     'days' => [],
                     'total' => 0,
@@ -222,12 +223,12 @@ class Builder
 
         foreach ($userAssignments as $projectId => $projectAssignments) {
             uasort($userAssignments[$projectId]['users'], function ($a, $b) {
-                return $a['name'] > $b['name'];
+                return strcmp($a['name'], $b['name']);
             });
         }
 
         uasort($userAssignments, function ($a, $b) {
-            return $a['firstDay'] > $b['firstDay'];
+            return strcmp($a['firstDay'], $b['firstDay']);
         });
 
         return $userAssignments;
@@ -241,14 +242,15 @@ class Builder
         if (null === $weeklyDays) {
             $workingDays = ['1', '2', '3', '4', '5'];
         } else {
-            $workingDays = [];
-            $weeklyDays->getMonday() && $workingDays[] = '1';
-            $weeklyDays->getTuesday() && $workingDays[] = '2';
-            $weeklyDays->getWednesday() && $workingDays[] = '3';
-            $weeklyDays->getThursday() && $workingDays[] = '4';
-            $weeklyDays->getFriday() && $workingDays[] = '5';
-            $weeklyDays->getSaturday() && $workingDays[] = '6';
-            $weeklyDays->getSunday() && $workingDays[] = '7';
+            $workingDays = array_flip(array_filter([
+                '1' => $weeklyDays->getMonday(),
+                '2' => $weeklyDays->getTuesday(),
+                '3' => $weeklyDays->getWednesday(),
+                '4' => $weeklyDays->getThursday(),
+                '5' => $weeklyDays->getFriday(),
+                '6' => $weeklyDays->getSaturday(),
+                '7' => $weeklyDays->getSunday(),
+            ]));
         }
 
         $days = [];

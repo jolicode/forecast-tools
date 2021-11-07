@@ -66,7 +66,6 @@ class SlackCommandController extends AbstractController
                     break;
                 default:
                     throw new \DomainException(sprintf('Could not understand the "%s" action type.', $action[0]));
-                    break;
             }
         }
 

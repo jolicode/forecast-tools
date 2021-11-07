@@ -27,7 +27,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use JoliCode\Forecast\ClientFactory as ForecastClientFactory;
 use JoliCode\Harvest\ClientFactory as HarvestClientFactory;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
-use KnpU\OAuth2ClientBundle\Client\OAuth2Client;
+use KnpU\OAuth2ClientBundle\Client\OAuth2ClientInterface;
 use KnpU\OAuth2ClientBundle\Security\Authenticator\OAuth2Authenticator;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -90,7 +90,7 @@ class HarvestAuthenticator extends OAuth2Authenticator
     {
         $targetUrl = $this->getPreviousUrl($request, $providerKey);
 
-        if (null === $targetUrl) {
+        if ('' === $targetUrl) {
             $targetUrl = $this->urlGenerator->generate('homepage');
         }
 
@@ -114,7 +114,7 @@ class HarvestAuthenticator extends OAuth2Authenticator
 
         return new SelfValidatingPassport(
             new UserBadge($accessToken->getToken(), function () use ($accessToken, $client) {
-                /** @var Nilesuan\OAuth2\Client\Provider\HarvestResourceOwner $harvestUser */
+                /** @var \Nilesuan\OAuth2\Client\Provider\HarvestResourceOwner $harvestUser */
                 $harvestUser = $client->fetchUserFromToken($accessToken);
 
                 $userData = $harvestUser->toArray();
@@ -135,7 +135,7 @@ class HarvestAuthenticator extends OAuth2Authenticator
                 $user->setName($harvestUser->getName());
 
                 usort($userData['accounts'], function ($a, $b) {
-                    return $a['product'] > $b['product'];
+                    return strcmp($a['product'], $b['product']);
                 });
 
                 $forecastAccounts = [];
@@ -161,7 +161,7 @@ class HarvestAuthenticator extends OAuth2Authenticator
         );
     }
 
-    private function addForecastAccount(User $user, array $account): ?ForecastAccount
+    private function addForecastAccount(User $user, array $account): ForecastAccount
     {
         $forecastAccount = $this->forecastAccountRepository->findOneBy(['forecastId' => $account['id']]);
 
@@ -206,7 +206,7 @@ class HarvestAuthenticator extends OAuth2Authenticator
         return $forecastAccount;
     }
 
-    private function addHarvestAccount(User $user, array $account): ?HarvestAccount
+    private function addHarvestAccount(User $user, array $account): HarvestAccount
     {
         $client = HarvestClientFactory::create(
             $user->getAccessToken(),
@@ -259,7 +259,7 @@ class HarvestAuthenticator extends OAuth2Authenticator
         return $harvestAccount;
     }
 
-    private function getHarvestClient(): OAuth2Client
+    private function getHarvestClient(): OAuth2ClientInterface
     {
         return $this->clientRegistry
             ->getClient('harvest')

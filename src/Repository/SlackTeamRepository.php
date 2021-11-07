@@ -18,6 +18,7 @@ use Doctrine\Persistence\ManagerRegistry;
 /**
  * @method SlackTeam|null find($id, $lockMode = null, $lockVersion = null)
  * @method SlackTeam|null findOneBy(array $criteria, array $orderBy = null)
+ * @method SlackTeam|null findOneByTeamId($value)
  * @method SlackTeam[]    findAll()
  * @method SlackTeam[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */

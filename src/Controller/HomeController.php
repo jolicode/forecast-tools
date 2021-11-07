@@ -36,7 +36,7 @@ class HomeController extends AbstractController
 
             if (!$defaultForecastAccount) {
                 $forecastAccounts = $forecastAccountRepository->findForecastAccountsForUser($user);
-                $defaultForecastAccount = $forecastAccounts[0];
+                $defaultForecastAccount = isset($forecastAccounts[0]) ? $forecastAccounts[0] : null;
             }
 
             if (!$defaultForecastAccount) {

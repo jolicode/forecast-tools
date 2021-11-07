@@ -51,7 +51,6 @@ class HarvestAccountVoter extends Voter
                 $userHarvestAccount = $this->userHarvestAccountRepository->findOneByEmailAndForecastAccount($user->getUserIdentifier(), $harvestAccount);
 
                 return $userHarvestAccount && $userHarvestAccount->getIsAdmin();
-                break;
         }
 
         return false;

@@ -21,6 +21,16 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Contracts\Cache\ItemInterface;
 
+/**
+ * @method \JoliCode\Harvest\Api\Model\Clients                 listClients(array $config, string $nodeName)
+ * @method \JoliCode\Harvest\Api\Model\Invoices                listInvoices(array $config, string $nodeName)
+ * @method \JoliCode\Harvest\Api\Model\Projects                listProjects(array $config, string $nodeName)
+ * @method \JoliCode\Harvest\Api\Model\TaskAssignments         listTaskAssignmentsForSpecificProject(string $projectId, string $nodeName)
+ * @method \JoliCode\Harvest\Api\Model\TimeEntries             listTimeEntries(array $config, string $nodeName)
+ * @method \JoliCode\Harvest\Api\Model\Users                   listUsers(array $config, string $nodeName)
+ * @method \JoliCode\Harvest\Api\Model\UserAssignments         listUserAssignments(array $config, string $nodeName)
+ * @method \JoliCode\Harvest\Api\Model\UninvoicedReportResults uninvoicedReport(array $config, string $nodeName)
+ */
 class HarvestClient extends AbstractClient
 {
     private $clients = [];
@@ -93,7 +103,7 @@ class HarvestClient extends AbstractClient
     private function __saveClient(string $accessToken, HarvestAccount $harvestAccount)
     {
         $forecastAccount = $harvestAccount->getForecastAccount();
-        $this->clients[$harvestAccount->getHarvestId()] = ClientFactory::create($accessToken, $harvestAccount->getHarvestId());
+        $this->clients[$harvestAccount->getHarvestId()] = ClientFactory::create($accessToken, (string) $harvestAccount->getHarvestId());
         $this->namespace = 'harvest-' . $forecastAccount->getId();
     }
 

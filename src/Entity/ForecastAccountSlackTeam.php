@@ -154,6 +154,13 @@ class ForecastAccountSlackTeam
         return $this->errorsCount;
     }
 
+    public function increaseErrorsCount(int $errorsCount = 1): self
+    {
+        $this->errorsCount += $errorsCount;
+
+        return $this;
+    }
+
     public function setErrorsCount(int $errorsCount): self
     {
         $this->errorsCount = $errorsCount;

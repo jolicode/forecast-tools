@@ -59,7 +59,7 @@ class ForecastDataSelector
     /**
      * @return Assignment[]
      */
-    public function getAssignments(\DateTime $from, \DateTime $to, array $options = []): array
+    public function getAssignments(\DateTimeInterface $from, \DateTimeInterface $to, array $options = []): array
     {
         $options = array_merge([
             'start_date' => $from->format('Y-m-d'),

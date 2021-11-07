@@ -21,6 +21,13 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Contracts\Cache\ItemInterface;
 
+/**
+ * @method \JoliCode\Forecast\Api\Model\Assignments  listAssignments(array $options, string $nodeName)
+ * @method \JoliCode\Forecast\Api\Model\Clients      listClients(string $nodeName)
+ * @method \JoliCode\Forecast\Api\Model\People       listPeople(string $nodeName)
+ * @method \JoliCode\Forecast\Api\Model\Placeholders listPlaceholders(string $nodeName)
+ * @method \JoliCode\Forecast\Api\Model\Projects     listProjects(string $nodeName)
+ */
 class ForecastClient extends AbstractClient
 {
     private $client = [];
@@ -80,7 +87,7 @@ class ForecastClient extends AbstractClient
 
             $this->client[$forecastAccount->getForecastId()] = ClientFactory::create(
                 $accessToken,
-                $forecastAccount->getForecastId()
+                (string) $forecastAccount->getForecastId()
             );
         }
 

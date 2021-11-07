@@ -15,7 +15,7 @@ use App\Entity\ForecastAccount;
 use App\Repository\ForecastAccountRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
-use KnpU\OAuth2ClientBundle\Client\OAuth2Client;
+use KnpU\OAuth2ClientBundle\Client\OAuth2ClientInterface;
 use Nilesuan\OAuth2\Client\Provider\Exception\HarvestIdentityProviderException;
 use Psr\Log\LoggerInterface;
 
@@ -86,7 +86,7 @@ class HarvestTokenRefresher
         $this->em->persist($forecastAccount);
     }
 
-    private function getHarvestClient(): OAuth2Client
+    private function getHarvestClient(): OAuth2ClientInterface
     {
         return $this->clientRegistry
             ->getClient('harvest')

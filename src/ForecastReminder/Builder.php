@@ -45,7 +45,7 @@ class Builder
         $account = $forecastReminder->getForecastAccount();
         $this->client = \JoliCode\Forecast\ClientFactory::create(
             $account->getAccessToken(),
-            $account->getForecastId()
+            (string) $account->getForecastId()
         );
     }
 
@@ -144,10 +144,10 @@ class Builder
         }));
         usort($users, function ($a, $b) {
             if ($a->getFirstName() === $b->getFirstName()) {
-                return $a->getLastName() > $b->getLastName();
+                return strcmp($a->getLastName(), $b->getLastName());
             }
 
-            return $a->getFirstName() > $b->getFirstName();
+            return strcmp($a->getFirstName(), $b->getFirstName());
         });
 
         $this->assignments = $this->client->listAssignments($options)->getAssignments();
@@ -245,7 +245,7 @@ class Builder
             return $activity;
         }, $activities);
         usort($activities, function ($a, $b) {
-            return $a->getEndDate() < $b->getEndDate();
+            return ($a->getEndDate() < $b->getEndDate()) ? 1 : -1;
         });
         $i = 1;
         $activity = $activities[0];
@@ -266,18 +266,17 @@ class Builder
 
     private function getWorkingDays($user)
     {
-        $workingDays = [];
         $weeklyDays = $user->getWorkingDays();
 
-        $weeklyDays->getMonday() && $workingDays[] = '1';
-        $weeklyDays->getTuesday() && $workingDays[] = '2';
-        $weeklyDays->getWednesday() && $workingDays[] = '3';
-        $weeklyDays->getThursday() && $workingDays[] = '4';
-        $weeklyDays->getFriday() && $workingDays[] = '5';
-        $weeklyDays->getSaturday() && $workingDays[] = '6';
-        $weeklyDays->getSunday() && $workingDays[] = '7';
-
-        return $workingDays;
+        return array_flip(array_filter([
+            '1' => $weeklyDays->getMonday(),
+            '2' => $weeklyDays->getTuesday(),
+            '3' => $weeklyDays->getWednesday(),
+            '4' => $weeklyDays->getThursday(),
+            '5' => $weeklyDays->getFriday(),
+            '6' => $weeklyDays->getSaturday(),
+            '7' => $weeklyDays->getSunday(),
+        ]));
     }
 
     private function isTimeOffActivity($activity)

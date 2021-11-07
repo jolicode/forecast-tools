@@ -380,9 +380,7 @@ class Manager
                 'explanationKey' => 'invoice-' . $invoice['invoice']->getNumber(),
             ]);
 
-            if (isset($invoice['invoiceAmount'])) {
-                $invoicesTotal += $invoice['invoiceAmount'];
-            }
+            $invoicesTotal += $invoice['invoiceAmount'];
 
             if ($explanation) {
                 $clientInvoices[$invoiceId]['explanation'] = $explanation;
@@ -424,7 +422,7 @@ class Manager
         }
 
         usort($clientInvoices, function ($a, $b) {
-            return $a['invoice']->getNumber() < $b['invoice']->getNumber();
+            return -strcmp($a['invoice']->getNumber(), $b['invoice']->getNumber());
         });
 
         usort($orphanTimeEntries, function ($a, $b) {
@@ -468,10 +466,16 @@ class Manager
 
     private function buildDatesRange(InvoicingProcess $invoicingProcess)
     {
+        $periodEnd = $invoicingProcess->getBillingPeriodEnd();
+
+        if (!($periodEnd instanceof \DateTime)) {
+            $periodEnd = \DateTime::createFromImmutable($periodEnd);
+        }
+
         return new \DatePeriod(
             $invoicingProcess->getBillingPeriodStart(),
             new \DateInterval('P1D'),
-            $invoicingProcess->getBillingPeriodEnd()->add(new \DateInterval('P1D'))
+            $periodEnd->add(new \DateInterval('P1D'))
         );
     }
 
@@ -527,11 +531,11 @@ class Manager
     }
 
     /**
-     * @param $harvestEntries \JoliCode\Harvest\Api\Model\TimeEntry[]
-     * @param $forecastEntries \JoliCode\Forecast\Api\Model\Assignment[]
-     * @param $projects \JoliCode\Forecast\Api\Model\Project[]
-     * @param $clients \JoliCode\Forecast\Api\Model\Client[]
-     * @param mixed $isWeekend
+     * @param \JoliCode\Harvest\Api\Model\TimeEntry[]   $harvestEntries
+     * @param \JoliCode\Forecast\Api\Model\Assignment[] $forecastEntries
+     * @param \JoliCode\Forecast\Api\Model\Project[]    $projects
+     * @param \JoliCode\Forecast\Api\Model\Client[]     $clients
+     * @param mixed                                     $isWeekend
      */
     private function computeViolations($harvestEntries, $forecastEntries, $projects, $clients, $isWeekend): array
     {

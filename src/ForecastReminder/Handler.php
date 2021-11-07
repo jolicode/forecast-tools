@@ -105,7 +105,7 @@ class Handler
         $text = str_replace(' and ', ', ' . $sign, $text);
         $datetime = new \DateTime($text);
 
-        if ($datetime && 0 === \DateTime::getLastErrors()['warning_count'] && 0 === \DateTime::getLastErrors()['error_count']) {
+        if (0 === \DateTime::getLastErrors()['warning_count'] && 0 === \DateTime::getLastErrors()['error_count']) {
             return $datetime;
         }
 

@@ -74,7 +74,6 @@ class Handler
                 break;
             default:
                 throw new \DomainException(sprintf('😱 The "%s" option is not valid.', $option));
-                break;
         }
     }
 

@@ -99,7 +99,7 @@ class ForecastReminder
 
     public function __toString()
     {
-        return $this->name;
+        return sprintf('Reminder for "%s"', $this->forecastAccount->getName());
     }
 
     public function getId(): ?int

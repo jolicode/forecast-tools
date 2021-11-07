@@ -106,13 +106,13 @@ class Sender
                                     ],
                                 ]),
                             ]);
-                            $forecastAccountSlackTeam->errorCount = 0;
+                            $forecastAccountSlackTeam->setErrorsCount(0);
                             $forecastReminder->setLastTimeSentAt(new \DateTime());
                             $this->em->persist($forecastReminder);
                         } catch (SlackErrorResponse $e) {
-                            ++$forecastAccountSlackTeam->errorCount;
+                            $forecastAccountSlackTeam->increaseErrorsCount();
 
-                            if ($forecastAccountSlackTeam->errorCount > ForecastAccountSlackTeam::MAX_ERRORS_ALLOWED) {
+                            if ($forecastAccountSlackTeam->getErrorsCount() > ForecastAccountSlackTeam::MAX_ERRORS_ALLOWED) {
                                 $this->forecastAccountSlackTeamRepository->remove($forecastAccountSlackTeam);
                             } else {
                                 $this->em->persist($forecastAccountSlackTeam);
