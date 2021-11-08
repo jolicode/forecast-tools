@@ -1,66 +1,82 @@
 {% extends 'organization/base.html.twig' %}
 
 {% block content %}
-    <div class="card card-body">
-        {% if publicForecast is defined %}
-            <h1>Edit public forecast "{{ publicForecast.name }}"</h1>
-        {% else %}
-            <h1>Create a new public forecast</h1>
-        {% endif %}
-
+    <div class="card">
         {{ form_start(form) }}
-            {{ form_errors(form) }}
-            {% if publicForecast is defined %}
+            <div class="card-header">
+                {% if publicForecast is defined %}
+                    <a class="float-right btn btn-primary" href="{{ url('public_forecast', { token: publicForecast.tokenValue })}}" role="button">🔗 Display this public forecast</a>
+                    <h2 class="mb-0">Edit the public forecast "{{ publicForecast.name }}"</h2>
+                {% else %}
+                    <h2 class="mb-0">Create a new public forecast</h2>
+                {% endif %}
+            </div>
+            <div class="card-body">
+
+                {{ form_errors(form) }}
+
+                {% if publicForecast is defined %}
+                    <div class="alert alert-primary pt-3 pb-1" role="alert">
+                        <p>
+                            This public Forecast is available at <a href="{{ url('public_forecast', { token: publicForecast.tokenValue }) }}">{{ url('public_forecast', { token: publicForecast.tokenValue }) }}</a>
+                        </p>
+
+                        <p>
+                            💡 Please note that this URL does not require authentication, so you can easily share it with your clients.
+                        </p>
+                    </div>
+                {% endif %}
+
+                {{ form_row(form.name) }}
+
                 <div class="form-group">
-                    This public Forecast is available at <a href="{{ url('public_forecast', { token: publicForecast.token }) }}">{{ url('public_forecast', { token: publicForecast.token }) }}</a>.
+                    {{ form_label(form.clients) }}
+                    {{ form_errors(form.clients) }}
+                    <div>
+                        {{ form_widget(form.clients, { attr: { class: 'select2', multiple: 'multiple' }}) }}
+                    </div>
+                    {{ form_help(form.clients) }}
                 </div>
 
                 <div class="form-group">
-                    Created on <strong>{{ publicForecast.createdAt|date('F jS \\a\\t G:i') }}</strong> by <strong>{{ publicForecast.createdBy | default('(deleted user)') }}</strong>
+                    {{ form_label(form.projects) }}
+                    {{ form_errors(form.projects) }}
+                    <div>
+                        {{ form_widget(form.projects, { attr: { class: 'select2', multiple: 'multiple' }}) }}
+                    </div>
+                    {{ form_help(form.projects) }}
                 </div>
-            {% endif %}
 
-            {{ form_row(form.name) }}
-
-            <div class="form-group">
-                {{ form_label(form.clients) }}
-                {{ form_errors(form.clients) }}
-                <div>
-                    {{ form_widget(form.clients, { attr: { class: 'select2', multiple: 'multiple' }}) }}
+                <div class="form-group">
+                    {{ form_label(form.people) }}
+                    {{ form_errors(form.people) }}
+                    <div>
+                        {{ form_widget(form.people, { attr: { class: 'select2', multiple: 'multiple' }}) }}
+                    </div>
+                    {{ form_help(form.people) }}
                 </div>
-                {{ form_help(form.clients) }}
+
+                <div class="form-group">
+                    {{ form_label(form.placeholders) }}
+                    {{ form_errors(form.placeholders) }}
+                    <div>
+                        {{ form_widget(form.placeholders, { attr: { class: 'select2', multiple: 'multiple' }}) }}
+                    </div>
+                    {{ form_help(form.placeholders) }}
+                </div>
             </div>
 
-            <div class="form-group">
-                {{ form_label(form.projects) }}
-                {{ form_errors(form.projects) }}
-                <div>
-                    {{ form_widget(form.projects, { attr: { class: 'select2', multiple: 'multiple' }}) }}
-                </div>
-                {{ form_help(form.projects) }}
-            </div>
+            <div class="card-footer">
+                {{ form_widget(form.save) }}
 
-            <div class="form-group">
-                {{ form_label(form.people) }}
-                {{ form_errors(form.people) }}
-                <div>
-                    {{ form_widget(form.people, { attr: { class: 'select2', multiple: 'multiple' }}) }}
-                </div>
-                {{ form_help(form.people) }}
+                {% if publicForecast is defined %}
+                    <small class="mt-2 ml-2">
+                        created on <code>{{ publicForecast.createdAt|date('F jS \\a\\t G:i') }}</code>
+                        by <code>{{ publicForecast.createdBy | default('(deleted user)') }}</code>
+                    </small>
+                    <a class="float-right btn btn-danger" href="{{ organization_path('public_forecasts_delete', { publicForecastId: publicForecast.id })}}" role="button">Delete this public forecast</a>
+                {% endif %}
             </div>
-
-            <div class="form-group">
-                {{ form_label(form.placeholders) }}
-                {{ form_errors(form.placeholders) }}
-                <div>
-                    {{ form_widget(form.placeholders, { attr: { class: 'select2', multiple: 'multiple' }}) }}
-                </div>
-                {{ form_help(form.placeholders) }}
-            </div>
-
-            {% if publicForecast is defined %}
-                <a class="float-right btn btn-danger" href="{{ organization_path('public_forecasts_delete', { publicForecastId: publicForecast.id })}}" role="button">Delete this public forecast</a>
-            {% endif %}
         {{ form_end(form) }}
     </div>
 {% endblock %}

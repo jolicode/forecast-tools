@@ -13,6 +13,7 @@ namespace App\Controller\Organization;
 
 use App\Entity\ForecastAccount;
 use App\Entity\PublicForecast;
+use App\Forecast\UniqueTokenGenerator;
 use App\Form\PublicForecastType;
 use App\Repository\PublicForecastRepository;
 use App\Repository\UserRepository;
@@ -50,10 +51,10 @@ class PublicForecastController extends AbstractController
      * @Route("/create", name="create")
      * @Security("is_granted('admin', forecastAccount) or forecastAccount.getAllowNonAdmins()")
      */
-    public function create(Request $request, ForecastAccount $forecastAccount, UserRepository $userRepository, EntityManagerInterface $em)
+    public function create(Request $request, ForecastAccount $forecastAccount, UserRepository $userRepository, EntityManagerInterface $em, UniqueTokenGenerator $tokenGenerator)
     {
         $publicForecast = new PublicForecast();
-        $publicForecast->setToken(bin2hex(random_bytes(80)));
+        $publicForecast->setToken($tokenGenerator->generate());
         $user = $userRepository->findOneBy(['email' => $this->getUser()->getUserIdentifier()]);
         $publicForecast->setCreatedBy($user);
         $publicForecast->setForecastAccount($forecastAccount);
@@ -65,6 +66,12 @@ class PublicForecastController extends AbstractController
             $publicForecast = $form->getData();
             $em->persist($publicForecast);
             $em->flush();
+
+            $url = $this->generateUrl('organization_public_forecasts_edit', ['slug' => $forecastAccount->getSlug(), 'publicForecastId' => $publicForecast->getId()]);
+            $this->addFlash(
+                'success',
+                sprintf('👋 This public forecast has been successfully created! <a href="%s">Review its details</a>', $url)
+            );
 
             return $this->redirectToRoute('organization_public_forecasts_list', ['slug' => $forecastAccount->getSlug()]);
         }
@@ -122,7 +129,7 @@ class PublicForecastController extends AbstractController
                 '👋 This forecast has been deleted!'
             );
 
-            return $this->redirectToRoute('homepage');
+            return $this->redirectToRoute('organization_public_forecasts_list', ['slug' => $forecastAccount->getSlug()]);
         }
 
         return $this->render('organization/public_forecast/delete.html.twig', [
