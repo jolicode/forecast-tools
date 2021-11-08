@@ -33,6 +33,7 @@ use Symfony\Contracts\Cache\ItemInterface;
  */
 class HarvestClient extends AbstractClient
 {
+    /** @var Client[] */
     private $clients = [];
     private $defaultClient = null;
     private $namespace = '';
@@ -50,22 +51,22 @@ class HarvestClient extends AbstractClient
         $this->userRepository = $userRepository;
     }
 
-    public function __disableCache()
+    public function __disableCache(): void
     {
         $this->cacheEnabled = false;
     }
 
-    public function __disableCacheForNextRequestOnly()
+    public function __disableCacheForNextRequestOnly(): void
     {
         $this->cacheStatusForNextRequestOnly = false;
     }
 
-    public function __enableCache()
+    public function __enableCache(): void
     {
         $this->cacheEnabled = true;
     }
 
-    public function __enableCacheForNextRequestOnly()
+    public function __enableCacheForNextRequestOnly(): void
     {
         $this->cacheStatusForNextRequestOnly = true;
     }
@@ -100,14 +101,14 @@ class HarvestClient extends AbstractClient
         return $this->defaultClient;
     }
 
-    private function __saveClient(string $accessToken, HarvestAccount $harvestAccount)
+    private function __saveClient(string $accessToken, HarvestAccount $harvestAccount): void
     {
         $forecastAccount = $harvestAccount->getForecastAccount();
         $this->clients[$harvestAccount->getHarvestId()] = ClientFactory::create($accessToken, (string) $harvestAccount->getHarvestId());
         $this->namespace = 'harvest-' . $forecastAccount->getId();
     }
 
-    protected function __namespace()
+    protected function __namespace(): string
     {
         if ('' === $this->namespace) {
             $forecastAccount = $this->requestStack->getCurrentRequest()->attributes->get('forecastAccount');

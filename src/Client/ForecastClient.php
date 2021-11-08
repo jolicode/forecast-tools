@@ -13,8 +13,8 @@ namespace App\Client;
 
 use App\Entity\ForecastAccount;
 use App\Repository\UserRepository;
-use JoliCode\Forecast\Api\Client;
 use JoliCode\Forecast\Api\Model\Error;
+use JoliCode\Forecast\Client;
 use JoliCode\Forecast\ClientFactory;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -30,6 +30,7 @@ use Symfony\Contracts\Cache\ItemInterface;
  */
 class ForecastClient extends AbstractClient
 {
+    /** @var Client[] */
     private $client = [];
     private $requestStack;
     private $security;
@@ -46,22 +47,22 @@ class ForecastClient extends AbstractClient
         $this->userRepository = $userRepository;
     }
 
-    public function __disableCache()
+    public function __disableCache(): void
     {
         $this->cacheEnabled = false;
     }
 
-    public function __disableCacheForNextRequestOnly()
+    public function __disableCacheForNextRequestOnly(): void
     {
         $this->cacheStatusForNextRequestOnly = false;
     }
 
-    public function __enableCache()
+    public function __enableCache(): void
     {
         $this->cacheEnabled = true;
     }
 
-    public function __enableCacheForNextRequestOnly()
+    public function __enableCacheForNextRequestOnly(): void
     {
         $this->cacheStatusForNextRequestOnly = true;
     }
@@ -94,7 +95,7 @@ class ForecastClient extends AbstractClient
         return $this->client[$forecastAccount->getForecastId()];
     }
 
-    protected function __namespace()
+    protected function __namespace(): string
     {
         return 'forecast-' . $this->getForecastAccount()->getId();
     }
@@ -132,7 +133,7 @@ class ForecastClient extends AbstractClient
         return $this->forecastAccount;
     }
 
-    public function setForecastAccount(ForecastAccount $forecastAccount)
+    public function setForecastAccount(ForecastAccount $forecastAccount): void
     {
         $this->forecastAccount = $forecastAccount;
     }

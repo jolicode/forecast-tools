@@ -13,6 +13,7 @@ namespace App\DataSelector;
 
 use App\Client\SlackClient;
 use App\Entity\SlackTeam;
+use JoliCode\Slack\Api\Model\ObjsConversation;
 use JoliCode\Slack\Api\Model\ObjsUserProfile;
 
 class SlackDataSelector
@@ -24,10 +25,7 @@ class SlackDataSelector
         $this->client = $slackClient;
     }
 
-    /**
-     * @return \JoliCode\Slack\Api\Model\ObjsConversation
-     */
-    public function getConversationInfos(SlackTeam $slackTeam, string $channelId)
+    public function getConversationInfos(SlackTeam $slackTeam, string $channelId): ?ObjsConversation
     {
         $this->client->setSlackTeam($slackTeam);
 
@@ -39,7 +37,7 @@ class SlackDataSelector
     /**
      * @return \JoliCode\Slack\Api\Model\ObjsConversation[]
      */
-    public function getConversations(SlackTeam $slackTeam)
+    public function getConversations(SlackTeam $slackTeam): array
     {
         $this->client->setSlackTeam($slackTeam);
 
@@ -72,13 +70,16 @@ class SlackDataSelector
     /**
      * @return \JoliCode\Slack\Api\Model\ObjsUser[]
      */
-    public function getUsers(SlackTeam $slackTeam)
+    public function getUsers(SlackTeam $slackTeam): array
     {
         $this->client->setSlackTeam($slackTeam);
 
         return $this->client->usersList()->getMembers();
     }
 
+    /**
+     * @return \JoliCode\Slack\Api\Model\ObjsUser[]
+     */
     public function getUsersByEmail(SlackTeam $slackTeam): array
     {
         $users = $this->getUsers($slackTeam);
@@ -93,6 +94,9 @@ class SlackDataSelector
         return $emails;
     }
 
+    /**
+     * @return string[]
+     */
     public function getUserIdsByEmail(SlackTeam $slackTeam): array
     {
         $users = $this->getUsers($slackTeam);

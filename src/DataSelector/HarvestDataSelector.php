@@ -268,7 +268,7 @@ class HarvestDataSelector
     /**
      * @return UninvoicedReportResult[]
      */
-    public function getUninvoiced(\DateTimeInterface $from, \DateTimeInterface $to)
+    public function getUninvoiced(\DateTimeInterface $from, \DateTimeInterface $to): array
     {
         $uninvoiced = $this->client->uninvoicedReport([
             'from' => $from->format('Y-m-d'),
