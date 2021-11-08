@@ -33,7 +33,7 @@ class PublicForecast
     private $forecastAccount;
 
     /**
-     * @ORM\Column(type="binary", length=255)
+     * @ORM\Column(type="string", length=255)
      */
     private $token;
 
@@ -91,22 +91,9 @@ class PublicForecast
         return $this;
     }
 
-    public function getToken()
+    public function getToken(): ?string
     {
         return $this->token;
-    }
-
-    public function getTokenValue(): ?string
-    {
-        if (\is_resource($this->token)) {
-            rewind($this->token);
-
-            return stream_get_contents($this->token);
-        } elseif (\is_string($this->token)) {
-            return $this->token;
-        }
-
-        return null;
     }
 
     public function setToken(string $token): self
