@@ -28,7 +28,7 @@
                 {% for publicForecast in publicForecasts %}
                     <div class="card card-body pt-3 pb-3 pr-0 pl-0 border-top-0 border-right-0 border-left-0 rounded-0">
                         <div class="card-text">
-                            <a href="{{ url('public_forecast', { token: publicForecast.tokenValue }) }}" class="btn btn-light border mr-3">🔗 View</a>
+                            <a href="{{ url('public_forecast', { token: publicForecast.token }) }}" class="btn btn-light border mr-3">🔗 View</a>
                             <a href="{{ organization_path('public_forecasts_delete', { publicForecastId: publicForecast.id }) }}" class="btn btn-danger float-right ml-3">🗑️&nbsp;&nbsp;Delete</a>
                             <a href="{{ organization_path('public_forecasts_edit', { publicForecastId: publicForecast.id }) }}" class="btn btn-primary float-right">✏️&nbsp;&nbsp;Edit</a>
                             <div class="d-inline-block align-middle" style="line-height: 1rem">

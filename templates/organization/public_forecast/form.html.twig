@@ -5,7 +5,7 @@
         {{ form_start(form) }}
             <div class="card-header">
                 {% if publicForecast is defined %}
-                    <a class="float-right btn btn-primary" href="{{ url('public_forecast', { token: publicForecast.tokenValue })}}" role="button">🔗 Display this public forecast</a>
+                    <a class="float-right btn btn-primary" href="{{ url('public_forecast', { token: publicForecast.token })}}" role="button">🔗 Display this public forecast</a>
                     <h2 class="mb-0">Edit the public forecast "{{ publicForecast.name }}"</h2>
                 {% else %}
                     <h2 class="mb-0">Create a new public forecast</h2>
@@ -18,7 +18,7 @@
                 {% if publicForecast is defined %}
                     <div class="alert alert-primary pt-3 pb-1" role="alert">
                         <p>
-                            This public Forecast is available at <a href="{{ url('public_forecast', { token: publicForecast.tokenValue }) }}">{{ url('public_forecast', { token: publicForecast.tokenValue }) }}</a>
+                            This public Forecast is available at <a href="{{ url('public_forecast', { token: publicForecast.token }) }}">{{ url('public_forecast', { token: publicForecast.token }) }}</a>
                         </p>
 
                         <p>
