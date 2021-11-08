@@ -20,6 +20,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 /**
  * @method PublicForecast|null find($id, $lockMode = null, $lockVersion = null)
  * @method PublicForecast|null findOneBy(array $criteria, array $orderBy = null)
+ * @method PublicForecast|null findOneByToken(string $value)
  * @method PublicForecast[]    findAll()
  * @method PublicForecast[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */

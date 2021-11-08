@@ -4,6 +4,9 @@ cs: ## Fix CS violations
 cs_dry_run: ## Display CS violations without fixing it
 	./vendor/bin/php-cs-fixer fix --verbose --dry-run
 
+phpstan: ## Run the phpstan analysis
+	./vendor/bin/phpstan analyse
+
 .PHONY: help
 
 help: ## Display this help

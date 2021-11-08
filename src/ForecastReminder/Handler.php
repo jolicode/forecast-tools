@@ -22,12 +22,14 @@ class Handler
     public const SLACK_COMMAND_NAME = '/forecast';
     public const SLACK_COMMAND_OPTION_HELP = 'help';
 
+    private Builder $builder;
     private ForecastReminderRepository $forecastReminderRepository;
     private SlackSender $slackSender;
     private WordToNumberConverter $wordToNumberConverter;
 
-    public function __construct(ForecastReminderRepository $forecastReminderRepository, SlackSender $slackSender, WordToNumberConverter $wordToNumberConverter)
+    public function __construct(Builder $builder, ForecastReminderRepository $forecastReminderRepository, SlackSender $slackSender, WordToNumberConverter $wordToNumberConverter)
     {
+        $this->builder = $builder;
         $this->forecastReminderRepository = $forecastReminderRepository;
         $this->slackSender = $slackSender;
         $this->wordToNumberConverter = $wordToNumberConverter;
@@ -55,9 +57,9 @@ class Handler
     public function buildReminder(ForecastReminder $forecastReminder, ?string $text = ''): array
     {
         $startDate = $this->extractStartDateFromtext($text);
-        $builder = new Builder($forecastReminder);
-        $title = $builder->buildTitle($startDate);
-        $message = $builder->buildMessage($startDate);
+        $this->builder->setForecastReminder($forecastReminder);
+        $title = $this->builder->buildTitle($startDate);
+        $message = $this->builder->buildMessage($startDate);
 
         if (false === $message) {
             $message = 'An error occured, could not compute the forecast.';
@@ -105,7 +107,7 @@ class Handler
         $text = str_replace(' and ', ', ' . $sign, $text);
         $datetime = new \DateTime($text);
 
-        if ($datetime && 0 === \DateTime::getLastErrors()['warning_count'] && 0 === \DateTime::getLastErrors()['error_count']) {
+        if (0 === \DateTime::getLastErrors()['warning_count'] && 0 === \DateTime::getLastErrors()['error_count']) {
             return $datetime;
         }
 

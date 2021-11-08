@@ -40,13 +40,13 @@ class HarvestAccountCrudController extends AbstractCrudController
             AssociationField::new('userHarvestAccounts', 'Users')->onlyOnIndex(),
             CollectionField::new('userHarvestAccounts', 'Users')
                 ->onlyOnDetail()
-                ->formatValue(function ($value, $entity) {
+                ->formatValue(function ($value, $entity): string {
                     $formattedValue = [];
                     $users = $entity->getUserHarvestAccounts();
 
                     foreach ($users as $user) {
                         $formattedValue[] = sprintf(
-                            '%s%s%',
+                            '%s%s%s',
                             $user->getUser()->getName(),
                             $user->getIsAdmin() ? ' (admin)' : '',
                             !$user->getIsEnabled() ? ' (disabled)' : ''

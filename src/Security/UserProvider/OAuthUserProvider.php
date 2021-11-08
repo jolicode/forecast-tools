@@ -20,7 +20,7 @@ class OAuthUserProvider extends BaseOAuthUserProvider
 {
     public function loadUserByIdentifier($username): UserInterface
     {
-        return new OAuthUser($username, $this->roles);
+        return $this->loadUserByUsername($username);
     }
 
     public function refreshUser(UserInterface $user): UserInterface

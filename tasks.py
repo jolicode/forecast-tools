@@ -114,6 +114,15 @@ def cs(c):
 
 
 @task
+def phpstan(c):
+    """
+    Run the phpstan analysis
+    """
+    with Builder(c):
+        docker_compose_run(c, 'php ./vendor/bin/phpstan analyse', no_deps=True)
+
+
+@task
 def watch(c):
     """
     Run Yarn watcher

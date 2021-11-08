@@ -34,12 +34,12 @@ class HomeController extends AbstractController
             $user = $userRepository->findOneBy(['email' => $this->getUser()->getUserIdentifier()]);
             $defaultForecastAccount = $user->getDefaultForecastAccount();
 
-            if (!$defaultForecastAccount) {
+            if (null === $defaultForecastAccount) {
                 $forecastAccounts = $forecastAccountRepository->findForecastAccountsForUser($user);
-                $defaultForecastAccount = $forecastAccounts[0];
+                $defaultForecastAccount = isset($forecastAccounts[0]) ? $forecastAccounts[0] : null;
             }
 
-            if (!$defaultForecastAccount) {
+            if (null === $defaultForecastAccount) {
                 // no forecast account?
                 return $this->render('home/index.html.twig', ['forecast_account_required' => true]);
             }

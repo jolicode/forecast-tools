@@ -49,14 +49,14 @@ class ForecastPromoteAdminCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $user = $this->userRepository->findOneByEmail($input->getArgument('email'));
 
-        if ($user) {
-            $user->setIsSuperAdmin(!$input->getOption('demote'));
+        if (null !== $user) {
+            $user->setIsSuperAdmin(null !== $input->getOption('demote'));
             $this->em->persist($user);
             $this->em->flush();
             $io->success(sprintf(
                 'The user with email %s has been %s as super admin',
                 $user->getEmail(),
-                $input->getOption('demote') ? 'demoted' : 'promoted'
+                (null !== $input->getOption('demote')) ? 'demoted' : 'promoted'
             ));
         } else {
             $io->error(sprintf(

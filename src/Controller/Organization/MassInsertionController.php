@@ -88,14 +88,17 @@ class MassInsertionController extends AbstractController
 
                 if ($data['harvest']) {
                     // search the harvest user
+                    /** @phpstan-ignore-next-line */
                     $harvestUserId = $forecastPeople[$personId]->getHarvestUserId();
 
                     // create the harvest timeEntry
                     $harvestBody = new TimeEntriesPostBody();
                     $harvestBody->setHours($data['duration']);
                     $harvestBody->setNotes($data['comment']);
+                    /* @phpstan-ignore-next-line */
                     $harvestBody->setProjectId($harvestProjectId);
                     $harvestBody->setSpentDate($data['date']);
+                    /* @phpstan-ignore-next-line */
                     $harvestBody->setTaskId($harvestTaskAssignment->getTask()->getId());
                     $harvestBody->setUserId($harvestUserId);
                     $this->harvestClient->__client()->createTimeEntry($harvestBody);

@@ -71,7 +71,7 @@ class Handler
                     $request->request->get('user_id')
                 );
 
-                if ($harvestProperties) {
+                if (null !== $harvestProperties) {
                     $this->updateReminder(
                         $harvestProperties['account'],
                         $harvestProperties['user'],
@@ -91,7 +91,6 @@ class Handler
                 break;
             default:
                 throw new \DomainException(sprintf('😱 The "%s" option is not valid.', $option));
-                break;
         }
     }
 
@@ -108,7 +107,7 @@ class Handler
                 $this->slackSender->sendMessage($payload['response_url'], $payload['trigger_id'], '⌛ Okay, we are checking your timesheet again');
                 $harvestProperties = $this->retrieveHarvestPropertiesFromSlackPayload($payload['user']['team_id'], $payload['user']['id']);
 
-                if ($harvestProperties) {
+                if (null !== $harvestProperties) {
                     try {
                         $this->updateReminder(
                             $harvestProperties['account'],
@@ -131,7 +130,7 @@ class Handler
     {
         $harvestProperties = $this->retrieveHarvestPropertiesFromSlackPayload($payload['user']['team_id'], $payload['user']['id']);
 
-        if ($harvestProperties) {
+        if (null !== $harvestProperties) {
             $this->harvestTimesheetReminder->copy(
                 $harvestProperties['account'],
                 $harvestProperties['user'],
@@ -175,7 +174,7 @@ EOT,
         ]);
         $slackEmail = $this->slackDataSelector->getUserProfile($slackTeam, $userId)->getEmail();
 
-        if ($slackEmail) {
+        if (null !== $slackEmail) {
             // get a collection of possible harvest accounts
             $harvestAccounts = $this->harvestAccountRepository->findBySlackTeamId($teamId);
 
@@ -184,7 +183,7 @@ EOT,
                     ->setHarvestAccount($harvestAccount)
                     ->getUserByEmail($slackEmail);
 
-                if ($harvestUser) {
+                if (null !== $harvestUser) {
                     return [
                         'account' => $harvestAccount,
                         'user' => $harvestUser,

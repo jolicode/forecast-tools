@@ -46,7 +46,7 @@ class Sender
                 $this->sendStandupMeetingReminder($standupMeetingReminder);
             } catch (\Exception $e) {
                 // silence
-                $this->bugsnagClient->notifyException($e, function ($report) use ($standupMeetingReminder) {
+                $this->bugsnagClient->notifyException($e, function ($report) use ($standupMeetingReminder): void {
                     $report->setMetaData([
                         'standupMeetingReminder' => $standupMeetingReminder->getId(),
                     ]);
@@ -107,19 +107,19 @@ class Sender
             $placeholders = $this->forecastDataSelector->getPlaceholdersById();
             $today = new \DateTime('today');
             $assignments = $this->forecastDataSelector->getAssignments($today, new \DateTime('tomorrow'));
-            $assignments = array_values(array_filter($assignments, function ($assignment) use ($today) {
+            $assignments = array_values(array_filter($assignments, function ($assignment) use ($today): bool {
                 return $assignment->getStartDate()->format('Y-m-d') <= $today->format('Y-m-d') && $assignment->getEndDate()->format('Y-m-d') >= $today->format('Y-m-d');
             }));
 
             foreach ($assignments as $assignment) {
                 if (\in_array((string) $assignment->getProjectId(), $standupMeetingReminder->getForecastProjects(), true)) {
-                    if ($assignment->getPersonId()) {
+                    if (null !== $assignment->getPersonId()) {
                         $members[$people[$assignment->getPersonId()]->getEmail()] = $memberName = sprintf(
                             '%s %s',
                             $people[$assignment->getPersonId()]->getFirstName(),
                             $people[$assignment->getPersonId()]->getLastName()
                         );
-                    } elseif ($assignment->getPlaceholderId()) {
+                    } elseif (null !== $assignment->getPlaceholderId()) {
                         $members[$assignment->getPlaceholderId()] = $memberName = $placeholders[$assignment->getPlaceholderId()]->getName();
                     }
                 }

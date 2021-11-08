@@ -94,7 +94,7 @@ class HarvestDataSelector
      */
     public function getEnabledClients(): array
     {
-        return array_filter($this->getClientsById(), function (Client $client) {
+        return array_filter($this->getClientsById(), function (Client $client): ?bool {
             return $client->getIsActive();
         });
     }
@@ -128,12 +128,12 @@ class HarvestDataSelector
             }
         }
 
-        usort($users, function ($a, $b) {
+        usort($users, function ($a, $b): int {
             if ($a->getFirstName() === $b->getFirstName()) {
-                return $a->getLastName() > $b->getLastName();
+                return strcmp($a->getLastName(), $b->getLastName());
             }
 
-            return $a->getFirstName() > $b->getFirstName();
+            return strcmp($a->getFirstName(), $b->getFirstName());
         });
 
         return $users;
@@ -141,11 +141,11 @@ class HarvestDataSelector
 
     public function getUserByEmail(string $email): ?User
     {
-        $users = array_filter($this->getEnabledUsers(), function (User $user) use ($email) {
+        $users = array_filter($this->getEnabledUsers(), function (User $user) use ($email): bool {
             return $email === $user->getEmail();
         });
 
-        if (\count($users)) {
+        if (\count($users) > 0) {
             return array_pop($users);
         }
 
@@ -189,7 +189,7 @@ class HarvestDataSelector
     /**
      * @return Invoice[]
      */
-    public function getInvoices(\DateTime $from, \DateTime $to): array
+    public function getInvoices(\DateTimeInterface $from, \DateTimeInterface $to): array
     {
         return $this->client->listInvoices([
             'from' => $from->format('Y-m-d'),
@@ -200,7 +200,7 @@ class HarvestDataSelector
     /**
      * @return Invoice[]
      */
-    public function getInvoicesById(\DateTime $from, \DateTime $to): array
+    public function getInvoicesById(\DateTimeInterface $from, \DateTimeInterface $to): array
     {
         $invoicesById = [];
         $invoices = $this->getInvoices($from, $to);
@@ -255,7 +255,7 @@ class HarvestDataSelector
     /**
      * @return TimeEntry[]
      */
-    public function getTimeEntries(\DateTime $from, \DateTime $to, array $options = []): array
+    public function getTimeEntries(\DateTimeInterface $from, \DateTimeInterface $to, array $options = []): array
     {
         $options = array_merge([
             'from' => $from->format('Y-m-d'),
@@ -268,13 +268,13 @@ class HarvestDataSelector
     /**
      * @return UninvoicedReportResult[]
      */
-    public function getUninvoiced(\DateTime $from, \DateTime $to)
+    public function getUninvoiced(\DateTimeInterface $from, \DateTimeInterface $to): array
     {
         $uninvoiced = $this->client->uninvoicedReport([
             'from' => $from->format('Y-m-d'),
             'to' => $to->format('Y-m-d'),
         ], 'results')->getResults();
-        $uninvoiced = array_filter($uninvoiced, function (UninvoicedReportResult $a) {
+        $uninvoiced = array_filter($uninvoiced, function (UninvoicedReportResult $a): bool {
             return ($a->getUninvoicedAmount() + $a->getUninvoicedExpenses()) > 0;
         });
 
@@ -300,7 +300,7 @@ class HarvestDataSelector
         return $result;
     }
 
-    public function getUserTimeEntries(\DateTime $from, \DateTime $to, array $options = []): array
+    public function getUserTimeEntries(\DateTimeInterface $from, \DateTimeInterface $to, array $options = []): array
     {
         $result = [];
         $timeEntries = $this->getTimeEntries($from, $to, $options);

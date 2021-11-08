@@ -55,16 +55,14 @@ class ForecastAccountVoter extends Voter
                 $userForecastAccount = $this->userForecastAccountRepository->findOneByEmailAndForecastAccount($user->getUserIdentifier(), $forecastAccount);
 
                 return $userForecastAccount && $userForecastAccount->getIsAdmin();
-                break;
             case self::HARVEST_ADMIN:
-                if (!$forecastAccount->getHarvestAccount()) {
+                if (null === $forecastAccount->getHarvestAccount()) {
                     return false;
                 }
 
                 $userHarvestAccount = $this->userHarvestAccountRepository->findOneByEmailAndForecastAccount($user->getUserIdentifier(), $forecastAccount->getHarvestAccount());
 
                 return $userHarvestAccount && $userHarvestAccount->getIsAdmin();
-                break;
         }
 
         return false;

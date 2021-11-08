@@ -11,17 +11,21 @@
 
 namespace App\Forecast;
 
+use App\Converter\PersonToWorkingDaysConverter;
 use App\DataSelector\ForecastDataSelector;
 use App\Entity\ForecastAccount;
 use App\Entity\PublicForecast;
+use JoliCode\Forecast\Api\Model\Person;
 
 class Builder
 {
-    private $forecastDataSelector;
+    protected PersonToWorkingDaysConverter $personToWorkingDaysConverter;
+    private ForecastDataSelector $forecastDataSelector;
 
-    public function __construct(ForecastDataSelector $forecastDataSelector)
+    public function __construct(ForecastDataSelector $forecastDataSelector, PersonToWorkingDaysConverter $personToWorkingDaysConverter)
     {
         $this->forecastDataSelector = $forecastDataSelector;
+        $this->personToWorkingDaysConverter = $personToWorkingDaysConverter;
     }
 
     public function buildAssignments(PublicForecast $publicForecast, \DateTime $start, \DateTime $end)
@@ -86,14 +90,14 @@ class Builder
 
         if (\count($publicForecast->getClients()) > 0) {
             // filter by clients
-            $allowedProjects = array_filter($allowedProjects, function ($project) use ($publicForecast) {
+            $allowedProjects = array_filter($allowedProjects, function ($project) use ($publicForecast): bool {
                 return \in_array($project->getClientId(), $publicForecast->getClients(), true);
             });
         }
 
         if (\count($publicForecast->getProjects()) > 0) {
             // filter by projects
-            $allowedProjects = array_filter($allowedProjects, function ($project) use ($publicForecast) {
+            $allowedProjects = array_filter($allowedProjects, function ($project) use ($publicForecast): bool {
                 return \in_array($project->getId(), $publicForecast->getProjects(), true);
             });
         }
@@ -102,13 +106,13 @@ class Builder
             $allowedProjectIds[] = $allowedProject->getId();
         }
 
-        $assignments = array_filter($assignments, function ($assignment) use ($allowedProjectIds) {
+        $assignments = array_filter($assignments, function ($assignment) use ($allowedProjectIds): bool {
             return \in_array($assignment->getProjectId(), $allowedProjectIds, true);
         });
 
         if (\count($publicForecast->getPeople()) + \count($publicForecast->getPlaceholders()) > 0) {
             // filter by people
-            $assignments = array_filter($assignments, function ($assignment) use ($publicForecast) {
+            $assignments = array_filter($assignments, function ($assignment) use ($publicForecast): bool {
                 return \in_array($assignment->getPersonId(), $publicForecast->getPeople(), true) || \in_array($assignment->getPlaceholderId(), $publicForecast->getPlaceholders(), true);
             });
         }
@@ -154,6 +158,7 @@ class Builder
 
             if (!isset($userAssignments['total']['users'][$id])) {
                 $userAssignments['total']['users'][$id] = [
+                    /* @phpstan-ignore-next-line */
                     'name' => $name,
                     'days' => [],
                     'total' => 0,
@@ -163,7 +168,7 @@ class Builder
             if (null !== $assignment->getPersonId()) {
                 $id = 'user_' . $assignment->getPersonId();
                 $user = $users[$assignment->getPersonId()];
-                $assignmentDays = $this->buildAssignmentInterval($assignment, $user->getWorkingDays());
+                $assignmentDays = $this->buildAssignmentInterval($assignment, $user);
             } else {
                 $assignmentDays = $this->buildAssignmentInterval($assignment);
             }
@@ -221,38 +226,24 @@ class Builder
         }
 
         foreach ($userAssignments as $projectId => $projectAssignments) {
-            uasort($userAssignments[$projectId]['users'], function ($a, $b) {
-                return $a['name'] > $b['name'];
+            uasort($userAssignments[$projectId]['users'], function ($a, $b): int {
+                return strcmp($a['name'], $b['name']);
             });
         }
 
-        uasort($userAssignments, function ($a, $b) {
-            return $a['firstDay'] > $b['firstDay'];
+        uasort($userAssignments, function ($a, $b): int {
+            return strcmp($a['firstDay'], $b['firstDay']);
         });
 
         return $userAssignments;
     }
 
-    private function buildAssignmentInterval($assignment, $weeklyDays = null)
+    private function buildAssignmentInterval($assignment, Person $user = null)
     {
-        $start = $assignment->getStartDate();
+        $current = $assignment->getStartDate();
         $end = $assignment->getEndDate();
-
-        if (null === $weeklyDays) {
-            $workingDays = ['1', '2', '3', '4', '5'];
-        } else {
-            $workingDays = [];
-            $weeklyDays->getMonday() && $workingDays[] = '1';
-            $weeklyDays->getTuesday() && $workingDays[] = '2';
-            $weeklyDays->getWednesday() && $workingDays[] = '3';
-            $weeklyDays->getThursday() && $workingDays[] = '4';
-            $weeklyDays->getFriday() && $workingDays[] = '5';
-            $weeklyDays->getSaturday() && $workingDays[] = '6';
-            $weeklyDays->getSunday() && $workingDays[] = '7';
-        }
-
+        $workingDays = $this->personToWorkingDaysConverter->convert($user);
         $days = [];
-        $current = $start;
 
         while ($current <= $end) {
             if (\in_array($current->format('N'), $workingDays, true)) {

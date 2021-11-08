@@ -25,7 +25,7 @@ class AuthController extends AbstractController
     {
         return $clientRegistry
             ->getClient('harvest')
-            ->redirect(['all']);
+            ->redirect(['all'], []);
     }
 
     /**

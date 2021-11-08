@@ -105,7 +105,7 @@ class ForecastAccount
     public function __construct()
     {
         $this->publicForecasts = new ArrayCollection();
-        $this->userHarvestAccounts = new ArrayCollection();
+        $this->userForecastAccounts = new ArrayCollection();
         $this->invoicingProcesses = new ArrayCollection();
         $this->forecastAccountSlackTeams = new ArrayCollection();
     }

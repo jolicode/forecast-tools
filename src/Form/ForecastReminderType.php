@@ -30,7 +30,7 @@ class ForecastReminderType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        if ($options['hasSlackTeams']) {
+        if (true === $options['hasSlackTeams']) {
             $clients = $this->forecastDataSelector->getEnabledClientsForChoice();
             $projects = $this->forecastDataSelector->getEnabledProjectsForChoice();
             $users = $this->forecastDataSelector->getEnabledPeopleForChoice();
@@ -90,7 +90,7 @@ class ForecastReminderType extends AbstractType
             ])
         ;
 
-        if ($options['hasSlackTeams']) {
+        if (true === $options['hasSlackTeams']) {
             $builder
                 ->add('forecastAccount', ForecastAccountForReminderType::class)
             ;

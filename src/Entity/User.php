@@ -98,7 +98,7 @@ class User
      * @ORM\ManyToOne(targetEntity=ForecastAccount::class)
      * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
      */
-    private $defaultForecastAccount;
+    private $defaultForecastAccount = null;
 
     /**
      * @ORM\Column(type="boolean")

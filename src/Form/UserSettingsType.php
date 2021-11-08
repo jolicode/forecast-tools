@@ -14,6 +14,7 @@ namespace App\Form;
 use App\Entity\ForecastAccount;
 use App\Entity\User;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -28,7 +29,7 @@ class UserSettingsType extends AbstractType
             ->add('defaultForecastAccount', EntityType::class, [
                 'class' => ForecastAccount::class,
                 'label' => 'Default account on login',
-                'query_builder' => function (EntityRepository $er) use ($options) {
+                'query_builder' => function (EntityRepository $er) use ($options): QueryBuilder {
                     return $er->createQueryBuilder('fa')
                         ->leftJoin('fa.userForecastAccounts', 'ufa')
                         ->andWhere('ufa.user = :user')

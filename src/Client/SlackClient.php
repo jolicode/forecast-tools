@@ -12,12 +12,20 @@
 namespace App\Client;
 
 use App\Entity\SlackTeam;
+use JoliCode\Slack\Client;
 use JoliCode\Slack\ClientFactory;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
+/**
+ * @method \JoliCode\Slack\Api\Model\ConversationsInfoGetResponse200|\JoliCode\Slack\Api\Model\ConversationsInfoGetResponsedefault|\Psr\Http\Message\ResponseInterface      conversationsInfo(array $queryParameters = [])
+ * @method \JoliCode\Slack\Api\Model\ConversationsListGetResponse200|\JoliCode\Slack\Api\Model\ConversationsListGetResponsedefault|\Psr\Http\Message\ResponseInterface|null conversationsList(array $queryParameters = [])
+ * @method \JoliCode\Slack\Api\Model\UsersInfoGetResponse200|\JoliCode\Slack\Api\Model\UsersInfoGetResponsedefault|\Psr\Http\Message\ResponseInterface|null                 usersInfo(array $queryParameters = [])
+ * @method \JoliCode\Slack\Api\Model\UsersListGetResponse200|\JoliCode\Slack\Api\Model\UsersListGetResponsedefault|\Psr\Http\Message\ResponseInterface|null                 usersList(array $queryParameters = [])
+ */
 class SlackClient extends AbstractClient
 {
+    /** @var Client[] */
     private $clients = [];
 
     /** @var SlackTeam */
@@ -28,7 +36,7 @@ class SlackClient extends AbstractClient
         $this->pool = $pool;
     }
 
-    protected function __client()
+    protected function __client(): Client
     {
         $slackTeam = $this->getSlackTeam();
 
@@ -41,7 +49,7 @@ class SlackClient extends AbstractClient
         return $this->clients[$slackTeam->getId()];
     }
 
-    protected function __namespace()
+    protected function __namespace(): string
     {
         return 'slack-' . $this->getSlackTeam()->getId();
     }
@@ -65,7 +73,7 @@ class SlackClient extends AbstractClient
         return $this->slackTeam;
     }
 
-    public function setSlackTeam(SlackTeam $slackTeam)
+    public function setSlackTeam(SlackTeam $slackTeam): void
     {
         $this->slackTeam = $slackTeam;
     }

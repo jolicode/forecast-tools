@@ -21,8 +21,19 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Contracts\Cache\ItemInterface;
 
+/**
+ * @method \JoliCode\Harvest\Api\Model\Clients                 listClients(array $config, string $nodeName)
+ * @method \JoliCode\Harvest\Api\Model\Invoices                listInvoices(array $config, string $nodeName)
+ * @method \JoliCode\Harvest\Api\Model\Projects                listProjects(array $config, string $nodeName)
+ * @method \JoliCode\Harvest\Api\Model\TaskAssignments         listTaskAssignmentsForSpecificProject(string $projectId, string $nodeName)
+ * @method \JoliCode\Harvest\Api\Model\TimeEntries             listTimeEntries(array $config, string $nodeName)
+ * @method \JoliCode\Harvest\Api\Model\Users                   listUsers(array $config, string $nodeName)
+ * @method \JoliCode\Harvest\Api\Model\UserAssignments         listUserAssignments(array $config, string $nodeName)
+ * @method \JoliCode\Harvest\Api\Model\UninvoicedReportResults uninvoicedReport(array $config, string $nodeName)
+ */
 class HarvestClient extends AbstractClient
 {
+    /** @var Client[] */
     private $clients = [];
     private $defaultClient = null;
     private $namespace = '';
@@ -40,22 +51,22 @@ class HarvestClient extends AbstractClient
         $this->userRepository = $userRepository;
     }
 
-    public function __disableCache()
+    public function __disableCache(): void
     {
         $this->cacheEnabled = false;
     }
 
-    public function __disableCacheForNextRequestOnly()
+    public function __disableCacheForNextRequestOnly(): void
     {
         $this->cacheStatusForNextRequestOnly = false;
     }
 
-    public function __enableCache()
+    public function __enableCache(): void
     {
         $this->cacheEnabled = true;
     }
 
-    public function __enableCacheForNextRequestOnly()
+    public function __enableCacheForNextRequestOnly(): void
     {
         $this->cacheStatusForNextRequestOnly = true;
     }
@@ -90,14 +101,14 @@ class HarvestClient extends AbstractClient
         return $this->defaultClient;
     }
 
-    private function __saveClient(string $accessToken, HarvestAccount $harvestAccount)
+    private function __saveClient(string $accessToken, HarvestAccount $harvestAccount): void
     {
         $forecastAccount = $harvestAccount->getForecastAccount();
-        $this->clients[$harvestAccount->getHarvestId()] = ClientFactory::create($accessToken, $harvestAccount->getHarvestId());
+        $this->clients[$harvestAccount->getHarvestId()] = ClientFactory::create($accessToken, (string) $harvestAccount->getHarvestId());
         $this->namespace = 'harvest-' . $forecastAccount->getId();
     }
 
-    protected function __namespace()
+    protected function __namespace(): string
     {
         if ('' === $this->namespace) {
             $forecastAccount = $this->requestStack->getCurrentRequest()->attributes->get('forecastAccount');
@@ -120,7 +131,7 @@ class HarvestClient extends AbstractClient
 
             // The callable will only be executed on a cache miss.
             $this->__addKey($cacheKey);
-            $value = $this->pool->get($cacheKey, function (ItemInterface $item) use ($name, $arguments, $nodeName) {
+            $value = $this->pool->get($cacheKey, function (ItemInterface $item) use ($name, $arguments, $nodeName): array {
                 $response = $this->call($name, $arguments, $nodeName);
 
                 return [
@@ -136,7 +147,7 @@ class HarvestClient extends AbstractClient
             if ($now->getTimestamp() - $value['time']->getTimestamp() > 60) {
                 // get the last updated_at from the current objects
                 $getter = sprintf('get%s', ucfirst($nodeName));
-                $lastUpdated = array_reduce($response->$getter(), function ($carry, $item) {
+                $lastUpdated = array_reduce(\call_user_func([$response, $getter]), function ($carry, $item) {
                     if (!method_exists($item, 'getUpdatedAt')) {
                         return null;
                     }
@@ -184,7 +195,7 @@ class HarvestClient extends AbstractClient
         $argumentsKey = \count($arguments) - 1;
 
         if (null !== $responseToUpdate) {
-            $accumulator = $responseToUpdate->$getter();
+            $accumulator = \call_user_func([$responseToUpdate, $getter]);
         }
 
         while ($nextPage > $page) {
@@ -194,10 +205,10 @@ class HarvestClient extends AbstractClient
             ], $arguments);
 
             if (Error::class === \get_class($response)) {
-                return $responseToUpdate ?: (new $expectedClass())->$setter([]);
+                return $responseToUpdate ?? \call_user_func([new $expectedClass(), $setter], []);
             }
 
-            $toAccumulate = $response->$getter();
+            $toAccumulate = \call_user_func([$response, $getter]);
             $ids = array_map(function ($a) {
                 if (method_exists($a, 'getId')) {
                     return $a->getId();
@@ -205,14 +216,14 @@ class HarvestClient extends AbstractClient
 
                 return $a->getProjectId();
             }, $toAccumulate);
-            $accumulator = array_replace($accumulator, array_combine($ids, $response->$getter()));
+            $accumulator = array_replace($accumulator, array_combine($ids, \call_user_func([$response, $getter])));
             $arguments[$argumentsKey]['page'] = $response->getNextPage();
 
             $nextPage = $response->getNextPage();
             $page = $response->getPage();
         }
 
-        $response->$setter($accumulator);
+        \call_user_func([$response, $setter], $accumulator);
 
         return $response;
     }

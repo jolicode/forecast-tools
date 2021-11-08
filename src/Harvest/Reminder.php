@@ -74,7 +74,7 @@ class Reminder
                         $harvestAccount->getTimesheetReminderSlackTeam()->getSlackTeam()->getAccessToken()
                     );
 
-                    if (\count($missingProjectAssignmentsIssues)) {
+                    if (\count($missingProjectAssignmentsIssues) > 0) {
                         $adminUsers = $this->getHarvestAdminSlackIds($harvestAccount);
 
                         foreach ($adminUsers as $adminUser) {
@@ -88,7 +88,7 @@ class Reminder
                             try {
                                 $slackClient->chatPostMessage($payload);
                             } catch (\Exception $e) {
-                                $this->bugsnagClient->notifyException($e, function ($report) use ($harvestAccount, $firstDayOfLastMonth, $lastDayOfLastMonth, $payload) {
+                                $this->bugsnagClient->notifyException($e, function ($report) use ($harvestAccount, $firstDayOfLastMonth, $lastDayOfLastMonth, $payload): void {
                                     $report->setMetaData([
                                         'harvestAccount' => [
                                             'id' => $harvestAccount->getId(),
@@ -115,7 +115,7 @@ class Reminder
                         try {
                             $slackClient->chatPostMessage($payload);
                         } catch (\Exception $e) {
-                            $this->bugsnagClient->notifyException($e, function ($report) use ($harvestAccount, $firstDayOfLastMonth, $lastDayOfLastMonth, $payload) {
+                            $this->bugsnagClient->notifyException($e, function ($report) use ($harvestAccount, $firstDayOfLastMonth, $lastDayOfLastMonth, $payload): void {
                                 $report->setMetaData([
                                     'harvestAccount' => [
                                         'id' => $harvestAccount->getId(),
@@ -132,7 +132,7 @@ class Reminder
                     }
                 }
             } catch (\Exception $e) {
-                $this->bugsnagClient->notifyException($e, function ($report) use ($harvestAccount, $firstDayOfLastMonth, $lastDayOfLastMonth) {
+                $this->bugsnagClient->notifyException($e, function ($report) use ($harvestAccount, $firstDayOfLastMonth, $lastDayOfLastMonth): void {
                     $report->setMetaData([
                         'harvestAccount' => [
                             'id' => $harvestAccount->getId(),
@@ -292,7 +292,7 @@ class Reminder
                 }
 
                 $dailyTimeEntries = $timeEntries['entries'][$day] ?? [];
-                $dailyAssignments = array_filter($forecastAssignments, function ($assignment) use ($forecastPeople, $harvestUserId, $day) {
+                $dailyAssignments = array_filter($forecastAssignments, function ($assignment) use ($forecastPeople, $harvestUserId, $day): bool {
                     return
                         isset($forecastPeople[$assignment->getPersonId()])
                         && $forecastPeople[$assignment->getPersonId()]->getHarvestUserId() === $harvestUserId
@@ -302,7 +302,7 @@ class Reminder
                 $onlyInForecast = $this->findOnlyInForecast($dailyAssignments, $dailyTimeEntries, $forecastProjects);
                 $onlyInHarvest = $this->findOnlyInHarvest($dailyAssignments, $dailyTimeEntries, $forecastProjects);
                 $duplicateTimeEntries = $this->findDuplicateTimeEntries($dailyTimeEntries);
-                $inBoth = array_filter($this->findInBoth($dailyAssignments, $dailyTimeEntries, $forecastProjects), function (TimeEntry $timeEntry) use ($duplicateTimeEntries) {
+                $inBoth = array_filter($this->findInBoth($dailyAssignments, $dailyTimeEntries, $forecastProjects), function (TimeEntry $timeEntry) use ($duplicateTimeEntries): bool {
                     return !\in_array($timeEntry, $duplicateTimeEntries, true);
                 });
                 $hours = array_reduce($dailyTimeEntries, function ($carry, TimeEntry $item) {
@@ -351,11 +351,11 @@ class Reminder
             $forecastProject = $forecastProjects[$forecastAssignment->getProjectId()] ?? null;
             $forecastPerson = $forecastPeople[$forecastAssignment->getPersonId()] ?? null;
 
-            if (!$forecastProject || !$forecastPerson || !$forecastPerson->getHarvestUserId()) {
+            if (null === $forecastProject || null === $forecastPerson || null === $forecastPerson->getHarvestUserId()) {
                 continue;
             }
 
-            if (!$forecastProject->getHarvestId()) {
+            if (null === $forecastProject->getHarvestId()) {
                 $issues['no_harvest_project'][$forecastProject->getId()] = $forecastProject;
             } elseif (!isset($harvestUserAssignments[$forecastPerson->getHarvestUserId()])
                 || !isset($harvestUserAssignments[$forecastPerson->getHarvestUserId()][$forecastProject->getHarvestId()])) {
@@ -627,7 +627,7 @@ class Reminder
 
         $duplicates = $timeEntries;
         usort($timeEntries, function ($a, $b) {
-            return $b->getUpdatedAt() > $a->getUpdatedAt();
+            return ($b->getUpdatedAt() > $a->getUpdatedAt()) ? 1 : -1;
         });
 
         foreach ($timeEntries as $i => $timeEntry) {
@@ -648,8 +648,8 @@ class Reminder
 
     private function findInBoth(array $assignments, array $timeEntries, array $forecastProjects): array
     {
-        return array_filter($timeEntries, function (TimeEntry $timeEntry) use ($assignments, $forecastProjects) {
-            $matchingAssignments = array_filter($assignments, function (Assignment $assignment) use ($timeEntry, $forecastProjects) {
+        return array_filter($timeEntries, function (TimeEntry $timeEntry) use ($assignments, $forecastProjects): bool {
+            $matchingAssignments = array_filter($assignments, function (Assignment $assignment) use ($timeEntry, $forecastProjects): bool {
                 return $this->isEquivalentEntries($assignment, $timeEntry, $forecastProjects);
             });
 
@@ -659,8 +659,8 @@ class Reminder
 
     private function findOnlyInForecast(array $assignments, array $timeEntries, array $forecastProjects): array
     {
-        return array_filter($assignments, function (Assignment $assignment) use ($timeEntries, $forecastProjects) {
-            $matchingTimeEntries = array_filter($timeEntries, function (TimeEntry $timeEntry) use ($assignment, $forecastProjects) {
+        return array_filter($assignments, function (Assignment $assignment) use ($timeEntries, $forecastProjects): bool {
+            $matchingTimeEntries = array_filter($timeEntries, function (TimeEntry $timeEntry) use ($assignment, $forecastProjects): bool {
                 return $this->isEquivalentEntries($assignment, $timeEntry, $forecastProjects);
             });
 
@@ -670,8 +670,8 @@ class Reminder
 
     private function findOnlyInHarvest(array $assignments, array $timeEntries, array $forecastProjects): array
     {
-        return array_filter($timeEntries, function (TimeEntry $timeEntry) use ($assignments, $forecastProjects) {
-            $matchingAssignments = array_filter($assignments, function (Assignment $assignment) use ($timeEntry, $forecastProjects) {
+        return array_filter($timeEntries, function (TimeEntry $timeEntry) use ($assignments, $forecastProjects): bool {
+            $matchingAssignments = array_filter($assignments, function (Assignment $assignment) use ($timeEntry, $forecastProjects): bool {
                 return $this->isEquivalentEntries($assignment, $timeEntry, $forecastProjects);
             });
 

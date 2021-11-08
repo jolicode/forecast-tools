@@ -59,7 +59,7 @@ class ForecastDataSelector
     /**
      * @return Assignment[]
      */
-    public function getAssignments(\DateTime $from, \DateTime $to, array $options = []): array
+    public function getAssignments(\DateTimeInterface $from, \DateTimeInterface $to, array $options = []): array
     {
         $options = array_merge([
             'start_date' => $from->format('Y-m-d'),
@@ -73,7 +73,7 @@ class ForecastDataSelector
     /**
      * @return Client[]
      */
-    public function getClients()
+    public function getClients(): array
     {
         return $this->client->listClients('clients')->getClients();
     }
@@ -81,7 +81,7 @@ class ForecastDataSelector
     /**
      * @return Client[]
      */
-    public function getClientsById()
+    public function getClientsById(): array
     {
         return self::makeLookup($this->getClients());
     }
@@ -138,7 +138,11 @@ class ForecastDataSelector
 
         foreach ($projects as $project) {
             if (isset($clients[$project->getClientId()])) {
-                $key = sprintf('%s - %s%s', $clients[$project->getClientId()]->getName(), $project->getCode() ? $project->getCode() . ' - ' : '', $project->getName());
+                if (null === $project->getCode() || '' === $project->getCode()) {
+                    $key = sprintf('%s - %s', $clients[$project->getClientId()]->getName(), $project->getName());
+                } else {
+                    $key = sprintf('%s - %s - %s', $clients[$project->getClientId()]->getName(), $project->getCode(), $project->getName());
+                }
             } else {
                 $key = $project->getName();
             }
@@ -154,11 +158,11 @@ class ForecastDataSelector
     /**
      * @return Person[]
      */
-    public function getPeople()
+    public function getPeople(): array
     {
         $people = $this->client->listPeople('people')->getPeople();
 
-        return array_filter($people, function (Person $item) {
+        return array_filter($people, function (Person $item): bool {
             return !$item->getArchived();
         });
     }
@@ -168,7 +172,7 @@ class ForecastDataSelector
      *
      * @return Person[]
      */
-    public function getPeopleById($methodName = null)
+    public function getPeopleById($methodName = null): array
     {
         return self::makeLookup($this->getPeople(), $methodName);
     }
@@ -176,7 +180,7 @@ class ForecastDataSelector
     /**
      * @return Placeholder[]
      */
-    public function getPlaceholders()
+    public function getPlaceholders(): array
     {
         return $this->client->listPlaceholders('placeholders')->getPlaceholders();
     }
@@ -186,7 +190,7 @@ class ForecastDataSelector
      *
      * @return Placeholder[]
      */
-    public function getPlaceholdersById($methodName = null)
+    public function getPlaceholdersById($methodName = null): array
     {
         return self::makeLookup($this->getPlaceholders(), $methodName);
     }
@@ -196,7 +200,7 @@ class ForecastDataSelector
      *
      * @return Project[]
      */
-    public function getProjects($enabled = null)
+    public function getProjects($enabled = null): array
     {
         $projects = $this->client->listProjects('projects')->getProjects();
 
@@ -217,7 +221,7 @@ class ForecastDataSelector
      *
      * @return Project[]
      */
-    public function getProjectsById($methodName = null, $enabled = null)
+    public function getProjectsById($methodName = null, $enabled = null): array
     {
         return self::makeLookup($this->getProjects($enabled), $methodName);
     }
@@ -229,13 +233,16 @@ class ForecastDataSelector
         return $this;
     }
 
-    private static function makeLookup($struct, $methodName = null)
+    private static function makeLookup($struct, $methodName = null): array
     {
-        $methodName = $methodName ?: 'getId';
+        if (null === $methodName) {
+            $methodName = 'getId';
+        }
+
         $lookup = [];
 
         foreach ($struct as $data) {
-            $lookup[$data->$methodName()] = $data;
+            $lookup[\call_user_func([$data, $methodName])] = $data;
         }
 
         return $lookup;

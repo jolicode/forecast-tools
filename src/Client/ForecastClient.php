@@ -13,16 +13,24 @@ namespace App\Client;
 
 use App\Entity\ForecastAccount;
 use App\Repository\UserRepository;
-use JoliCode\Forecast\Api\Client;
 use JoliCode\Forecast\Api\Model\Error;
+use JoliCode\Forecast\Client;
 use JoliCode\Forecast\ClientFactory;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Contracts\Cache\ItemInterface;
 
+/**
+ * @method \JoliCode\Forecast\Api\Model\Assignments  listAssignments(array $options, string $nodeName)
+ * @method \JoliCode\Forecast\Api\Model\Clients      listClients(string $nodeName)
+ * @method \JoliCode\Forecast\Api\Model\People       listPeople(string $nodeName)
+ * @method \JoliCode\Forecast\Api\Model\Placeholders listPlaceholders(string $nodeName)
+ * @method \JoliCode\Forecast\Api\Model\Projects     listProjects(string $nodeName)
+ */
 class ForecastClient extends AbstractClient
 {
+    /** @var Client[] */
     private $client = [];
     private $requestStack;
     private $security;
@@ -39,22 +47,22 @@ class ForecastClient extends AbstractClient
         $this->userRepository = $userRepository;
     }
 
-    public function __disableCache()
+    public function __disableCache(): void
     {
         $this->cacheEnabled = false;
     }
 
-    public function __disableCacheForNextRequestOnly()
+    public function __disableCacheForNextRequestOnly(): void
     {
         $this->cacheStatusForNextRequestOnly = false;
     }
 
-    public function __enableCache()
+    public function __enableCache(): void
     {
         $this->cacheEnabled = true;
     }
 
-    public function __enableCacheForNextRequestOnly()
+    public function __enableCacheForNextRequestOnly(): void
     {
         $this->cacheStatusForNextRequestOnly = true;
     }
@@ -80,14 +88,14 @@ class ForecastClient extends AbstractClient
 
             $this->client[$forecastAccount->getForecastId()] = ClientFactory::create(
                 $accessToken,
-                $forecastAccount->getForecastId()
+                (string) $forecastAccount->getForecastId()
             );
         }
 
         return $this->client[$forecastAccount->getForecastId()];
     }
 
-    protected function __namespace()
+    protected function __namespace(): string
     {
         return 'forecast-' . $this->getForecastAccount()->getId();
     }
@@ -125,7 +133,7 @@ class ForecastClient extends AbstractClient
         return $this->forecastAccount;
     }
 
-    public function setForecastAccount(ForecastAccount $forecastAccount)
+    public function setForecastAccount(ForecastAccount $forecastAccount): void
     {
         $this->forecastAccount = $forecastAccount;
     }
@@ -142,20 +150,20 @@ class ForecastClient extends AbstractClient
         $expectedClass = sprintf('JoliCode\Forecast\Api\Model\%s', ucfirst($nodeName));
 
         if (Error::class === \get_class($response)) {
-            return $responseToUpdate ?: (new $expectedClass())->$setter([]);
+            return $responseToUpdate ?? \call_user_func([new $expectedClass(), $setter], []);
         }
 
-        $data = $response->$getter();
+        $data = \call_user_func([$response, $getter]);
         $ids = array_map(function ($a) {
             return $a->getId();
         }, $data);
         $indicedData = array_combine($ids, $data);
 
         if (null !== $responseToUpdate) {
-            $indicedData = array_replace($responseToUpdate->$getter(), $indicedData);
+            $indicedData = array_replace(\call_user_func([$responseToUpdate, $getter()]), $indicedData);
         }
 
-        $response->$setter($indicedData);
+        \call_user_func([$response, $setter], $indicedData);
 
         return $response;
     }

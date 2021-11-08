@@ -88,8 +88,8 @@ class SettingsController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             // delete the forecast accounts
-            foreach ($forecastAccountsToDelete as $forecastAccount) {
-                $em->remove($forecastAccount);
+            foreach ($forecastAccountsToDelete as $forecastAccountToDelete) {
+                $em->remove($forecastAccountToDelete);
             }
 
             // delete the account
@@ -187,7 +187,7 @@ class SettingsController extends AbstractController
         if ($request->query->has('code')) {
             $session = $request->getSession();
 
-            if (empty($request->query->get('state')) || ($request->query->get('state') !== $session->get(self::SESSION_STATE_KEY))) {
+            if (null === $request->query->get('state', null) || ($request->query->get('state') !== $session->get(self::SESSION_STATE_KEY))) {
                 $session->remove(self::SESSION_STATE_KEY);
 
                 throw new \RuntimeException('Invalid OAuth state.');
@@ -204,7 +204,7 @@ class SettingsController extends AbstractController
                     'teamId' => $values['team']['id'],
                 ]);
 
-                if (!$slackTeam) {
+                if (null === $slackTeam) {
                     $slackTeam = new SlackTeam();
                     $slackTeam->setTeamId($values['team']['id']);
                 }
@@ -214,7 +214,7 @@ class SettingsController extends AbstractController
                     'slackTeam' => $slackTeam,
                 ]);
 
-                if (!$forecastAccountSlackTeam) {
+                if (null === $forecastAccountSlackTeam) {
                     $forecastAccountSlackTeam = new ForecastAccountSlackTeam();
                     $forecastAccountSlackTeam->setForecastAccount($forecastAccount);
                     $forecastAccountSlackTeam->setSlackTeam($slackTeam);

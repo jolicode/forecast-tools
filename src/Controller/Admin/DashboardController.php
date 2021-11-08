@@ -35,8 +35,6 @@ class DashboardController extends AbstractDashboardController
     public function index(): Response
     {
         return $this->render('admin/dashboard.html.twig');
-
-        return parent::index();
     }
 
     public function configureDashboard(): Dashboard
@@ -47,7 +45,7 @@ class DashboardController extends AbstractDashboardController
 
     public function configureMenuItems(): iterable
     {
-        yield MenuItem::linktoDashboard('Dashboard', 'fa fa-home');
+        yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
         yield MenuItem::section('Organizations');
         yield MenuItem::linkToCrud('Forecast organizations', 'fa fa-cloud-sun', ForecastAccount::class);
         yield MenuItem::linkToCrud('Harvest organizations', 'fa fa-tractor', HarvestAccount::class);

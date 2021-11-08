@@ -52,8 +52,8 @@ class WordToNumberConverter
     {
         preg_match_all('#((?:^|and|,| |-)*(\b' . implode('\b|\b', array_keys(self::WORDS_NUMBER)) . '\b))+#i', $value, $tokens);
         $tokens = $tokens[0];
-        usort($tokens, function ($a, $b) {
-            return \strlen($a) < \strlen($b);
+        usort($tokens, function ($a, $b): int {
+            return \strlen($a) - \strlen($b);
         });
 
         foreach ($tokens as $token) {
@@ -72,10 +72,10 @@ class WordToNumberConverter
                 $word = trim($word);
                 $val = self::WORDS_NUMBER[$word];
 
-                if (-1 === bccomp($val, 100)) {
+                if (-1 === bccomp($val, '100')) {
                     $num = bcadd($num, $val);
                     continue;
-                } elseif (0 === bccomp($val, 100)) {
+                } elseif (0 === bccomp($val, '100')) {
                     $num = bcmul($num, $val);
                     continue;
                 }
