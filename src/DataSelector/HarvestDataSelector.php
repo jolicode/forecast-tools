@@ -94,7 +94,7 @@ class HarvestDataSelector
      */
     public function getEnabledClients(): array
     {
-        return array_filter($this->getClientsById(), function (Client $client) {
+        return array_filter($this->getClientsById(), function (Client $client): ?bool {
             return $client->getIsActive();
         });
     }
@@ -128,7 +128,7 @@ class HarvestDataSelector
             }
         }
 
-        usort($users, function ($a, $b) {
+        usort($users, function ($a, $b): int {
             if ($a->getFirstName() === $b->getFirstName()) {
                 return strcmp($a->getLastName(), $b->getLastName());
             }
@@ -141,11 +141,11 @@ class HarvestDataSelector
 
     public function getUserByEmail(string $email): ?User
     {
-        $users = array_filter($this->getEnabledUsers(), function (User $user) use ($email) {
+        $users = array_filter($this->getEnabledUsers(), function (User $user) use ($email): bool {
             return $email === $user->getEmail();
         });
 
-        if (\count($users)) {
+        if (\count($users) > 0) {
             return array_pop($users);
         }
 
@@ -274,7 +274,7 @@ class HarvestDataSelector
             'from' => $from->format('Y-m-d'),
             'to' => $to->format('Y-m-d'),
         ], 'results')->getResults();
-        $uninvoiced = array_filter($uninvoiced, function (UninvoicedReportResult $a) {
+        $uninvoiced = array_filter($uninvoiced, function (UninvoicedReportResult $a): bool {
             return ($a->getUninvoicedAmount() + $a->getUninvoicedExpenses()) > 0;
         });
 

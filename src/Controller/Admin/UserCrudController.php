@@ -45,7 +45,7 @@ class UserCrudController extends AbstractCrudController
             DateTimeField::new('createdAt')->hideOnForm(),
             IntegerField::new('expires', 'token expiration')
                 ->hideOnForm()
-                ->formatValue(function ($value) {
+                ->formatValue(function ($value): string {
                     $interval = ((new \DateTime())->setTimestamp($value))->diff(new \DateTime());
                     $mapping = [
                         ['y', 'y'],

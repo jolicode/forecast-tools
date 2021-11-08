@@ -90,7 +90,8 @@ class HarvestAuthenticator extends OAuth2Authenticator
     {
         $targetUrl = $this->getPreviousUrl($request, $providerKey);
 
-        if ('' === $targetUrl) {
+        /* @phpstan-ignore-next-line */
+        if ('' === $targetUrl || null === $targetUrl) {
             $targetUrl = $this->urlGenerator->generate('homepage');
         }
 
@@ -113,7 +114,7 @@ class HarvestAuthenticator extends OAuth2Authenticator
         $accessToken = $this->fetchAccessToken($client);
 
         return new SelfValidatingPassport(
-            new UserBadge($accessToken->getToken(), function () use ($accessToken, $client) {
+            new UserBadge($accessToken->getToken(), function () use ($accessToken, $client): OAuthUser {
                 /** @var \Nilesuan\OAuth2\Client\Provider\HarvestResourceOwner $harvestUser */
                 $harvestUser = $client->fetchUserFromToken($accessToken);
 
@@ -134,7 +135,7 @@ class HarvestAuthenticator extends OAuth2Authenticator
                 $user->setExpires($accessToken->getExpires());
                 $user->setName($harvestUser->getName());
 
-                usort($userData['accounts'], function ($a, $b) {
+                usort($userData['accounts'], function ($a, $b): int {
                     return strcmp($a['product'], $b['product']);
                 });
 
@@ -188,7 +189,7 @@ class HarvestAuthenticator extends OAuth2Authenticator
             $userForecastAccount->setUser($user);
         }
 
-        if ($forecastUser->getHarvestUserId()) {
+        if (null !== $forecastUser->getHarvestUserId()) {
             $this->harvestIdToForecastAccountRelationships[$forecastUser->getHarvestUserId()] = $forecastAccount;
         }
 

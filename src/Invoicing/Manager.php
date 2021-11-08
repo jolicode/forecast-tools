@@ -100,7 +100,7 @@ class Manager
                             'date' => $date,
                             'total' => 0,
                             'status' => ($skipErrors ? self::TIME_ENTRY_STATUS_SKIP . ' ' : '') . $this->getTimeEntryStatus($date, 0),
-                            'error' => $this->hasErrors($date, 0, '' !== $skipErrors) ? 1 : 0,
+                            'error' => $this->hasErrors($date, 0, $skipErrors) ? 1 : 0,
                         ];
                     }
                     $timeEntries[$user->getId()] = [
@@ -117,7 +117,7 @@ class Manager
             }, 0);
         }, 0);
 
-        usort($timeEntries, function ($a, $b) {
+        usort($timeEntries, function ($a, $b): int {
             return strcasecmp($a['user']->getName(), $b['user']->getName());
         });
 
@@ -181,7 +181,7 @@ class Manager
                     $harvestEntries = [];
                 }
 
-                $violations = $this->computeViolations($harvestEntries, $forecastEntries, $projects, $clients, ($date->format('N') >= 6));
+                $violations = $this->computeViolations($harvestEntries, $forecastEntries, $projects, ($date->format('N') >= 6));
 
                 if (!$skipErrors) {
                     $totalViolations += $violations['violations']->count();
@@ -199,7 +199,7 @@ class Manager
             ];
         }
 
-        usort($diff, function ($a, $b) {
+        usort($diff, function ($a, $b): int {
             if ($a['user']->getFirstName() === $b['user']->getFirstName()) {
                 return strcasecmp($a['user']->getLastName(), $b['user']->getLastName());
             }
@@ -261,7 +261,7 @@ class Manager
             $timeEntries[$userId] = $timeEntry;
         }
 
-        usort($timeEntries, function ($a, $b) {
+        usort($timeEntries, function ($a, $b): int {
             return strcasecmp($a['user']->getName(), $b['user']->getName());
         });
 
@@ -395,7 +395,7 @@ class Manager
             $invoiceNumbers[] = $invoice['invoice']->getNumber();
         }
 
-        if (\count($invoiceNumbers)) {
+        if (\count($invoiceNumbers) > 0) {
             sort($invoiceNumbers);
             $missingInvoiceNumbers = array_diff(range($invoiceNumbers[0], end($invoiceNumbers)), $invoiceNumbers);
         }
@@ -421,11 +421,11 @@ class Manager
             $uninvoiced[] = $item;
         }
 
-        usort($clientInvoices, function ($a, $b) {
+        usort($clientInvoices, function ($a, $b): int {
             return -strcmp($a['invoice']->getNumber(), $b['invoice']->getNumber());
         });
 
-        usort($orphanTimeEntries, function ($a, $b) {
+        usort($orphanTimeEntries, function ($a, $b): int {
             if ($a['project']->getClient()->getName() === $b['project']->getClient()->getName()) {
                 return strcasecmp($a['project']->getName(), $b['project']->getName());
             }
@@ -534,10 +534,8 @@ class Manager
      * @param \JoliCode\Harvest\Api\Model\TimeEntry[]   $harvestEntries
      * @param \JoliCode\Forecast\Api\Model\Assignment[] $forecastEntries
      * @param \JoliCode\Forecast\Api\Model\Project[]    $projects
-     * @param \JoliCode\Forecast\Api\Model\Client[]     $clients
-     * @param mixed                                     $isWeekend
      */
-    private function computeViolations($harvestEntries, $forecastEntries, $projects, $clients, $isWeekend): array
+    private function computeViolations(array $harvestEntries, array $forecastEntries, array $projects, bool $isWeekend): array
     {
         $mainViolationContainer = new ViolationContainer();
         $result = [
@@ -564,7 +562,7 @@ class Manager
                 'harvestEntry' => null,
             ];
 
-            if (!$forecastProject->getHarvestId()) {
+            if (null === $forecastProject->getHarvestId()) {
                 $entry['violations']->add('This Forecast project is not linked to an Harvest project.');
             } else {
                 foreach ($harvestEntries as $key => $harvestEntry) {
@@ -585,7 +583,7 @@ class Manager
             $result['forecastEntries'][] = $entry;
         }
 
-        if (\count($harvestEntries)) {
+        if (\count($harvestEntries) > 0) {
             $result['extraHarvestEntries'] = $harvestEntries;
             $result['violations']->add('Some assignments have been declared in Harvest but not in Forecast.');
         }

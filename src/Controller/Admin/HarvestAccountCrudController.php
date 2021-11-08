@@ -40,7 +40,7 @@ class HarvestAccountCrudController extends AbstractCrudController
             AssociationField::new('userHarvestAccounts', 'Users')->onlyOnIndex(),
             CollectionField::new('userHarvestAccounts', 'Users')
                 ->onlyOnDetail()
-                ->formatValue(function ($value, $entity) {
+                ->formatValue(function ($value, $entity): string {
                     $formattedValue = [];
                     $users = $entity->getUserHarvestAccounts();
 

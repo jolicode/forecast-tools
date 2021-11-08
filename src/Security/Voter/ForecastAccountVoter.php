@@ -56,7 +56,7 @@ class ForecastAccountVoter extends Voter
 
                 return $userForecastAccount && $userForecastAccount->getIsAdmin();
             case self::HARVEST_ADMIN:
-                if (!$forecastAccount->getHarvestAccount()) {
+                if (null === $forecastAccount->getHarvestAccount()) {
                     return false;
                 }
 

@@ -11,6 +11,7 @@
 
 namespace App\ForecastReminder;
 
+use App\Converter\PersonToWorkingDaysConverter;
 use App\Entity\ForecastReminder;
 use JoliCode\Forecast\Api\Model\Assignment;
 use JoliCode\Forecast\Api\Model\Client;
@@ -20,7 +21,8 @@ use JoliCode\Forecast\Api\Model\Project;
 
 class Builder
 {
-    protected $forecastReminder;
+    protected PersonToWorkingDaysConverter $personToWorkingDaysConverter;
+    protected ForecastReminder $forecastReminder;
     protected $client;
     protected $clientOverrides;
     protected $projectOverrides;
@@ -37,7 +39,12 @@ class Builder
     /** @var Person[] */
     protected $users;
 
-    public function __construct(ForecastReminder $forecastReminder)
+    public function __construct(PersonToWorkingDaysConverter $personToWorkingDaysConverter)
+    {
+        $this->personToWorkingDaysConverter = $personToWorkingDaysConverter;
+    }
+
+    public function setForecastReminder(ForecastReminder $forecastReminder)
     {
         $this->forecastReminder = $forecastReminder;
         $this->clientOverrides = self::makeLookup($forecastReminder->getClientOverrides(), 'getClientId');
@@ -119,12 +126,12 @@ class Builder
         );
     }
 
-    public static function makeLookup($struct, $methodName = 'getId')
+    private static function makeLookup($struct, $methodName = 'getId')
     {
         $lookup = [];
 
         foreach ($struct as $data) {
-            $lookup[$data->$methodName()] = $data;
+            $lookup[\call_user_func([$data, $methodName])] = $data;
         }
 
         return $lookup;
@@ -139,10 +146,10 @@ class Builder
         }
 
         $users = $users->getPeople();
-        $users = array_values(array_filter($users, function ($user) {
+        $users = array_values(array_filter($users, function ($user): bool {
             return false === $user->getArchived();
         }));
-        usort($users, function ($a, $b) {
+        usort($users, function ($a, $b): int {
             if ($a->getFirstName() === $b->getFirstName()) {
                 return strcmp($a->getLastName(), $b->getLastName());
             }
@@ -161,14 +168,14 @@ class Builder
     private function getActivitiesAsText($activities, Person $user)
     {
         if (0 === \count($activities)) {
-            return $this->forecastReminder->getDefaultActivityName() ?: 'not set';
+            return $this->forecastReminder->getDefaultActivityName() ?? 'not set';
         }
 
         if (1 === \count($activities) && $this->isTimeOffActivity($activities[0])) {
             $endDate = $this->getTimeOffEndDate($user);
-            $timeOffActivityName = $this->forecastReminder->getTimeOffActivityName() ?: 'holidays (until %s)';
+            $timeOffActivityName = $this->forecastReminder->getTimeOffActivityName() ?? 'holidays (until %s)';
 
-            if ($this->forecastReminder->getDefaultActivityName() && $activities[0]->getAllocation() < 8 * 3600) {
+            if (null !== $this->forecastReminder->getDefaultActivityName() && $activities[0]->getAllocation() < 8 * 3600) {
                 $timeOffActivityName .= ' and ' . $this->forecastReminder->getDefaultActivityName();
             }
 
@@ -186,7 +193,7 @@ class Builder
                 return $this->clientOverrides[$project->getClientId()];
             }
 
-            if ($project->getClientId() && \array_key_exists($project->getClientId(), $this->clients)) {
+            if ((null !== $project->getClientId()) && \array_key_exists($project->getClientId(), $this->clients)) {
                 $client = $this->clients[$project->getClientId()];
 
                 return $client->getName() . ' | ' . $project->getName();
@@ -208,7 +215,7 @@ class Builder
 
     private function getActivity($user, \DateTime $date)
     {
-        $workingDays = $this->getWorkingDays($user);
+        $workingDays = $this->personToWorkingDaysConverter->convert($user);
 
         if (!\in_array($date->format('N'), $workingDays, true)) {
             return [];
@@ -216,25 +223,30 @@ class Builder
 
         $activities = $this->getPersonActivities($user);
 
-        return array_values(array_filter($activities, function ($activity) use ($date) {
+        return array_values(array_filter($activities, function ($activity) use ($date): bool {
             return $activity->getStartDate()->format('Y-m-d') <= $date->format('Y-m-d') && $activity->getEndDate()->format('Y-m-d') >= $date->format('Y-m-d');
         }));
     }
 
+    /**
+     * @param mixed $user
+     *
+     * @return Assignment[]
+     */
     private function getPersonActivities($user)
     {
-        return array_values(array_filter($this->assignments, function ($activity) use ($user) {
+        return array_values(array_filter($this->assignments, function ($activity) use ($user): bool {
             return $activity->getPersonId() === $user->getId();
         }));
     }
 
-    private function getTimeOffEndDate($user)
+    private function getTimeOffEndDate(Person $user)
     {
         $activities = $this->getPersonActivities($user);
-        $activities = array_values(array_filter($activities, function ($activity) {
+        $activities = array_values(array_filter($activities, function ($activity): bool {
             return $this->isTimeOffActivity($activity);
         }));
-        $activities = array_map(function ($activity) {
+        $activities = array_map(function ($activity): Assignment {
             $endDate = clone $activity->getEndDate();
 
             if ($endDate->format('N') >= 5) {
@@ -244,7 +256,7 @@ class Builder
 
             return $activity;
         }, $activities);
-        usort($activities, function ($a, $b) {
+        usort($activities, function ($a, $b): int {
             return ($a->getEndDate() < $b->getEndDate()) ? 1 : -1;
         });
         $i = 1;

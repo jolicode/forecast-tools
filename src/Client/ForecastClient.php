@@ -149,20 +149,20 @@ class ForecastClient extends AbstractClient
         $expectedClass = sprintf('JoliCode\Forecast\Api\Model\%s', ucfirst($nodeName));
 
         if (Error::class === \get_class($response)) {
-            return $responseToUpdate ?: (new $expectedClass())->$setter([]);
+            return $responseToUpdate ?? \call_user_func([new $expectedClass(), $setter], []);
         }
 
-        $data = $response->$getter();
+        $data = \call_user_func([$response, $getter]);
         $ids = array_map(function ($a) {
             return $a->getId();
         }, $data);
         $indicedData = array_combine($ids, $data);
 
         if (null !== $responseToUpdate) {
-            $indicedData = array_replace($responseToUpdate->$getter(), $indicedData);
+            $indicedData = array_replace(\call_user_func([$responseToUpdate, $getter()]), $indicedData);
         }
 
-        $response->$setter($indicedData);
+        \call_user_func([$response, $setter], $indicedData);
 
         return $response;
     }

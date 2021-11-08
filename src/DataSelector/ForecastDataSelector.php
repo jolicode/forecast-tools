@@ -138,7 +138,11 @@ class ForecastDataSelector
 
         foreach ($projects as $project) {
             if (isset($clients[$project->getClientId()])) {
-                $key = sprintf('%s - %s%s', $clients[$project->getClientId()]->getName(), $project->getCode() ? $project->getCode() . ' - ' : '', $project->getName());
+                if (null === $project->getCode() || '' === $project->getCode()) {
+                    $key = sprintf('%s - %s', $clients[$project->getClientId()]->getName(), $project->getName());
+                } else {
+                    $key = sprintf('%s - %s - %s', $clients[$project->getClientId()]->getName(), $project->getCode(), $project->getName());
+                }
             } else {
                 $key = $project->getName();
             }
@@ -158,7 +162,7 @@ class ForecastDataSelector
     {
         $people = $this->client->listPeople('people')->getPeople();
 
-        return array_filter($people, function (Person $item) {
+        return array_filter($people, function (Person $item): bool {
             return !$item->getArchived();
         });
     }
@@ -231,11 +235,14 @@ class ForecastDataSelector
 
     private static function makeLookup($struct, $methodName = null)
     {
-        $methodName = $methodName ?: 'getId';
+        if (null === $methodName) {
+            $methodName = 'getId';
+        }
+
         $lookup = [];
 
         foreach ($struct as $data) {
-            $lookup[$data->$methodName()] = $data;
+            $lookup[\call_user_func([$data, $methodName])] = $data;
         }
 
         return $lookup;

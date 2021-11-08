@@ -31,7 +31,7 @@ class ForecastAccountSlackTeamType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event): void {
             $form = $event->getForm();
             $conversations = $this->slackDataSelector->getConversationsForChoice($event->getData()->getSlackTeam());
             $form
@@ -44,7 +44,7 @@ class ForecastAccountSlackTeamType extends AbstractType
                     'help' => 'Please choose a channel to post to in this Slack team.',
                 ]);
         });
-        $builder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) {
+        $builder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event): void {
             $forecastAccountSlackTeam = $event->getData();
 
             if (null !== $forecastAccountSlackTeam->getChannelId()) {

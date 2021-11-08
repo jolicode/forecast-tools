@@ -171,7 +171,7 @@ class Handler
         ]);
         $actionName = 'updated';
 
-        if (!$standupMeetingReminder) {
+        if (null === $standupMeetingReminder) {
             $standupMeetingReminder = new StandupMeetingReminder();
             $standupMeetingReminder->setChannelId($channelId);
             $standupMeetingReminder->setSlackTeam($slackTeam);
@@ -375,7 +375,7 @@ EOT,
                 'type' => 'divider',
             ];
 
-            if ($standupMeetingReminder) {
+            if (null !== $standupMeetingReminder) {
                 list($initialHour, $initialMinute) = explode(':', $standupMeetingReminder->getTime());
 
                 foreach ($forecastAccounts as $forecastAccount) {
@@ -384,7 +384,7 @@ EOT,
 
                     foreach ($projects as $project) {
                         if (\in_array((string) $project->getId(), $standupMeetingReminder->getForecastProjects(), true)) {
-                            $projectCode = $project->getCode() ? '[' . $project->getCode() . '] ' : '';
+                            $projectCode = (null !== $project->getCode()) ? '[' . $project->getCode() . '] ' : '';
                             $initialProjects[] = [
                                 'text' => [
                                     'type' => 'plain_text',

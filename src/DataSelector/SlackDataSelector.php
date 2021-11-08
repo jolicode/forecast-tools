@@ -85,7 +85,7 @@ class SlackDataSelector
         $emails = [];
 
         foreach ($users as $user) {
-            if ($user->getProfile()->getEmail()) {
+            if (null !== $user->getProfile()->getEmail()) {
                 $emails[$user->getProfile()->getEmail()] = $user;
             }
         }
@@ -99,7 +99,7 @@ class SlackDataSelector
         $emails = [];
 
         foreach ($users as $user) {
-            if ($user->getProfile()->getEmail()) {
+            if (null !== $user->getProfile()->getEmail()) {
                 $emails[$user->getProfile()->getEmail()] = $user->getId();
             }
         }

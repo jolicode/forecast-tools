@@ -130,7 +130,7 @@ class HarvestClient extends AbstractClient
 
             // The callable will only be executed on a cache miss.
             $this->__addKey($cacheKey);
-            $value = $this->pool->get($cacheKey, function (ItemInterface $item) use ($name, $arguments, $nodeName) {
+            $value = $this->pool->get($cacheKey, function (ItemInterface $item) use ($name, $arguments, $nodeName): array {
                 $response = $this->call($name, $arguments, $nodeName);
 
                 return [
@@ -146,7 +146,7 @@ class HarvestClient extends AbstractClient
             if ($now->getTimestamp() - $value['time']->getTimestamp() > 60) {
                 // get the last updated_at from the current objects
                 $getter = sprintf('get%s', ucfirst($nodeName));
-                $lastUpdated = array_reduce($response->$getter(), function ($carry, $item) {
+                $lastUpdated = array_reduce(\call_user_func([$response, $getter]), function ($carry, $item) {
                     if (!method_exists($item, 'getUpdatedAt')) {
                         return null;
                     }
@@ -194,7 +194,7 @@ class HarvestClient extends AbstractClient
         $argumentsKey = \count($arguments) - 1;
 
         if (null !== $responseToUpdate) {
-            $accumulator = $responseToUpdate->$getter();
+            $accumulator = \call_user_func([$responseToUpdate, $getter]);
         }
 
         while ($nextPage > $page) {
@@ -204,10 +204,10 @@ class HarvestClient extends AbstractClient
             ], $arguments);
 
             if (Error::class === \get_class($response)) {
-                return $responseToUpdate ?: (new $expectedClass())->$setter([]);
+                return $responseToUpdate ?? \call_user_func([new $expectedClass(), $setter], []);
             }
 
-            $toAccumulate = $response->$getter();
+            $toAccumulate = \call_user_func([$response, $getter]);
             $ids = array_map(function ($a) {
                 if (method_exists($a, 'getId')) {
                     return $a->getId();
@@ -215,14 +215,14 @@ class HarvestClient extends AbstractClient
 
                 return $a->getProjectId();
             }, $toAccumulate);
-            $accumulator = array_replace($accumulator, array_combine($ids, $response->$getter()));
+            $accumulator = array_replace($accumulator, array_combine($ids, \call_user_func([$response, $getter])));
             $arguments[$argumentsKey]['page'] = $response->getNextPage();
 
             $nextPage = $response->getNextPage();
             $page = $response->getPage();
         }
 
-        $response->$setter($accumulator);
+        \call_user_func([$response, $setter], $accumulator);
 
         return $response;
     }

@@ -52,7 +52,7 @@ class WordToNumberConverter
     {
         preg_match_all('#((?:^|and|,| |-)*(\b' . implode('\b|\b', array_keys(self::WORDS_NUMBER)) . '\b))+#i', $value, $tokens);
         $tokens = $tokens[0];
-        usort($tokens, function ($a, $b) {
+        usort($tokens, function ($a, $b): int {
             return \strlen($a) - \strlen($b);
         });
 

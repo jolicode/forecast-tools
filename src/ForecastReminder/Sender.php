@@ -24,17 +24,20 @@ use JoliCode\Slack\Exception\SlackErrorResponse;
 class Sender
 {
     private $botName;
+    private Builder $builder;
     private EntityManagerInterface $em;
     private ForecastAccountSlackTeamRepository $forecastAccountSlackTeamRepository;
     private ForecastReminderRepository $forecastReminderRepository;
     private Client $bugsnagClient;
 
     public function __construct(
+        Builder $builder,
         EntityManagerInterface $em,
         ForecastAccountSlackTeamRepository $forecastAccountSlackTeamRepository,
         ForecastReminderRepository $forecastReminderRepository,
         Client $bugsnagClient)
     {
+        $this->builder = $builder;
         $this->em = $em;
         $this->forecastAccountSlackTeamRepository = $forecastAccountSlackTeamRepository;
         $this->forecastReminderRepository = $forecastReminderRepository;
@@ -54,7 +57,7 @@ class Sender
                 try {
                     $this->sendForecastReminder($forecastReminder);
                 } catch (\Exception $e) {
-                    $this->bugsnagClient->notifyException($e, function ($report) use ($forecastReminder) {
+                    $this->bugsnagClient->notifyException($e, function ($report) use ($forecastReminder): void {
                         $report->setMetaData([
                             'forecastReminder' => $forecastReminder->getId(),
                             'forecastAccount' => $forecastReminder->getForecastAccount()->getName(),
@@ -74,14 +77,14 @@ class Sender
         $forecastAccountSlackTeams = $forecastReminder->getForecastAccount()->getForecastAccountSlackTeams();
 
         if (\count($forecastAccountSlackTeams) > 0) {
-            $builder = new Builder($forecastReminder);
-            $message = $builder->buildMessage();
+            $this->builder->setForecastReminder($forecastReminder);
+            $message = $this->builder->buildMessage();
 
             if (false !== $message) {
-                $title = $builder->buildTitle();
+                $title = $this->builder->buildTitle();
 
                 foreach ($forecastAccountSlackTeams as $forecastAccountSlackTeam) {
-                    if ($forecastAccountSlackTeam->getChannelId()) {
+                    if (null !== $forecastAccountSlackTeam->getChannelId()) {
                         try {
                             $slackClient = ClientFactory::create(
                                 $forecastAccountSlackTeam->getSlackTeam()->getAccessToken()

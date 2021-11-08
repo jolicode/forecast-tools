@@ -43,7 +43,7 @@ class ForecastAccountCrudController extends AbstractCrudController
             AssociationField::new('forecastAccountSlackTeams', 'Slack teams')->onlyOnIndex(),
             CollectionField::new('userForecastAccounts', 'Users')
                 ->onlyOnDetail()
-                ->formatValue(function ($value, $entity) {
+                ->formatValue(function ($value, $entity): string {
                     $formattedValue = [];
                     $users = $entity->getUserForecastAccounts();
 
@@ -63,7 +63,7 @@ class ForecastAccountCrudController extends AbstractCrudController
             TextField::new('accessToken')->onlyOnDetail(),
             TextField::new('refreshToken')->onlyOnDetail(),
             IntegerField::new('expires', 'token expiration')
-                ->formatValue(function ($value) {
+                ->formatValue(function ($value): string {
                     $interval = ((new \DateTime())->setTimestamp($value))->diff(new \DateTime());
                     $mapping = [
                         ['y', 'y'],

@@ -125,7 +125,7 @@ class InvoicingController extends AbstractController
             'explanationKey' => $explanationKey,
         ]);
 
-        if (!$invoiceExplanation) {
+        if (null === $invoiceExplanation) {
             $user = $userRepository->findOneBy(['email' => $this->getUser()->getUserIdentifier()]);
             $invoiceExplanation = new InvoiceExplanation();
             $invoiceExplanation->setInvoicingProcess($invoicingProcess);
@@ -167,7 +167,7 @@ class InvoicingController extends AbstractController
             'explanationKey' => $explanationKey,
         ]);
 
-        if (!$invoiceExplanation) {
+        if (null === $invoiceExplanation) {
             throw $this->createNotFoundException(sprintf('Could not find the explanation "%s" for the invoicing process "%s".', $explanationKey, $invoicingProcess->getId()));
         }
 
@@ -208,7 +208,7 @@ class InvoicingController extends AbstractController
                 'form' => $form->createView(),
                 'invoicingProcess' => $invoicingProcess,
                 'transition' => $transition,
-            ], $this->invoicingManager->$transition($invoicingProcess)
+            ], \call_user_func([$this->invoicingManager, $transition], $invoicingProcess)
         );
 
         return $this->render('organization/invoicing/transition/' . $transition . '.html.twig', $parameters);
