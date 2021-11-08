@@ -26,7 +26,7 @@ class UniqueTokenGenerator
     {
         $value = bin2hex(random_bytes(25));
 
-        if ($this->repository->findOneByToken($value)) {
+        if ($this->repository->findOneByToken($value) !== null) {
             return $this->generate();
         }
 
