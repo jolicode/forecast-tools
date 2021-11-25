@@ -75,7 +75,7 @@ class ForecastAccountCrudController extends AbstractCrudController
                     ];
                     $tmp = [];
 
-                    foreach ($mapping as [$format, $toDisplay]) {
+                    foreach ($mapping as list($format, $toDisplay)) {
                         if ($interval->format('%' . $format) > 0) {
                             $tmp[] = sprintf('%s%s', $interval->format("%$format"), $toDisplay);
                         }
