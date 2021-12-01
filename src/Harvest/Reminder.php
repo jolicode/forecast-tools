@@ -247,6 +247,11 @@ class Reminder
             }
         } else {
             $forecastPeopleByHarvestId = $this->forecastDataSelector->getPeopleById('getHarvestUserId');
+
+            if (!isset($forecastPeopleByHarvestId[$harvestUser->getId()])) {
+                return [];
+            }
+
             $forecastPersonId = $forecastPeopleByHarvestId[$harvestUser->getId()]->getId();
             $userTimesheets = $this->harvestDataSelector
                 ->disableCacheForNextRequestOnly()
@@ -548,11 +553,19 @@ class Reminder
                         $weeklyIssue['name'],
                         $this->buildHoursDiffSuffix($weeklyHoursDiff)
                     );
+                    $text = $message . "\n" . implode("\n", $detailsMessages);
+
+                    if (mb_strlen($text) > 2998) {
+                        $text = mb_substr($text, 0, 2997) . "…\n";
+                    } else {
+                        $text .= "\n";
+                    }
+
                     $block = [
                         'type' => 'section',
                         'text' => [
                             'type' => 'mrkdwn',
-                            'text' => $message . "\n" . implode("\n", $detailsMessages) . "\n",
+                            'text' => $text,
                         ],
                     ];
 

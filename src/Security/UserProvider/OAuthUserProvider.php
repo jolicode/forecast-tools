@@ -12,6 +12,7 @@
 namespace App\Security\UserProvider;
 
 use App\Security\User\OAuthUser;
+use KnpU\OAuth2ClientBundle\Security\User\OAuthUser as BaseOAuthUser;
 use KnpU\OAuth2ClientBundle\Security\User\OAuthUserProvider as BaseOAuthUserProvider;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -25,15 +26,15 @@ class OAuthUserProvider extends BaseOAuthUserProvider
 
     public function refreshUser(UserInterface $user): UserInterface
     {
-        if (!$user instanceof OAuthUser) {
+        if (!$user instanceof OAuthUser && !$user instanceof BaseOAuthUser) {
             throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', \get_class($user)));
         }
 
-        return new OAuthUser($user->getUserIdentifier(), $user->getRoles());
+        return new OAuthUser($user->getUsername(), $user->getRoles());
     }
 
     public function supportsClass($class): bool
     {
-        return OAuthUser::class === $class;
+        return OAuthUser::class === $class || BaseOAuthUser::class === $class;
     }
 }

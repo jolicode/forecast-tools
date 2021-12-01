@@ -119,7 +119,7 @@ class Builder
 
         foreach ($assignments as $assignment) {
             $project = $projects[$assignment->getProjectId()];
-            $client = $clients[$project->getClientId()]->getName();
+            $client = isset($clients[$project->getClientId()]) ? $clients[$project->getClientId()]->getName() : null;
             $projectId = $project->getId();
             $duration = $assignment->getAllocation() / 28800;
 

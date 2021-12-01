@@ -75,8 +75,16 @@ class UserCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
+        $impersonate = Action::new('impersonate', 'Impersonate')
+            ->linkToUrl(function (User $entity) {
+                return '/?_switch_user=' . $entity->getEmail();
+            })
+        ;
+
         return $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
+            ->add(Crud::PAGE_INDEX, $impersonate)
+            ->add(Crud::PAGE_DETAIL, $impersonate)
             ->disable(Action::NEW)
         ;
     }

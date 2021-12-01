@@ -8,20 +8,27 @@
     <div class="collapse navbar-collapse flex-row-reverse text-right" id="navbarNavDropdown">
         <ul class="navbar-nav">
             <li class="nav-item">
-                <a class="nav-link" href="#">{{ app.user.username }}</a>
+                <span class="nav-link">{{ app.user.username }}</span>
             </li>
-            <li class="nav-item dropdown">
-                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    {{ currentAccount.name }}
-                </button>
-                <div class="dropdown-menu dropdown-menu-right text-right" aria-labelledby="dropdownMenuButton">
-                    {% for forecastAccount in forecastAccounts %}
-                        <a class="dropdown-item{% if forecastAccount == currentAccount %} active{% endif %}" href="{{ path('organization_homepage', {slug: forecastAccount.slug}) }}">{{ forecastAccount.name }}</a>
-                    {% endfor %}
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="{{ path('logout') }}">logout 👋</a>
-                </div>
-            </li>
+            {% if is_granted('IS_IMPERSONATOR') %}
+                <li class="nav-item mr-2">
+                    <a href="{{ impersonation_exit_path(path('homepage') ) }}" class="btn btn-danger">Exit impersonation</a>
+                </li>
+            {% endif %}
+            {% if currentAccount %}
+                <li class="nav-item dropdown">
+                    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        {{ currentAccount.name }}
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right text-right" aria-labelledby="dropdownMenuButton">
+                        {% for forecastAccount in forecastAccounts %}
+                            <a class="dropdown-item{% if forecastAccount == currentAccount %} active{% endif %}" href="{{ path('organization_homepage', {slug: forecastAccount.slug}) }}">{{ forecastAccount.name }}</a>
+                        {% endfor %}
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="{{ path('logout') }}">logout 👋</a>
+                    </div>
+                </li>
+            {% endif %}
         </ul>
     </div>
 </nav>
