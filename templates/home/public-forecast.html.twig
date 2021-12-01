@@ -27,7 +27,12 @@
 
                     {% for key, project in assignments %}
                         {% if key != 'total' %}
-                            {{ include('home/_project.html.twig', {project: project, title: project.client ~ ' / ' ~ project.project.name, slug: project.project.id}) }}
+                            {% if project.client %}
+                                {% set title = project.client ~ ' / ' ~ project.project.name %}
+                            {% else %}
+                                {% set title = project.project.name %}
+                            {% endif %}
+                            {{ include('home/_project.html.twig', {project: project, title: title, slug: project.project.id}) }}
                         {% endif %}
                     {% endfor %}
                 {% else %}
