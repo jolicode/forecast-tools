@@ -17,6 +17,7 @@ security:
             logout:
                 path: /logout
                 target: /
+            switch_user: true
             custom_authenticators:
                 - App\Security\HarvestAuthenticator
 
@@ -29,3 +30,6 @@ security:
         - { path: ^/slack, roles: PUBLIC_ACCESS }
         - { path: ^/_admin, roles: ROLE_ADMIN }
         - { path: ^/, roles: ROLE_USER }
+
+    role_hierarchy:
+        ROLE_ADMIN: [ROLE_ALLOWED_TO_SWITCH]
