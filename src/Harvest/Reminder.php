@@ -22,6 +22,7 @@ use JoliCode\Forecast\Api\Model\Assignment;
 use JoliCode\Harvest\Api\Model\TimeEntriesPostBody;
 use JoliCode\Harvest\Api\Model\TimeEntry;
 use JoliCode\Harvest\Api\Model\User as HarvestUser;
+use function Symfony\Component\String\u;
 
 class Reminder
 {
@@ -547,20 +548,34 @@ class Reminder
                 }
 
                 if (\count($detailsMessages) > 0) {
-                    $message = sprintf(
+                    $text = sprintf(
                         '📅 *<%s|Week starting on %s>*%s',
                         $weeklyIssue['link'],
                         $weeklyIssue['name'],
                         $this->buildHoursDiffSuffix($weeklyHoursDiff)
                     );
-                    $text = $message . "\n" . implode("\n", $detailsMessages);
 
-                    if (mb_strlen($text) > 2998) {
-                        $text = mb_substr($text, 0, 2997) . "…\n";
-                    } else {
-                        $text .= "\n";
+                    foreach ($detailsMessages as $message) {
+                        if (u($text)->length() + u($message)->length() < 2997) {
+                            $text .=  "\n".$message;
+                        } else {
+                            $block = [
+                                'type' => 'section',
+                                'text' => [
+                                    'type' => 'mrkdwn',
+                                    'text' => $text . "\n",
+                                ],
+                            ];
+                            if (null !== $accessory) {
+                                $block['accessory'] = $accessory;
+                                $accessory = null;
+                            }
+                            $blocks[] = $block;
+                            $text = $message;
+                        }
                     }
 
+                    $text .= "\n";
                     $block = [
                         'type' => 'section',
                         'text' => [
