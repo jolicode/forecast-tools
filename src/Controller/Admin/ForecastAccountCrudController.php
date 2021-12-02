@@ -64,7 +64,6 @@ class ForecastAccountCrudController extends AbstractCrudController
             TextField::new('refreshToken')->onlyOnDetail(),
             BooleanField::new('refreshToken', 'Refreshable')
                 ->formatValue(function ($value): bool {
-                    dump($value);
                     return null !== $value;
                 })->setCustomOptions([
                     'renderAsSwitch' => false,

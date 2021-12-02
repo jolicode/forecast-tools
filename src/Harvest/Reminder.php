@@ -557,7 +557,7 @@ class Reminder
 
                     foreach ($detailsMessages as $message) {
                         if (u($text)->length() + u($message)->length() < 2997) {
-                            $text .=  "\n".$message;
+                            $text .= "\n" . $message;
                         } else {
                             $block = [
                                 'type' => 'section',
