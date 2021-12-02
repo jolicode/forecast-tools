@@ -16,6 +16,7 @@ use App\DataSelector\ForecastDataSelector;
 use App\Entity\ForecastAccount;
 use App\Entity\PublicForecast;
 use JoliCode\Forecast\Api\Model\Person;
+use function Symfony\Component\String\u;
 
 class Builder
 {
@@ -118,6 +119,10 @@ class Builder
         }
 
         foreach ($assignments as $assignment) {
+            if (null === $assignment->getProjectId() || null === $assignment->getPersonId() && null === $assignment->getPlaceholderId() || null === $assignment->getAllocation()) {
+                continue;
+            }
+
             $project = $projects[$assignment->getProjectId()];
             $client = isset($clients[$project->getClientId()]) ? $clients[$project->getClientId()]->getName() : null;
             $projectId = $project->getId();
@@ -218,7 +223,7 @@ class Builder
                     $userAssignments[$projectId]['monthly_total'][$assignmentMonth] += $duration;
                     $userAssignments['total']['monthly_total'][$assignmentMonth] += $duration;
 
-                    if (!isset($userAssignments[$projectId]['firstDay']) || $userAssignments[$projectId]['firstDay'] < $assignmentDay) {
+                    if (!isset($userAssignments[$projectId]['firstDay']) || $userAssignments[$projectId]['firstDay'] > $assignmentDay) {
                         $userAssignments[$projectId]['firstDay'] = $assignmentDay;
                     }
                 }
@@ -227,11 +232,19 @@ class Builder
 
         foreach ($userAssignments as $projectId => $projectAssignments) {
             uasort($userAssignments[$projectId]['users'], function ($a, $b): int {
-                return strcmp($a['name'], $b['name']);
+                return strcmp(u($a['name'])->folded(), u($b['name'])->folded());
             });
         }
 
         uasort($userAssignments, function ($a, $b): int {
+            if ($a['firstDay'] === $b['firstDay']) {
+                if (u($a['client'])->folded() === u($b['client'])->folded()) {
+                    return strcmp(u($a['project']->getName())->folded(), u($b['project']->getName())->folded());
+                }
+
+                return strcmp(u($a['client'])->folded(), u($b['client'])->folded());
+            }
+
             return strcmp($a['firstDay'], $b['firstDay']);
         });
 
