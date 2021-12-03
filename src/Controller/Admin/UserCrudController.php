@@ -43,7 +43,7 @@ class UserCrudController extends AbstractCrudController
             EmailField::new('email')
                 ->setFormTypeOptions(['disabled' => 'disabled']),
             DateTimeField::new('createdAt')->hideOnForm(),
-            IntegerField::new('expires', 'token expiration')
+            IntegerField::new('expires', 'Token expiration')
                 ->hideOnForm()
                 ->formatValue(function ($value): string {
                     $interval = ((new \DateTime())->setTimestamp($value))->diff(new \DateTime());

@@ -62,7 +62,13 @@ class ForecastAccountCrudController extends AbstractCrudController
             BooleanField::new('allowNonAdmins', 'Allow non admins to create public forecasts')->hideOnIndex(),
             TextField::new('accessToken')->onlyOnDetail(),
             TextField::new('refreshToken')->onlyOnDetail(),
-            IntegerField::new('expires', 'token expiration')
+            BooleanField::new('refreshToken', 'Refreshable')
+                ->formatValue(function ($value): bool {
+                    return null !== $value;
+                })->setCustomOptions([
+                    'renderAsSwitch' => false,
+                ]),
+            IntegerField::new('expires', 'Token expiration')
                 ->formatValue(function ($value): string {
                     $interval = ((new \DateTime())->setTimestamp($value))->diff(new \DateTime());
                     $mapping = [
