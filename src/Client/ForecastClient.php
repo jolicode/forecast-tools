@@ -18,7 +18,7 @@ use JoliCode\Forecast\Client;
 use JoliCode\Forecast\ClientFactory;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
+use Symfony\Component\Security\Core\Authorization\Voter\AuthenticatedVoter;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Contracts\Cache\ItemInterface;
 
@@ -76,7 +76,7 @@ class ForecastClient extends AbstractClient
             $user = null;
             $forecastAccount = $this->getForecastAccount();
 
-            if ($this->security->getUser() && !($this->security->getToken() instanceof SwitchUserToken)) {
+            if ($this->security->getUser() && !$this->security->isGranted(AuthenticatedVoter::IS_IMPERSONATOR)) {
                 $email = $this->security->getUser()->getUserIdentifier();
                 $user = $this->userRepository->findOneBy(['email' => $email]);
             }
