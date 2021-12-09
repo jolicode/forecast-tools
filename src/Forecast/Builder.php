@@ -189,7 +189,12 @@ class Builder
                     $userAssignments[$projectId]['users'][$id]['days'][$assignmentDay] = $duration;
                     $userAssignments['total']['users'][$id]['total'] += $duration;
                     $userAssignments['total']['total_days'] += $duration;
-                    $userAssignments['total']['users'][$id]['days'][$assignmentDay] = $duration;
+
+                    if (!\array_key_exists($assignmentDay, $userAssignments['total']['users'][$id]['days'])) {
+                        $userAssignments['total']['users'][$id]['days'][$assignmentDay] = 0;
+                    }
+
+                    $userAssignments['total']['users'][$id]['days'][$assignmentDay] += $duration;
 
                     if (!isset($userAssignments[$projectId]['total'][$assignmentDay])) {
                         $userAssignments[$projectId]['total'][$assignmentDay] = 0;
