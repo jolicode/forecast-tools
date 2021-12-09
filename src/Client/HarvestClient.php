@@ -18,7 +18,7 @@ use JoliCode\Harvest\Api\Model\Error;
 use JoliCode\Harvest\ClientFactory;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
+use Symfony\Component\Security\Core\Authorization\Voter\AuthenticatedVoter;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Contracts\Cache\ItemInterface;
 
@@ -88,7 +88,7 @@ class HarvestClient extends AbstractClient
             $forecastAccount = $this->requestStack->getCurrentRequest()->attributes->get('forecastAccount');
             $harvestAccount = $forecastAccount->getHarvestAccount();
 
-            if ($this->security->getUser() && !($this->security->getToken() instanceof SwitchUserToken)) {
+            if ($this->security->getUser() && !$this->security->isGranted(AuthenticatedVoter::IS_IMPERSONATOR)) {
                 $email = $this->security->getUser()->getUserIdentifier();
                 $user = $this->userRepository->findOneBy(['email' => $email]);
             }
