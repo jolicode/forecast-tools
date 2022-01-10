@@ -59,7 +59,7 @@ class MassInsertionController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
 
-            if ($data['harvest']) {
+            if (true === $data['harvest']) {
                 // search the Harvest project
                 $forecastProjects = $this->forecastDataSelector->getProjectsById(null, true);
                 $harvestProjectId = $forecastProjects[$data['project']]->getHarvestId();
@@ -71,7 +71,7 @@ class MassInsertionController extends AbstractController
             }
 
             foreach ($data['people'] as $personId) {
-                if ($data['forecast']) {
+                if (true === $data['forecast']) {
                     $assignment = new Assignment();
                     $assignment->setAllocation($data['duration'] * 3600);
                     $assignment->setEndDate($data['date']);
@@ -86,7 +86,7 @@ class MassInsertionController extends AbstractController
                     $this->forecastClient->__client()->createAssignment($forecastBody);
                 }
 
-                if ($data['harvest']) {
+                if (true === $data['harvest']) {
                     // search the harvest user
                     /** @phpstan-ignore-next-line */
                     $harvestUserId = $forecastPeople[$personId]->getHarvestUserId();
