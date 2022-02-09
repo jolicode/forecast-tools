@@ -1,16 +1,16 @@
 
-small.form-text:not(.text-normal) {
+p.help-text:not(.text-normal) {
   font-size: .8em;
   color: #aaa;
   margin-top: 0;
   margin-bottom: 1rem;
 }
 
-small.form-text.text-normal {
+p.help-text.text-normal {
   font-size: 1em;
   color: #212529 !important;
   margin-top: 0;
-  margin-bottom: 1rem;
+  margin-bottom: 1rem !important;
 }
 
 label {

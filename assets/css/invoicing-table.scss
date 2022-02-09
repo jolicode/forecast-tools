@@ -121,12 +121,13 @@
         }
         &.right-column {
             .tooltip-bottom {
+                transform: none;
                 left: auto;
-                right: 0;
+                right: -20px;
             }
             .tooltiptext::after {
                 left: auto;
-                right: 10%;
+                right: 35px;
             }
         }
         &:hover {

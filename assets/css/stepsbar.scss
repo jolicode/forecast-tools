@@ -17,7 +17,7 @@
                 height: 0;
                 border-top: 19px solid transparent;
                 border-bottom: 19px solid transparent;
-                border-left: 19px solid #007bff;
+                border-left: 19px solid #0d6efd;
                 position: absolute;
                 top: 50%;
                 margin-top: -19px;
@@ -25,7 +25,7 @@
                 z-index: 3;
             }
             &:hover:after {
-                border-left: 19px solid #0069d9;
+                border-left: 19px solid #0b5ed7;
             }
             &:before {
                 content: " ";
@@ -38,7 +38,7 @@
                 position: absolute;
                 top: 50%;
                 margin-top: -19px;
-                margin-left: 3px;
+                margin-left: 1px;
                 left: 100%;
                 z-index: 3;
             }

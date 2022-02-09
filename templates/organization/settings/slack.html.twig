@@ -8,13 +8,10 @@
         {% if  forecastAccount.forecastAccountSlackTeams|length > 0 %}
             <div class="card-body mb-4 flex-wrap flex-row">
                 <h2>Available Slack workspaces</h2>
-                <div style="flex-basis: 100%;"></div>
 
                 {% for forecastAccountSlackTeam in forecastAccount.forecastAccountSlackTeams %}
-                    <div class="card card-body col-md-4 col-xl-3 mt-3 mr-3">
-                        <a data-href="{{ organization_path('settings_slack_delete', {forecastAccountSlackTeamId: forecastAccountSlackTeam.id})}}" class="close position-absolute" aria-label="Close" style="top: 1rem; right: 1rem"  data-toggle="modal" data-target="#confirm-delete">
-                            <span aria-hidden="true">&times;</span>
-                        </a>
+                    <div class="card card-body col-md-4 col-xl-3 mt-3 me-3">
+                        <button type="button" data-href="{{ organization_path('settings_slack_delete', {forecastAccountSlackTeamId: forecastAccountSlackTeam.id})}}" class="btn-close position-absolute" aria-label="Close" style="top: 1rem; right: 1rem"  data-bs-toggle="modal" data-bs-target="#confirm-delete"></button>
                         <h5 class="card-title">{{ forecastAccountSlackTeam.slackTeam.teamName }}</h5>
                         <p class="card-text">
                             Added by <code>{{ forecastAccountSlackTeam.updatedBy | default('(deleted user)') }}</code><br />
@@ -55,7 +52,7 @@
                     will not be sent to this workspace anymore.
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-default" data-bs-dismiss="modal">Cancel</button>
                     <a class="btn btn-danger btn-ok">Yes, delete</a>
                 </div>
             </div>

@@ -41,7 +41,7 @@ class HarvestSettingsType extends AbstractType
             ->add('hideSkippedUsers', null, [
                 'help' => 'Completely hide those users from the timesheets verification steps?',
                 'label_attr' => [
-                    'class' => 'switch-custom',
+                    'class' => 'checkbox-switch',
                 ],
             ])
             ->add('invoiceDueDelayRequirements', CollectionType::class, [
