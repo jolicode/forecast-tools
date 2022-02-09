@@ -128,7 +128,7 @@ def watch(c):
     Run Yarn watcher
     """
     with Builder(c):
-        docker_compose_run('yarn run watch')
+        docker_compose_run(c, 'yarn run watch')
 
 
 @task
