@@ -5,14 +5,14 @@
 {% form_theme form _self %}
 
 {% block _forecast_reminder_projectOverrides_entry_row %}
-    <div class="d-flex flex-wrap flex-row">
+    <div class="d-flex flex-wrap flex-row pb-3">
         <div class="col-md-5 p-0">
             {{ form_label(form.projectId, null, { label_attr: { class: 'd-md-none' }}) }}
             {{ form_errors(form.projectId) }}
             {{ form_widget(form.projectId) }}
             {{ form_help(form.projectId) }}
         </div>
-        <div class="col-md-5 p-0 pl-md-3">
+        <div class="col-md-5 p-0 ps-md-3">
             {{ form_label(form.name, null, { label_attr: { class: 'd-md-none' }}) }}
             {{ form_errors(form.name) }}
             {{ form_widget(form.name, { attr: { class: 'form-control' }}) }}
@@ -22,14 +22,14 @@
 {% endblock %}
 
 {% block _forecast_reminder_clientOverrides_entry_row %}
-    <div class="d-flex flex-wrap flex-row">
+    <div class="d-flex flex-wrap flex-row pb-3">
         <div class="col-md-5 p-0">
             {{ form_label(form.clientId, null, { label_attr: { class: 'd-md-none' }}) }}
             {{ form_errors(form.clientId) }}
             {{ form_widget(form.clientId) }}
             {{ form_help(form.clientId) }}
         </div>
-        <div class="col-md-5 p-0 pl-md-3">
+        <div class="col-md-5 p-0 ps-md-3">
             {{ form_label(form.name, null, { label_attr: { class: 'd-md-none' }}) }}
             {{ form_errors(form.name) }}
             {{ form_widget(form.name, { attr: { class: 'form-control' }}) }}
@@ -53,11 +53,11 @@
 
     <nav>
         <div class="nav nav-tabs" id="nav-tab" role="tablist">
-            <a class="nav-item nav-link active" id="workspaces-tab" data-toggle="tab" href="#nav-workspaces" role="tab" aria-controls="nav-workspaces" aria-selected="true">Schedule</a>
-            <a class="nav-item nav-link{{ disabled }}" id="labels-tab" data-toggle="tab" href="#nav-labels" role="tab" aria-controls="nav-labels" aria-selected="false">Labels</a>
-            <a class="nav-item nav-link{{ disabled }}" id="users-tab" data-toggle="tab" href="#nav-users" role="tab" aria-controls="nav-users" aria-selected="false">Users</a>
-            <a class="nav-item nav-link{{ disabled }}" id="project-overrides-tab" data-toggle="tab" href="#nav-project-overrides" role="tab" aria-controls="nav-project-overrides" aria-selected="false">Project overrides</a>
-            <a class="nav-item nav-link{{ disabled }}" id="client-overrides-tab" data-toggle="tab" href="#nav-client-overrides" role="tab" aria-controls="nav-client-overrides" aria-selected="false">Client overrides</a>
+            <a class="nav-item nav-link active" id="workspaces-tab" data-bs-toggle="tab" href="#nav-workspaces" role="tab" aria-controls="nav-workspaces" aria-selected="true">Schedule</a>
+            <a class="nav-item nav-link{{ disabled }}" id="labels-tab" data-bs-toggle="tab" href="#nav-labels" role="tab" aria-controls="nav-labels" aria-selected="false">Labels</a>
+            <a class="nav-item nav-link{{ disabled }}" id="users-tab" data-bs-toggle="tab" href="#nav-users" role="tab" aria-controls="nav-users" aria-selected="false">Users</a>
+            <a class="nav-item nav-link{{ disabled }}" id="project-overrides-tab" data-bs-toggle="tab" href="#nav-project-overrides" role="tab" aria-controls="nav-project-overrides" aria-selected="false">Project overrides</a>
+            <a class="nav-item nav-link{{ disabled }}" id="client-overrides-tab" data-bs-toggle="tab" href="#nav-client-overrides" role="tab" aria-controls="nav-client-overrides" aria-selected="false">Client overrides</a>
         </div>
     </nav>
 
@@ -83,12 +83,10 @@
                             {% if forecastAccount.forecastAccountSlackTeams|length > 0 %}
                                 {% for forecastAccountSlackTeamForm in form.forecastAccount.forecastAccountSlackTeams %}
                                     {% set forecastAccountSlackTeam = forecastAccountSlackTeamForm.vars.value %}
-                                    <div class="col-md-4 col-xl-3 mt-3 mr-3">
+                                    <div class="col-md-4 col-xl-3 mt-3 me-3">
                                         <div class="card">
                                             <div class="card-body">
-                                                <a data-href="{{ organization_path('settings_slack_delete', {forecastAccountSlackTeamId: forecastAccountSlackTeam.id})}}" class="close position-absolute" aria-label="Close" style="top: 1rem; right: 1rem"  data-toggle="modal" data-target="#confirm-delete">
-                                                    <span aria-hidden="true">&times;</span>
-                                                </a>
+                                                <button type="button" data-href="{{ organization_path('settings_slack_delete', {forecastAccountSlackTeamId: forecastAccountSlackTeam.id})}}" class="btn-close position-absolute" aria-label="Close" style="top: 1rem; right: 1rem"  data-bs-toggle="modal" data-bs-target="#confirm-delete"></button>
                                                 <h5 class="card-title">{{ forecastAccountSlackTeam.slackTeam.teamName }}</h5>
                                                 <p class="card-text">
                                                     Added by <code>{{ forecastAccountSlackTeam.updatedBy | default('(deleted user)') }}</code><br />
@@ -109,7 +107,7 @@
                                 {% endfor %}
                             {% endif %}
 
-                            <div class="card card-body col-md-4 col-xl-3 mt-3 mr-3">
+                            <div class="card card-body col-md-4 col-xl-3 mt-3 me-3">
                                 <h5 class="card-title">Add a Slack workspace</h5>
                                 {% if is_granted('admin', forecastAccount) %}
                                     <p class="card-text">
@@ -135,7 +133,7 @@
                     <div class="card-body">
                         {{ form_row(form.defaultActivityName) }}
 
-                        <div class="form-group">
+                        <div class="mb-3">
                             {{ form_label(form.timeOffProjects) }}
                             {{ form_errors(form.timeOffProjects) }}
                             {{ form_widget(form.timeOffProjects, { attr: { class: 'select2', multiple: 'multiple' }}) }}
@@ -148,13 +146,13 @@
 
                 <div class="tab-pane" id="nav-users" role="tabpanel" aria-labelledby="users-tab">
                     <div class="card-body">
-                        <div class="form-group">
+                        <div class="mb-3">
                             {{ form_label(form.onlyUsers) }}
                             {{ form_errors(form.onlyUsers) }}
                             {{ form_widget(form.onlyUsers, { attr: { class: 'select2', multiple: 'multiple' }}) }}
                             {{ form_help(form.onlyUsers)|raw }}
                         </div>
-                        <div class="form-group">
+                        <div class="mb-3">
                             {{ form_label(form.exceptUsers) }}
                             {{ form_errors(form.exceptUsers) }}
                             {{ form_widget(form.exceptUsers, { attr: { class: 'select2', multiple: 'multiple' }}) }}
@@ -165,7 +163,7 @@
 
                 <div class="tab-pane" id="nav-project-overrides" role="tabpanel" aria-labelledby="project-overrides-tab">
                     <div class="card-body">
-                        <div class="form-group">
+                        <div class="mb-3">
                             {{ form_label(form.projectOverrides, null, { label_attr: { class: 'd-md-none' }}) }}
                             {{ form_help(form.projectOverrides, { help_attr: { class: 'text-normal' }}) }}
                             {{ form_errors(form.projectOverrides) }}
@@ -178,7 +176,7 @@
 
                 <div class="tab-pane" id="nav-client-overrides" role="tabpanel" aria-labelledby="client-overrides-tab">
                     <div class="card-body">
-                        <div class="form-group">
+                        <div class="mb-3">
                             {{ form_label(form.clientOverrides, null, { label_attr: { class: 'd-md-none' }}) }}
                             {{ form_help(form.clientOverrides, { help_attr: { class: 'text-normal' }}) }}
                             {{ form_errors(form.clientOverrides) }}
@@ -190,9 +188,9 @@
                 </div>
             </div>
 
-            <div class="card-footer text-right">
+            <div class="card-footer text-end">
                 {% if forecastAccount.forecastReminder %}
-                    <small class="float-left mt-2">
+                    <small class="float-start mt-2">
                         last updated by <code>{{ forecastAccount.forecastReminder.updatedBy | default('(deleted user)') }}</code>
                         on <code>{{ forecastAccount.forecastReminder.updatedAt|date('F jS, Y, G:i')  }}</code>
                     </small>
@@ -213,7 +211,7 @@
                     will not be sent to this workspace anymore.
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-default" data-bs-dismiss="modal">Cancel</button>
                     <a class="btn btn-danger btn-ok">Yes, delete</a>
                 </div>
             </div>

@@ -25,7 +25,7 @@ class ForecastSettingsType extends AbstractType
             ->add('allowNonAdmins', null, [
                 'help' => 'Allow regular Forecast users to create, edit or delete public forecasts? In unset, only Forecast admins will be allowed to do so.',
                 'label_attr' => [
-                    'class' => 'switch-custom',
+                    'class' => 'checkbox-switch',
                 ],
             ])
             ->add('save', SubmitType::class, [

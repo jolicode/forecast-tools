@@ -5,14 +5,14 @@
 {% form_theme form _self %}
 
 {% block _harvest_settings_invoiceDueDelayRequirements_entry_row %}
-    <div class="d-flex flex-wrap flex-row">
+    <div class="d-flex flex-wrap flex-row pb-3">
         <div class="col-md-7 p-0">
             {{ form_label(form.harvestClientId, null, { label_attr: { class: 'd-md-none' }}) }}
             {{ form_errors(form.harvestClientId) }}
             {{ form_widget(form.harvestClientId, { attr: { class: 'form-control' }}) }}
             {{ form_help(form.harvestClientId) }}
         </div>
-        <div class="col-md-3 p-0 pl-md-3">
+        <div class="col-md-3 p-0 ps-md-3">
             {{ form_label(form.delay, null, { label_attr: { class: 'd-md-none' }}) }}
             {{ form_errors(form.delay) }}
             {{ form_widget(form.delay, { attr: { class: 'form-control' }}) }}
@@ -22,14 +22,14 @@
 {% endblock %}
 
 {% block _harvest_settings_invoiceNotesRequirements_entry_row %}
-    <div class="d-flex flex-wrap flex-row">
+    <div class="d-flex flex-wrap flex-row pb-3">
         <div class="col-md-4 p-0">
             {{ form_label(form.harvestClientId, null, { label_attr: { class: 'd-md-none' }}) }}
             {{ form_errors(form.harvestClientId) }}
             {{ form_widget(form.harvestClientId, { attr: { class: 'form-control' }}) }}
             {{ form_help(form.harvestClientId) }}
         </div>
-        <div class="col-md-6 p-0 pl-md-3">
+        <div class="col-md-6 p-0 ps-md-3">
             {{ form_label(form.requirement, null, { label_attr: { class: 'd-md-none' }}) }}
             {{ form_errors(form.requirement) }}
             {{ form_widget(form.requirement, { attr: { class: 'form-control' }}) }}
@@ -45,7 +45,7 @@
             <div class="card-body">
                 {{ form_errors(form) }}
 
-                <div class="form-group">
+                <div class="mb-3">
                     {{ form_label(form.doNotCheckTimesheetsFor) }}
                     {{ form_errors(form.doNotCheckTimesheetsFor) }}
                     <div>
@@ -58,8 +58,8 @@
             <div class="card-body">
                 <div class="container-fluid">
                     <div class="row">
-                        <div class="col-lg pl-lg-0">
-                            <div class="form-group card card-body">
+                        <div class="col-lg ps-lg-0">
+                            <div class="mb-3 card card-body">
                                 {{ form_label(form.invoiceDueDelayRequirements, null, { label_attr: { class: 'd-md-none' }}) }}
                                 {{ form_help(form.invoiceDueDelayRequirements, { help_attr: { class: 'text-normal' }}) }}
                                 {{ form_errors(form.invoiceDueDelayRequirements) }}
@@ -68,8 +68,8 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg pr-lg-0">
-                            <div class="form-group card card-body">
+                        <div class="col-lg pe-lg-0">
+                            <div class="mb-3 card card-body">
                                 {{ form_label(form.invoiceNotesRequirements, null, { label_attr: { class: 'd-md-none' }}) }}
                                 {{ form_help(form.invoiceNotesRequirements, { help_attr: { class: 'text-normal' }}) }}
                                 {{ form_errors(form.invoiceNotesRequirements) }}
@@ -81,7 +81,7 @@
                     </div>
                 </div>
             </div>
-            <div class="card-footer text-right">
+            <div class="card-footer text-end">
                 {{ form_widget(form.save) }}
             </div>
         {{ form_end(form) }}

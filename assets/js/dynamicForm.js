@@ -1,4 +1,4 @@
-import 'bootstrap/js/dist/util';
+//import 'bootstrap/js/dist/util';
 import 'bootstrap/js/dist/tab';
 import jQuery from 'jquery';
 import 'select2';
@@ -52,7 +52,7 @@ export default(label = 'Add a new item') => {
 
   function addItemFormDeleteLink($itemFormDiv) {
     let $removeFormButton = jQuery('<button type="button" class="btn btn-danger">Delete</button>');
-    let $removeButtonDiv = jQuery('<div class="col-md-2 p-0 text-right"></div>').append($removeFormButton);
+    let $removeButtonDiv = jQuery('<div class="col-md-2 p-0 text-end"></div>').append($removeFormButton);
     $itemFormDiv.append($removeButtonDiv);
 
     $removeFormButton.on('click', function (e) {

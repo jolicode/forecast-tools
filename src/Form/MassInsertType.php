@@ -82,7 +82,7 @@ class MassInsertType extends AbstractType
             ->add('people', ChoiceType::class, [
                 'choices' => $people,
                 'label_attr' => [
-                    'class' => 'switch-custom',
+                    'class' => 'checkbox-switch',
                 ],
                 'data' => $people,
                 'required' => true,
@@ -101,7 +101,7 @@ class MassInsertType extends AbstractType
                 'data' => true,
                 'required' => false,
                 'label_attr' => [
-                    'class' => 'switch-custom',
+                    'class' => 'checkbox-switch',
                 ],
             ])
             ->add('harvest', CheckboxType::class, [
@@ -109,7 +109,7 @@ class MassInsertType extends AbstractType
                 'data' => true,
                 'required' => false,
                 'label_attr' => [
-                    'class' => 'switch-custom',
+                    'class' => 'checkbox-switch',
                 ],
             ])
             ->add('comment', TextareaType::class, [

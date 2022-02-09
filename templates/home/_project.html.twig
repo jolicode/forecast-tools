@@ -1,6 +1,6 @@
 <div class="card card-body p-3 mb-3 border-0">
     <h5 class="card-title mb-2">
-        <a id="{{ slug }}" class="permalink" href="#{{ slug }}">🔗</a> {{ title }}
+        <a id="{{ slug }}" class="permalink text-decoration-none" href="#{{ slug }}">🔗</a> {{ title }}
     </h5>
     <div class="card-text">
         <div class="container-fluid p-0">
@@ -19,7 +19,7 @@
                         </tr>
                         {% for user in project.users %}
                             <tr>
-                                <th class="people pr-1">
+                                <th class="people pe-1">
                                     {{ user.name }}
                                 </th>
                             </tr>
@@ -32,17 +32,17 @@
                         </tr>
 
                         <tr>
-                            <th class="total pr-1">
+                            <th class="total pe-1">
                                 Total
                             </th>
                         </tr>
                         <tr>
-                            <th class="total pr-1">
+                            <th class="total pe-1">
                                 Weekly total
                             </th>
                         </tr>
                         <tr>
-                            <th class="total pr-1">
+                            <th class="total pe-1">
                                 Monthly total
                             </th>
                         </tr>

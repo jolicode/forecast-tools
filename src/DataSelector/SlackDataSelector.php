@@ -41,7 +41,9 @@ class SlackDataSelector
     {
         $this->client->setSlackTeam($slackTeam);
 
-        return $this->client->conversationsList()->getChannels();
+        return $this->client->conversationsList([
+            'exclude_archived' => true,
+        ])->getChannels();
     }
 
     public function getConversationsForChoice(SlackTeam $slackTeam): array

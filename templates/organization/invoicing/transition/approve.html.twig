@@ -31,7 +31,7 @@
 
                     {% for entry in userEntries.entries %}
                         <td class="entry{{ entry.isClosed ? ' ok' : ' bug'}}{{ entry.skipErrors ? ' skip'}}{{ entry.isWeekend ? ' weekend'}}">
-                            <a href="{{ forecastAccount.harvestAccount.baseUri }}/time/week/{{ entry.date|date('Y/m/d') }}/{{ userEntries.user.id }}">
+                            <a href="{{ forecastAccount.harvestAccount.baseUri }}/time/week/{{ entry.date|date('Y/m/d') }}/{{ userEntries.user.id }}" class="text-decoration-none">
                                 &nbsp;
                             </a>
                         </td>
@@ -43,7 +43,7 @@
 {% endblock %}
 
 {% block footerLeft %}
-    <small class="float-left text-left">
+    <small class="float-start text-start">
         {% if errorsCount > 0 %}
             There are <code>{{ errorsCount }} problems</code> on this step, which should prevent you from continuing for the moment. Please take care.
         {% else %}

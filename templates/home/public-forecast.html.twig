@@ -10,11 +10,11 @@
     </head>
     <body>
         {% block body %}
-            <nav class="navbar navbar-expand-lg navbar-light">
+            <nav class="navbar navbar-expand-lg navbar-light px-3">
                 <a class="navbar-brand" href="{{ path('homepage') }}">⛅&nbsp;Forecast&nbsp;tools</a>
-                <div id="datepicker" class="form-inline">
+                <div id="datepicker" class="d-flex flex-wrap flex-row align-items-center">
                     <input type="text" name="daterange" class="form-control" value="{{ start|date("d/m/Y") }} - {{ end|date("d/m/Y") }}" />
-                    <button type="button" class="btn btn-primary ml-3 charts-switch">📊 show/hide charts</button>
+                    <button type="button" class="btn btn-primary ms-3 charts-switch">📊 show/hide charts</button>
                 </div>
             </nav>
 

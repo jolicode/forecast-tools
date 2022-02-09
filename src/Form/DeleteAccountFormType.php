@@ -23,6 +23,7 @@ class DeleteAccountFormType extends AbstractType
     {
         $builder
             ->add('yolo', null, [
+                'attr' => ['autocomplete' => 'off'],
                 'help' => 'Please type here "YOLO" to get your account and all your data deleted.',
                 'label_attr' => ['class' => 'd-none'],
                 'constraints' => [

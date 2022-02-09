@@ -6,11 +6,9 @@
 
 {% block content %}
     {% for message in app.flashes('success') %}
-        <div class="alert alert-success fade show mb-3" role="alert">
+        <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
             {{ message }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     {% endfor %}
 
@@ -31,7 +29,7 @@
                 {{ form_row(form.project) }}
                 {{ form_row(form.date) }}
 
-                <div class="form-group">
+                <div class="mb-3">
                     {{ form_label(form.duration) }}
                     <div class="input-group">
                         {{ form_widget(form.duration, {'attr': { 'aria-describedby': 'duration-unit', 'style': 'max-width: 10rem' }}) }}
@@ -47,7 +45,7 @@
                 {{ form_row(form.harvest) }}
                 {{ form_row(form.comment) }}
             </div>
-            <div class="card-footer text-right">
+            <div class="card-footer text-end">
                 {{ form_widget(form.save) }}
             </div>
         </div>

@@ -15,7 +15,7 @@
 
                 {{ form_errors(form) }}
 
-                <div class="form-group">
+                <div class="mb-3">
                     {{ form_label(form.doNotSendTimesheetReminderFor) }}
                     {{ form_errors(form.doNotSendTimesheetReminderFor) }}
                     <div>
@@ -26,7 +26,7 @@
 
                 {{ form_row(form.timesheetReminderSlackTeam) }}
             </div>
-            <div class="card-footer text-right">
+            <div class="card-footer text-end">
                 {{ form_widget(form.save) }}
             </div>
         {{ form_end(form) }}

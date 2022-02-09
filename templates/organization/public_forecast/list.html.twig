@@ -4,18 +4,16 @@
 
 {% block content %}
     {% for message in app.flashes('success') %}
-        <div class="alert alert-success fade show mb-3" role="alert">
+        <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
             {{ message | raw }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     {% endfor %}
 
     {% if publicForecasts|length > 0 %}
         <div class="card mb-4">
             <div class="card-header">
-                <span class="float-right">
+                <span class="float-end">
                     {% if is_granted('admin', forecastAccount) or forecastAccount.getAllowNonAdmins() %}
                         <a href="{{ organization_path('public_forecasts_create') }}" class="btn btn-primary">✨&nbsp;&nbsp;Add a public Forecast</a>
                     {% else %}
@@ -26,14 +24,14 @@
             </div>
             <div class="card-body">
                 {% for publicForecast in publicForecasts %}
-                    <div class="card card-body pt-3 pb-3 pr-0 pl-0 border-top-0 border-right-0 border-left-0 rounded-0">
+                    <div class="card card-body pt-3 pb-3 pe-0 ps-0 border-top-0 border-end-0 border-start-0 rounded-0">
                         <div class="card-text">
-                            <a href="{{ url('public_forecast', { token: publicForecast.token }) }}" class="btn btn-light border mr-3">🔗 View</a>
-                            <a href="{{ organization_path('public_forecasts_delete', { publicForecastId: publicForecast.id }) }}" class="btn btn-danger float-right ml-3">🗑️&nbsp;&nbsp;Delete</a>
-                            <a href="{{ organization_path('public_forecasts_edit', { publicForecastId: publicForecast.id }) }}" class="btn btn-primary float-right">✏️&nbsp;&nbsp;Edit</a>
-                            <div class="d-inline-block align-middle" style="line-height: 1rem">
-                                <h6 class="m-0" style="line-height: 1rem">{{ publicForecast.name }}</h6>
-                                <small class="font-weight-light">created by <code>{{ publicForecast.createdBy | default('(deleted user)') }}</code> on <code>{{ publicForecast.createdAt|date('F jS, Y, G:i') }}</code></small>
+                            <a href="{{ url('public_forecast', { token: publicForecast.token }) }}" class="btn btn-light border me-3">🔗 View</a>
+                            <a href="{{ organization_path('public_forecasts_delete', { publicForecastId: publicForecast.id }) }}" class="btn btn-danger float-end ms-3">🗑️&nbsp;&nbsp;Delete</a>
+                            <a href="{{ organization_path('public_forecasts_edit', { publicForecastId: publicForecast.id }) }}" class="btn btn-primary float-end">✏️&nbsp;&nbsp;Edit</a>
+                            <div class="d-inline-block align-middle lh-1">
+                                <h6 class="m-0 lh-1">{{ publicForecast.name }}</h6>
+                                <small class="fw-light">created by <code>{{ publicForecast.createdBy | default('(deleted user)') }}</code> on <code>{{ publicForecast.createdAt|date('F jS, Y, G:i') }}</code></small>
                             </div>
                         </div>
                     </div>
