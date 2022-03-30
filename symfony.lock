@@ -547,13 +547,16 @@
         "version": "v4.2.1"
     },
     "symfony/monolog-bundle": {
-        "version": "3.1",
+        "version": "3.7",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "master",
-            "version": "3.1",
-            "ref": "18ebf5a940573a20de06f9c4060101eeb438cf3d"
-        }
+            "version": "3.7",
+            "ref": "213676c4ec929f046dfde5ea8e97625b81bc0578"
+        },
+        "files": [
+            "config/packages/monolog.yaml"
+        ]
     },
     "symfony/options-resolver": {
         "version": "v4.2.1"
