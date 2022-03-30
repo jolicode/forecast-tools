@@ -123,17 +123,13 @@
         "version": "v2.2.0"
     },
     "easycorp/easyadmin-bundle": {
-        "version": "2.0",
+        "version": "3.5",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "master",
-            "version": "2.0",
-            "ref": "0a51040a43c6f2172a3a0135cd15daf2043905d7"
-        },
-        "files": [
-            "config/packages/easy_admin.yaml",
-            "config/routes/easy_admin.yaml"
-        ]
+            "version": "3.0",
+            "ref": "b131e6cbfe1b898a508987851963fff485986285"
+        }
     },
     "friendsofphp/php-cs-fixer": {
         "version": "3.8",
