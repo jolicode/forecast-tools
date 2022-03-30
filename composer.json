@@ -4,7 +4,7 @@
     "type": "project",
     "license": "MIT",
     "require": {
-        "php": "^7.4",
+        "php": "^7.4 || ^8.0 || ^8.1",
         "ext-ctype": "*",
         "ext-iconv": "*",
         "adam-paterson/oauth2-slack": "^1.1",
