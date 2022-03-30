@@ -29,6 +29,9 @@
     "composer/ca-bundle": {
         "version": "1.2.9"
     },
+    "composer/package-versions-deprecated": {
+        "version": "1.11.99.4"
+    },
     "composer/pcre": {
         "version": "1.0.0"
     },
@@ -195,12 +198,6 @@
     "laminas/laminas-code": {
         "version": "3.4.1"
     },
-    "laminas/laminas-eventmanager": {
-        "version": "3.2.1"
-    },
-    "laminas/laminas-zendframework-bridge": {
-        "version": "1.0.0"
-    },
     "league/oauth2-client": {
         "version": "1.4.2"
     },
@@ -234,17 +231,11 @@
             "config/packages/nyholm_psr7.yaml"
         ]
     },
-    "ocramius/package-versions": {
-        "version": "1.5.1"
-    },
     "phar-io/manifest": {
         "version": "2.0.1"
     },
     "phar-io/version": {
         "version": "3.1.0"
-    },
-    "php": {
-        "version": "7.4"
     },
     "php-cs-fixer/diff": {
         "version": "v1.3.0"
@@ -432,13 +423,16 @@
         "version": "v4.2.1"
     },
     "symfony/console": {
-        "version": "3.3",
+        "version": "5.4",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "master",
-            "version": "3.3",
-            "ref": "0fa049c19069a65f52c1c181d64be3de672c1504"
-        }
+            "version": "5.3",
+            "ref": "da0c8be8157600ad34f10ff0c9cc91232522e047"
+        },
+        "files": [
+            "bin/console"
+        ]
     },
     "symfony/css-selector": {
         "version": "v4.2.1"
@@ -621,6 +615,9 @@
             "ref": "5374e24d508ba8fd6ba9eb15170255fdb778316a"
         }
     },
+    "symfony/runtime": {
+        "version": "v5.4.5"
+    },
     "symfony/security-bundle": {
         "version": "3.3",
         "recipe": {
@@ -740,11 +737,5 @@
     },
     "webmozart/assert": {
         "version": "1.4.0"
-    },
-    "zendframework/zend-code": {
-        "version": "3.3.1"
-    },
-    "zendframework/zend-eventmanager": {
-        "version": "3.2.1"
     }
 }
