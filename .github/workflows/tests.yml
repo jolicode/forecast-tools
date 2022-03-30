@@ -1,0 +1,36 @@
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  cs-check:
+    name: Check Coding Standards
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Cache composer
+        uses: actions/cache@v2
+        with:
+          path: ~/.composer/cache/
+          key: composer-ubuntu-${{ github.sha }}
+
+      - name: Setup
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.1
+          extensions: mbstring, fileinfo, json, intl, dom
+
+      - name: Run composer install
+        run: composer install -n --prefer-dist --no-interaction
+
+      - name: Check coding standards
+        run: php vendor/bin/php-cs-fixer fix --dry-run --diff
+        env:
+          PHP_CS_FIXER_IGNORE_ENV: 1
+
+      - name: Lint Twig and yaml files
+        run:  |
+          php bin/console lint:yaml config
+          php bin/console lint:twig templates
