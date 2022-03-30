@@ -223,13 +223,16 @@
         "version": "1.2.0"
     },
     "nyholm/psr7": {
-        "version": "1.0",
+        "version": "1.5",
         "recipe": {
-            "repo": "github.com/symfony/recipes-contrib",
+            "repo": "github.com/symfony/recipes",
             "branch": "master",
             "version": "1.0",
-            "ref": "67ea0f5db9d5393911b2f380cf234f111750c49c"
-        }
+            "ref": "0cd4d2d0e7f646fda75f9944f747a56e6ed13d4c"
+        },
+        "files": [
+            "config/packages/nyholm_psr7.yaml"
+        ]
     },
     "ocramius/package-versions": {
         "version": "1.5.1"
