@@ -1,5 +1,7 @@
 # Forecast tools
 
+![Tests badge](https://github.com/jolicode/forecast-tools/actions/workflows/tests.yml/badge.svg)
+
 Forecast tools improves the overall experience with Harvest & Harvest Forecast, and adds some features:
 
  * share publicly a Client's or Project's forecast
