@@ -42,6 +42,7 @@ class ForecastReminderCrudController extends AbstractCrudController
     public function configureActions(Actions $actions): Actions
     {
         return $actions
-            ->disable(Action::NEW, Action::EDIT);
+            ->disable(Action::NEW, Action::EDIT)
+        ;
     }
 }

@@ -12,8 +12,10 @@
 namespace App\Client;
 
 use App\Entity\SlackTeam;
+use Doctrine\ORM\EntityManagerInterface;
 use JoliCode\Slack\Client;
 use JoliCode\Slack\ClientFactory;
+use JoliCode\Slack\Exception\SlackErrorResponse;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
@@ -25,15 +27,17 @@ use Symfony\Contracts\Cache\ItemInterface;
  */
 class SlackClient extends AbstractClient
 {
+    private EntityManagerInterface $em;
+
     /** @var Client[] */
     private $clients = [];
 
-    /** @var SlackTeam */
-    private $slackTeam = null;
+    private ?SlackTeam $slackTeam = null;
 
-    public function __construct(AdapterInterface $pool)
+    public function __construct(AdapterInterface $pool, EntityManagerInterface $em)
     {
         $this->pool = $pool;
+        $this->em = $em;
     }
 
     protected function __client(): Client
@@ -80,9 +84,23 @@ class SlackClient extends AbstractClient
 
     public function call(string $name, array $arguments)
     {
-        return \call_user_func_array([
-            $this->__client(),
-            $name,
-        ], $arguments);
+        if ('' !== $this->getSlackTeam()->getAccessToken()) {
+            try {
+                return \call_user_func_array([
+                    $this->__client(),
+                    $name,
+                ], $arguments);
+            } catch (SlackErrorResponse $e) {
+                if ('account_inactive' === $e->getErrorCode() || 'invalid_auth' === $e->getErrorCode()) {
+                    $slackTeam = $this->getSlackTeam();
+                    $slackTeam->setAccessToken('');
+                    $this->em->flush();
+                }
+
+                throw $e;
+            }
+        }
+
+        return null;
     }
 }

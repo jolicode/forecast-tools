@@ -12,6 +12,7 @@ RUN apt-get update \
         curl \
         git \
         make \
+        mariadb-client \
         nodejs \
         sudo \
         unzip \

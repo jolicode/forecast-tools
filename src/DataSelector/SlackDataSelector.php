@@ -29,9 +29,11 @@ class SlackDataSelector
     {
         $this->client->setSlackTeam($slackTeam);
 
-        return $this->client->conversationsInfo([
+        $conversationsInfo = $this->client->conversationsInfo([
             'channel' => $channelId,
-        ])->getChannel();
+        ]);
+
+        return $conversationsInfo ? $conversationsInfo->getChannel() : [];
     }
 
     /**
@@ -40,10 +42,11 @@ class SlackDataSelector
     public function getConversations(SlackTeam $slackTeam): array
     {
         $this->client->setSlackTeam($slackTeam);
-
-        return $this->client->conversationsList([
+        $conversationsList = $this->client->conversationsList([
             'exclude_archived' => true,
-        ])->getChannels();
+        ]);
+
+        return $conversationsList ? $conversationsList->getChannels() : [];
     }
 
     public function getConversationsForChoice(SlackTeam $slackTeam): array
@@ -63,10 +66,11 @@ class SlackDataSelector
     public function getUserProfile(SlackTeam $slackTeam, string $userId): ObjsUserProfile
     {
         $this->client->setSlackTeam($slackTeam);
-
-        return $this->client->usersInfo([
+        $usersInfo = $this->client->usersInfo([
             'user' => $userId,
-        ])->getUser()->getProfile();
+        ]);
+
+        return $usersInfo ? $usersInfo->getUser()->getProfile() : new ObjsUserProfile();
     }
 
     /**
@@ -75,8 +79,9 @@ class SlackDataSelector
     public function getUsers(SlackTeam $slackTeam): array
     {
         $this->client->setSlackTeam($slackTeam);
+        $usersList = $this->client->usersList();
 
-        return $this->client->usersList()->getMembers();
+        return $usersList ? $usersList->getMembers() : [];
     }
 
     /**
