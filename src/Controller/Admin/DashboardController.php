@@ -17,6 +17,7 @@ use App\Entity\HarvestAccount;
 use App\Entity\PublicForecast;
 use App\Entity\SlackCall;
 use App\Entity\SlackRequest;
+use App\Entity\SlackTeam;
 use App\Entity\StandupMeetingReminder;
 use App\Entity\User;
 use App\Entity\UserForecastAccount;
@@ -49,6 +50,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('Organizations');
         yield MenuItem::linkToCrud('Forecast organizations', 'fa fa-cloud-sun', ForecastAccount::class);
         yield MenuItem::linkToCrud('Harvest organizations', 'fa fa-tractor', HarvestAccount::class);
+        yield MenuItem::linkToCrud('Slack teams', 'fa fa-comment', SlackTeam::class);
         yield MenuItem::section('Accounts');
         yield MenuItem::linkToCrud('Users', 'fa fa-users', User::class);
         yield MenuItem::linkToCrud('Forecast accounts', 'fa fa-cloud-sun', UserForecastAccount::class);

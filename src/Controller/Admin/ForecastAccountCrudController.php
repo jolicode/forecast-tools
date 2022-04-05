@@ -23,12 +23,27 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 
 class ForecastAccountCrudController extends AbstractCrudController
 {
+    private $adminUrlGenerator;
+
+    public function __construct(AdminUrlGenerator $adminUrlGenerator)
+    {
+        $this->adminUrlGenerator = $adminUrlGenerator;
+    }
+
     public static function getEntityFqcn(): string
     {
         return ForecastAccount::class;
+    }
+
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->setPageTitle('index', 'Forecast organizations')
+        ;
     }
 
     public function configureFields(string $pageName): iterable
@@ -36,27 +51,42 @@ class ForecastAccountCrudController extends AbstractCrudController
         return [
             IdField::new('id'),
             TextField::new('name'),
-            IntegerField::new('forecastId')->onlyOnDetail(),
+            IntegerField::new('forecastId')
+                ->formatValue(function ($value): string {
+                    return sprintf('<a href="https://forecastapp.com/%s/schedule/team">%s</a>', $value, $value);
+                })->onlyOnDetail(),
+            AssociationField::new('harvestAccount'),
             AssociationField::new('userForecastAccounts', 'Users')->onlyOnIndex(),
             AssociationField::new('publicForecasts', 'Public forecasts')->onlyOnIndex(),
             AssociationField::new('invoicingProcesses', 'Invoicing processes')->onlyOnIndex(),
             AssociationField::new('forecastAccountSlackTeams', 'Slack teams')->onlyOnIndex(),
             CollectionField::new('userForecastAccounts', 'Users')
                 ->onlyOnDetail()
+                ->addCssClass('field-boolean')
                 ->formatValue(function ($value, $entity): string {
                     $formattedValue = [];
-                    $users = $entity->getUserForecastAccounts();
+                    $users = $entity->getUserForecastAccounts()->toArray();
+                    usort($users, function ($a, $b) {
+                        return strcmp($a->getUser()->getName(), $b->getUser()->getName());
+                    });
 
                     foreach ($users as $user) {
+                        $url = $this->adminUrlGenerator
+                            ->unsetAll()
+                            ->setController(UserCrudController::class)
+                            ->setAction(Action::DETAIL)
+                            ->setEntityId($user->getUser()->getId())
+                            ->generateUrl();
                         $formattedValue[] = sprintf(
-                            '%s%s%s',
+                            '<a href="%s">%s</a>%s%s',
+                            $url,
                             $user->getUser()->getName(),
-                            $user->getIsAdmin() ? ' (admin)' : '',
-                            !$user->getIsEnabled() ? ' (disabled)' : ''
+                            $user->getIsAdmin() ? '&nbsp;<span class="badge badge-boolean-true">admin</span>' : '',
+                            !$user->getIsEnabled() ? '&nbsp;<span class="badge badge-boolean-false">disabled</span>' : '',
                         );
                     }
 
-                    return implode(', ', $formattedValue);
+                    return implode('<br />', $formattedValue);
                 }),
             DateTimeField::new('createdAt')->onlyOnIndex(),
             BooleanField::new('allowNonAdmins', 'Allow non admins to create public forecasts')->hideOnIndex(),
@@ -100,6 +130,7 @@ class ForecastAccountCrudController extends AbstractCrudController
     {
         return $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
-            ->disable(Action::NEW, Action::EDIT);
+            ->disable(Action::NEW, Action::EDIT)
+        ;
     }
 }

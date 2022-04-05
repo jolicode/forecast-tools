@@ -23,9 +23,17 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 
 class UserCrudController extends AbstractCrudController
 {
+    private $adminUrlGenerator;
+
+    public function __construct(AdminUrlGenerator $adminUrlGenerator)
+    {
+        $this->adminUrlGenerator = $adminUrlGenerator;
+    }
+
     public static function getEntityFqcn(): string
     {
         return User::class;
@@ -37,8 +45,56 @@ class UserCrudController extends AbstractCrudController
             IdField::new('id')->hideOnForm(),
             TextField::new('name')
                 ->setFormTypeOptions(['disabled' => 'disabled']),
-            CollectionField::new('userForecastAccounts', 'Forecast')->onlyOnDetail(),
-            CollectionField::new('userHarvestAccounts', 'Harvest')->onlyOnDetail(),
+            CollectionField::new('userForecastAccounts', 'Forecast accounts')
+                ->onlyOnDetail()
+                ->addCssClass('field-boolean')
+                ->formatValue(function ($value, $entity): string {
+                    $formattedValue = [];
+                    $accounts = $entity->getUserForecastAccounts();
+
+                    foreach ($accounts as $account) {
+                        $url = $this->adminUrlGenerator
+                            ->unsetAll()
+                            ->setController(ForecastAccountCrudController::class)
+                            ->setAction(Action::DETAIL)
+                            ->setEntityId($account->getForecastAccount()->getId())
+                            ->generateUrl();
+                        $formattedValue[] = sprintf(
+                            '<a href="%s">%s</a>%s%s',
+                            $url,
+                            $account->getForecastAccount()->getName(),
+                            $account->getIsAdmin() ? '&nbsp;<span class="badge badge-boolean-true">admin</span>' : '',
+                            !$account->getIsEnabled() ? '&nbsp;<span class="badge badge-boolean-false">disabled</span>' : '',
+                        );
+                    }
+
+                    return implode('<br />', $formattedValue);
+                }),
+            CollectionField::new('userHarvestAccounts', 'Harvest accounts')
+                ->onlyOnDetail()
+                ->addCssClass('field-boolean')
+                ->formatValue(function ($value, $entity): string {
+                    $formattedValue = [];
+                    $accounts = $entity->getUserHarvestAccounts();
+
+                    foreach ($accounts as $account) {
+                        $url = $this->adminUrlGenerator
+                            ->unsetAll()
+                            ->setController(HarvestAccountCrudController::class)
+                            ->setAction(Action::DETAIL)
+                            ->setEntityId($account->getHarvestAccount()->getId())
+                            ->generateUrl();
+                        $formattedValue[] = sprintf(
+                            '<a href="%s">%s</a>%s%s',
+                            $url,
+                            $account->getHarvestAccount()->getName(),
+                            $account->getIsAdmin() ? '&nbsp;<span class="badge badge-boolean-true">admin</span>' : '',
+                            !$account->getIsEnabled() ? '&nbsp;<span class="badge badge-boolean-false">disabled</span>' : '',
+                        );
+                    }
+
+                    return implode('<br />', $formattedValue);
+                }),
             IntegerField::new('forecastId')->hideOnForm(),
             EmailField::new('email')
                 ->setFormTypeOptions(['disabled' => 'disabled']),
@@ -70,6 +126,7 @@ class UserCrudController extends AbstractCrudController
                     return implode(' ', $tmp);
                 }),
             BooleanField::new('isSuperAdmin'),
+            BooleanField::new('isEnabled'),
         ];
     }
 

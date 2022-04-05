@@ -21,12 +21,27 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 
 class HarvestAccountCrudController extends AbstractCrudController
 {
+    private $adminUrlGenerator;
+
+    public function __construct(AdminUrlGenerator $adminUrlGenerator)
+    {
+        $this->adminUrlGenerator = $adminUrlGenerator;
+    }
+
     public static function getEntityFqcn(): string
     {
         return HarvestAccount::class;
+    }
+
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->setPageTitle('index', 'Harvest organizations')
+        ;
     }
 
     public function configureFields(string $pageName): iterable
@@ -40,20 +55,31 @@ class HarvestAccountCrudController extends AbstractCrudController
             AssociationField::new('userHarvestAccounts', 'Users')->onlyOnIndex(),
             CollectionField::new('userHarvestAccounts', 'Users')
                 ->onlyOnDetail()
+                ->addCssClass('field-boolean')
                 ->formatValue(function ($value, $entity): string {
                     $formattedValue = [];
-                    $users = $entity->getUserHarvestAccounts();
+                    $users = $entity->getUserHarvestAccounts()->toArray();
+                    usort($users, function ($a, $b) {
+                        return strcmp($a->getUser()->getName(), $b->getUser()->getName());
+                    });
 
                     foreach ($users as $user) {
+                        $url = $this->adminUrlGenerator
+                            ->unsetAll()
+                            ->setController(UserCrudController::class)
+                            ->setAction(Action::DETAIL)
+                            ->setEntityId($user->getUser()->getId())
+                            ->generateUrl();
                         $formattedValue[] = sprintf(
-                            '%s%s%s',
+                            '<a href="%s">%s</a>%s%s',
+                            $url,
                             $user->getUser()->getName(),
-                            $user->getIsAdmin() ? ' (admin)' : '',
-                            !$user->getIsEnabled() ? ' (disabled)' : ''
+                            $user->getIsAdmin() ? '&nbsp;<span class="badge badge-boolean-true">admin</span>' : '',
+                            !$user->getIsEnabled() ? '&nbsp;<span class="badge badge-boolean-false">disabled</span>' : '',
                         );
                     }
 
-                    return implode(', ', $formattedValue);
+                    return implode('<br />', $formattedValue);
                 }),
             AssociationField::new('timesheetReminderSlackTeam', 'Send timesheet reminders to')
                 ->setTemplatePath('admin/fields/timesheet_reminder_slack_team.html.twig')
@@ -65,6 +91,7 @@ class HarvestAccountCrudController extends AbstractCrudController
     {
         return $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
-            ->disable(Action::NEW, Action::EDIT);
+            ->disable(Action::NEW, Action::EDIT)
+        ;
     }
 }

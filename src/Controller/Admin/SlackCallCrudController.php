@@ -52,6 +52,7 @@ class SlackCallCrudController extends AbstractCrudController
     {
         return $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
-            ->disable(Action::NEW, Action::DELETE, Action::EDIT);
+            ->disable(Action::NEW, Action::DELETE, Action::EDIT)
+        ;
     }
 }
