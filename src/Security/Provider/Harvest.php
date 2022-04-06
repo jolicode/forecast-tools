@@ -11,11 +11,16 @@
 
 namespace App\Security\Provider;
 
+use App\Exception\HarvestIdentityProviderException;
+use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
-use Nilesuan\OAuth2\Client\Provider\Harvest as BaseHarvestProvider;
+use League\OAuth2\Client\Tool\BearerAuthorizationTrait;
+use Psr\Http\Message\ResponseInterface;
 
-class Harvest extends BaseHarvestProvider
+class Harvest extends AbstractProvider
 {
+    use BearerAuthorizationTrait;
+
     public $domain = 'https://id.getharvest.com';
 
     public function getBaseAuthorizationUrl()
@@ -31,5 +36,33 @@ class Harvest extends BaseHarvestProvider
     public function getResourceOwnerDetailsUrl(AccessToken $token)
     {
         return $this->domain . '/api/v2/accounts';
+    }
+
+    public function getAuthenticatedRequest($method, $url, $token, array $options = [])
+    {
+        $options['headers'] = ['Content-Type' => 'application/json', 'Accept' => 'application/json'];
+
+        return $this->createRequest($method, $url, $token, $options);
+    }
+
+    protected function getDefaultScopes()
+    {
+        return [];
+    }
+
+    protected function checkResponse(ResponseInterface $response, $data)
+    {
+        if ($response->getStatusCode() >= 400) {
+            throw HarvestIdentityProviderException::clientException($response, $data);
+        } elseif (isset($data['error'])) {
+            throw HarvestIdentityProviderException::oauthException($response, $data);
+        }
+    }
+
+    protected function createResourceOwner(array $response, AccessToken $token)
+    {
+        $user = new HarvestResourceOwner($response);
+
+        return $user->setDomain($this->domain);
     }
 }

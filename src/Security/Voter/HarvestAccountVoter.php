@@ -28,13 +28,13 @@ class HarvestAccountVoter extends Voter
         $this->userHarvestAccountRepository = $userHarvestAccountRepository;
     }
 
-    protected function supports($attribute, $subject)
+    protected function supports(string $attribute, mixed $subject): bool
     {
         return \in_array($attribute, [self::ADMIN], true)
             && $subject instanceof \App\Entity\HarvestAccount;
     }
 
-    protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
+    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
         $user = $token->getUser();
 
