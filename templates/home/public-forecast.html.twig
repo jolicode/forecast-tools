@@ -10,11 +10,16 @@
     </head>
     <body>
         {% block body %}
-            <nav class="navbar navbar-expand-lg navbar-light px-3">
+            <nav class="navbar navbar-light px-3">
                 <a class="navbar-brand" href="{{ path('homepage') }}">⛅&nbsp;Forecast&nbsp;tools</a>
                 <div id="datepicker" class="d-flex flex-wrap flex-row align-items-center">
-                    <input type="text" name="daterange" class="form-control" value="{{ start|date("d/m/Y") }} - {{ end|date("d/m/Y") }}" />
-                    <button type="button" class="btn btn-primary ms-3 charts-switch">📊 show/hide charts</button>
+                    <div class="btn-toolbar me-3 mt-3" role="toolbar" aria-label="Toolbar with button groups">
+                        <div class="btn-group" role="group" aria-label="First group">
+                            <a href="{{ url('public_forecast_ical', { token: publicForecast.token }) }}" class="btn btn-success charts-switch">🗓 iCal</a>
+                            <button type="button" class="btn btn-primary charts-switch">📊 show/hide charts</button>
+                        </div>
+                    </div>
+                    <input type="text" name="daterange" class="form-control mt-3" value="{{ start|date("d/m/Y") }} - {{ end|date("d/m/Y") }}" />
                 </div>
             </nav>
 

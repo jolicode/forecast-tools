@@ -17,6 +17,7 @@
         "doctrine/orm": "^2.11",
         "dragonmantank/cron-expression": "^3.3",
         "easycorp/easyadmin-bundle": "^4.0",
+        "eluceo/ical": "^2.5",
         "jolicode/forecast-php-api": "^5.2",
         "jolicode/harvest-php-api": "^5.2",
         "jolicode/slack-php-api": "^4.5",

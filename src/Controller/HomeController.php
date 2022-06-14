@@ -15,6 +15,12 @@ use App\Entity\PublicForecast;
 use App\Forecast\Builder;
 use App\Repository\ForecastAccountRepository;
 use App\Repository\UserRepository;
+use Eluceo\iCal\Domain\Entity\Calendar;
+use Eluceo\iCal\Domain\Entity\Event;
+use Eluceo\iCal\Domain\ValueObject\Date;
+use Eluceo\iCal\Domain\ValueObject\SingleDay;
+use Eluceo\iCal\Domain\ValueObject\UniqueIdentifier;
+use Eluceo\iCal\Presentation\Factory\CalendarFactory;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,6 +28,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 class HomeController extends AbstractController
 {
@@ -53,6 +60,46 @@ class HomeController extends AbstractController
         }
 
         return $this->render('home/index.html.twig');
+    }
+
+    /**
+     * @Route("/forecast/{token}.ical", name="public_forecast_ical")
+     */
+    public function forecastIcal(Builder $forecastBuilder, PublicForecast $publicForecast, SluggerInterface $asciiSlugger)
+    {
+        $start = new \DateTime('-6 months');
+        $end = new \DateTime('+6 months');
+        $assignments = $forecastBuilder->buildAssignments($publicForecast, $start, $end);
+        $calendar = new Calendar();
+        $calendarFactory = new CalendarFactory();
+
+        foreach ($assignments['total']['users'] as $user) {
+            $username = $user['name'];
+
+            foreach ($user['days'] as $day => $duration) {
+                $event = (new Event(new UniqueIdentifier("forecast-tools/events/$username-$day")))
+                    ->setSummary($username)
+                    ->setOccurrence(new SingleDay(
+                        new Date(\DateTimeImmutable::createFromFormat('Y-m-d', $day))
+                    ))
+                ;
+
+                if ($duration < 1) {
+                    $event->setDescription(sprintf('%s day', $duration));
+                }
+
+                $calendar->addEvent($event);
+            }
+        }
+
+        return new Response(
+            $calendarFactory->createCalendar($calendar),
+            Response::HTTP_OK,
+            [
+                'content-type' => 'text/calendar; charset=utf-8',
+                'content-disposition' => sprintf('attachment; filename="%s.ics"', $asciiSlugger->slug($publicForecast->getName())),
+            ]
+        );
     }
 
     /**
