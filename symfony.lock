@@ -2,18 +2,6 @@
     "adam-paterson/oauth2-slack": {
         "version": "1.1.3"
     },
-    "antishov/doctrine-extensions-bundle": {
-        "version": "1.4",
-        "recipe": {
-            "repo": "github.com/symfony/recipes-contrib",
-            "branch": "master",
-            "version": "1.4",
-            "ref": "6c1ceb662f8997085f739cd089bfbef67f245983"
-        },
-        "files": [
-            "config/packages/stof_doctrine_extensions.yaml"
-        ]
-    },
     "behat/transliterator": {
         "version": "v1.2.0"
     },
@@ -158,12 +146,6 @@
     "guzzlehttp/psr7": {
         "version": "1.5.2"
     },
-    "ircmaxell/random-lib": {
-        "version": "v1.2.0"
-    },
-    "ircmaxell/security-lib": {
-        "version": "v1.1.0"
-    },
     "jane-php/json-schema-runtime": {
         "version": "v4.5.4"
     },
@@ -211,9 +193,6 @@
     },
     "nikic/php-parser": {
         "version": "v4.1.1"
-    },
-    "nilesuan/oauth2-harvest": {
-        "version": "1.2.0"
     },
     "nyholm/psr7": {
         "version": "1.5",
@@ -403,6 +382,18 @@
             "ref": "fb7e19da7f013d0d422fa9bce16f5c510e27609b"
         }
     },
+    "stof/doctrine-extensions-bundle": {
+        "version": "1.7",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "1.2",
+            "ref": "e805aba9eff5372e2d149a9ff56566769e22819d"
+        },
+        "files": [
+            "config/packages/stof_doctrine_extensions.yaml"
+        ]
+    },
     "symfony/asset": {
         "version": "v4.2.1"
     },
@@ -536,9 +527,6 @@
             "ref": "fadbfe33303a76e25cb63401050439aa9b1a9c7f"
         }
     },
-    "symfony/mime": {
-        "version": "v5.1.10"
-    },
     "symfony/monolog-bridge": {
         "version": "v4.2.1"
     },
@@ -581,9 +569,6 @@
     "symfony/polyfill-intl-icu": {
         "version": "v1.10.0"
     },
-    "symfony/polyfill-intl-idn": {
-        "version": "v1.10.0"
-    },
     "symfony/polyfill-intl-normalizer": {
         "version": "v1.18.0"
     },
@@ -592,9 +577,6 @@
     },
     "symfony/polyfill-php72": {
         "version": "v1.10.0"
-    },
-    "symfony/polyfill-php73": {
-        "version": "v1.13.1"
     },
     "symfony/polyfill-php80": {
         "version": "v1.17.1"
@@ -649,9 +631,6 @@
         "version": "v4.2.1"
     },
     "symfony/security-csrf": {
-        "version": "v4.2.1"
-    },
-    "symfony/security-guard": {
         "version": "v4.2.1"
     },
     "symfony/security-http": {

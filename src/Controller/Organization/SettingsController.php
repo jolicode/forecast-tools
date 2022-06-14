@@ -246,14 +246,14 @@ class SettingsController extends AbstractController
      * @IsGranted("admin", subject="forecastAccount")
      * @ParamConverter("forecastAccountSlackTeam", options={"id" = "forecastAccountSlackTeamId"})
      */
-    public function slackDelete(ForecastAccount $forecastAccount, ForecastAccountSlackTeam $forecastAccountSlackTeam, ForecastAccountSlackTeamRepository $forecastAccountSlackTeamRepository)
+    public function slackDelete(ForecastAccount $forecastAccount, ForecastAccountSlackTeam $forecastAccountSlackTeam, ForecastAccountSlackTeamRepository $forecastAccountSlackTeamRepository, EntityManagerInterface $em)
     {
         if ($forecastAccountSlackTeam->getForecastAccount() !== $forecastAccount) {
             throw new NotFoundHttpException('Could not find this Slack channel.');
         }
 
         $forecastAccountSlackTeamRepository->remove($forecastAccountSlackTeam);
-        $this->getDoctrine()->getManager()->flush();
+        $em->flush();
 
         return new RedirectResponse($this->router->generate('organization_settings_slack', [
             'slug' => $forecastAccount->getSlug(),

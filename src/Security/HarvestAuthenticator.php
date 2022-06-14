@@ -36,7 +36,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
-use Symfony\Component\Security\Http\Authenticator\Passport\PassportInterface;
+use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 
 class HarvestAuthenticator extends OAuth2Authenticator
@@ -108,14 +108,14 @@ class HarvestAuthenticator extends OAuth2Authenticator
         return $this->fetchAccessToken($this->getHarvestClient());
     }
 
-    public function authenticate(Request $request): PassportInterface
+    public function authenticate(Request $request): Passport
     {
         $client = $this->clientRegistry->getClient('harvest');
         $accessToken = $this->fetchAccessToken($client);
 
         return new SelfValidatingPassport(
             new UserBadge($accessToken->getToken(), function () use ($accessToken, $client): OAuthUser {
-                /** @var \Nilesuan\OAuth2\Client\Provider\HarvestResourceOwner $harvestUser */
+                /** @var \App\Security\Provider\HarvestResourceOwner $harvestUser */
                 $harvestUser = $client->fetchUserFromToken($accessToken);
 
                 $userData = $harvestUser->toArray();

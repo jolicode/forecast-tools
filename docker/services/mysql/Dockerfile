@@ -1,3 +1,3 @@
-FROM mariadb:10.4
+FROM mariadb:10.7
 
 ENV MYSQL_ALLOW_EMPTY_PASSWORD=1

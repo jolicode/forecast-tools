@@ -12,11 +12,11 @@
 namespace App\Security;
 
 use App\Entity\ForecastAccount;
+use App\Exception\HarvestIdentityProviderException;
 use App\Repository\ForecastAccountRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 use KnpU\OAuth2ClientBundle\Client\OAuth2ClientInterface;
-use Nilesuan\OAuth2\Client\Provider\Exception\HarvestIdentityProviderException;
 use Psr\Log\LoggerInterface;
 
 class HarvestTokenRefresher

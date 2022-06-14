@@ -59,7 +59,7 @@ class UniqueClientValidator extends ConstraintValidator
         }
     }
 
-    protected function formatValue($value, int $format = 0)
+    protected function formatValue(mixed $value, int $format = 0): string
     {
         $clients = $this->harvestDataSelector->getClientsById();
 
