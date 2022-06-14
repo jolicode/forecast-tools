@@ -4,7 +4,6 @@ import 'daterangepicker/daterangepicker.js';
 import '../css/forecast.scss';
 
 jQuery(function() {
-  console.log(jQuery.daterangepicker);
   jQuery('input[name="daterange"]').daterangepicker({
     opens: 'left',
     locale: {
