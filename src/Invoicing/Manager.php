@@ -181,7 +181,7 @@ class Manager
                     $harvestEntries = [];
                 }
 
-                $violations = $this->computeViolations($harvestEntries, $forecastEntries, $projects, ($date->format('N') >= 6));
+                $violations = $this->computeViolations($harvestEntries, $forecastEntries, $projects, $date->format('N') >= 6);
 
                 if (!$skipErrors) {
                     $totalViolations += $violations['violations']->count();

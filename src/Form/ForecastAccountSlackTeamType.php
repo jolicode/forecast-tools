@@ -22,11 +22,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ForecastAccountSlackTeamType extends AbstractType
 {
-    private $slackDataSelector;
-
-    public function __construct(SlackDataSelector $slackDataSelector)
+    public function __construct(private SlackDataSelector $slackDataSelector)
     {
-        $this->slackDataSelector = $slackDataSelector;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)

@@ -22,15 +22,14 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class HarvestSettingsType extends AbstractType
 {
-    private $harvestDataSelector;
-
-    public function __construct(HarvestDataSelector $harvestDataSelector)
+    public function __construct(private HarvestDataSelector $harvestDataSelector)
     {
-        $this->harvestDataSelector = $harvestDataSelector;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+        $enabledClients = $this->harvestDataSelector->getClientsForChoice(true);
+        $allClients = $this->harvestDataSelector->getClientsForChoice(null);
         $builder
             ->add('doNotCheckTimesheetsFor', ChoiceType::class, [
                 'choices' => $this->harvestDataSelector->getEnabledUsersForChoice(),
@@ -47,7 +46,8 @@ class HarvestSettingsType extends AbstractType
             ->add('invoiceDueDelayRequirements', CollectionType::class, [
                 'entry_type' => InvoiceDueDelayRequirementType::class,
                 'entry_options' => [
-                    'choices' => $this->harvestDataSelector->getEnabledClientsForChoice(),
+                    'enabledChoices' => $enabledClients,
+                    'allChoices' => $allClients,
                 ],
                 'allow_add' => true,
                 'allow_delete' => true,
@@ -58,7 +58,8 @@ class HarvestSettingsType extends AbstractType
             ->add('invoiceNotesRequirements', CollectionType::class, [
                 'entry_type' => InvoiceNotesRequirementType::class,
                 'entry_options' => [
-                    'choices' => $this->harvestDataSelector->getEnabledClientsForChoice(),
+                    'enabledChoices' => $enabledClients,
+                    'allChoices' => $allClients,
                 ],
                 'allow_add' => true,
                 'allow_delete' => true,

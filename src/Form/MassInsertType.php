@@ -31,20 +31,16 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class MassInsertType extends AbstractType
 {
-    private HarvestDataSelector $harvestDataSelector;
-
-    private ForecastDataSelector $forecastDataSelector;
-
-    public function __construct(ForecastDataSelector $forecastDataSelector, HarvestDataSelector $harvestDataSelector)
-    {
-        $this->forecastDataSelector = $forecastDataSelector;
-        $this->harvestDataSelector = $harvestDataSelector;
+    public function __construct(
+        private ForecastDataSelector $forecastDataSelector,
+        private HarvestDataSelector $harvestDataSelector
+    ) {
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $people = $this->forecastDataSelector->getEnabledPeopleForChoice();
-        $projects = $this->forecastDataSelector->getEnabledProjectsForChoice();
+        $people = $this->forecastDataSelector->getPeopleForChoice(true);
+        $projects = $this->forecastDataSelector->getProjectsForChoice(true);
         $builder
             ->add('project', ChoiceType::class, [
                 'choices' => $projects,

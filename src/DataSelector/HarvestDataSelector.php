@@ -99,13 +99,13 @@ class HarvestDataSelector
         });
     }
 
-    public function getEnabledClientsForChoice(): array
+    public function getClientsForChoice(?bool $enabled): array
     {
         $choices = [];
         $clients = $this->getClients();
 
-        foreach ($clients as $key => $client) {
-            if ($client->getIsActive()) {
+        foreach ($clients as $client) {
+            if (null === $enabled || $enabled === $client->getIsActive()) {
                 $choices[$client->getName()] = $client->getId();
             }
         }

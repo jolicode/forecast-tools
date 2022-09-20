@@ -25,11 +25,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class HarvestTimesheetsReminderType extends AbstractType
 {
-    private $harvestDataSelector;
-
-    public function __construct(HarvestDataSelector $harvestDataSelector)
+    public function __construct(private HarvestDataSelector $harvestDataSelector)
     {
-        $this->harvestDataSelector = $harvestDataSelector;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)

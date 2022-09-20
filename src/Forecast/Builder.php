@@ -16,6 +16,7 @@ use App\DataSelector\ForecastDataSelector;
 use App\Entity\ForecastAccount;
 use App\Entity\PublicForecast;
 use JoliCode\Forecast\Api\Model\Person;
+
 use function Symfony\Component\String\u;
 
 class Builder
@@ -242,6 +243,7 @@ class Builder
         }
 
         uasort($userAssignments, function ($a, $b): int {
+            /* @phpstan-ignore-next-line */
             if ($a['firstDay'] === $b['firstDay']) {
                 if (u($a['client'])->folded() === u($b['client'])->folded()) {
                     return strcmp(u($a['project']->getName())->folded(), u($b['project']->getName())->folded());
@@ -250,6 +252,7 @@ class Builder
                 return strcmp(u($a['client'])->folded(), u($b['client'])->folded());
             }
 
+            /* @phpstan-ignore-next-line */
             return strcmp($a['firstDay'], $b['firstDay']);
         });
 

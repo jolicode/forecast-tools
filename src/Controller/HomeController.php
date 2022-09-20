@@ -77,7 +77,11 @@ class HomeController extends AbstractController
             $username = $user['name'];
 
             foreach ($user['days'] as $day => $duration) {
-                $event = (new Event(new UniqueIdentifier("forecast-tools/events/$username-$day")))
+                $event = (new Event(new UniqueIdentifier(sprintf(
+                    'forecast-tools/events/%s-%s',
+                    $asciiSlugger->slug($username),
+                    $day
+                ))))
                     ->setSummary($username)
                     ->setOccurrence(new SingleDay(
                         new Date(\DateTimeImmutable::createFromFormat('Y-m-d', $day))
