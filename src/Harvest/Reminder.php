@@ -22,6 +22,7 @@ use JoliCode\Forecast\Api\Model\Assignment;
 use JoliCode\Harvest\Api\Model\TimeEntriesPostBody;
 use JoliCode\Harvest\Api\Model\TimeEntry;
 use JoliCode\Harvest\Api\Model\User as HarvestUser;
+
 use function Symfony\Component\String\u;
 
 class Reminder

@@ -102,7 +102,7 @@ class UserCrudController extends AbstractCrudController
             IntegerField::new('expires', 'Token expiration')
                 ->hideOnForm()
                 ->formatValue(function ($value): string {
-                    $interval = ((new \DateTime())->setTimestamp($value))->diff(new \DateTime());
+                    $interval = (new \DateTime())->setTimestamp($value)->diff(new \DateTime());
                     $mapping = [
                         ['y', 'y'],
                         ['m', 'm'],
