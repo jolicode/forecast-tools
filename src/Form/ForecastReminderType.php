@@ -21,22 +21,23 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ForecastReminderType extends AbstractType
 {
-    private $forecastDataSelector;
-
-    public function __construct(ForecastDataSelector $forecastDataSelector)
+    public function __construct(private ForecastDataSelector $forecastDataSelector)
     {
-        $this->forecastDataSelector = $forecastDataSelector;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         if (true === $options['hasSlackTeams']) {
-            $clients = $this->forecastDataSelector->getEnabledClientsForChoice();
-            $projects = $this->forecastDataSelector->getEnabledProjectsForChoice();
-            $users = $this->forecastDataSelector->getEnabledPeopleForChoice();
+            $enabledClients = $this->forecastDataSelector->getClientsForChoice(true);
+            $allClients = $this->forecastDataSelector->getClientsForChoice(null);
+            $enabledProjects = $this->forecastDataSelector->getProjectsForChoice(true);
+            $allProjects = $this->forecastDataSelector->getProjectsForChoice(null);
+            $users = $this->forecastDataSelector->getPeopleForChoice(true);
         } else {
-            $clients = [];
-            $projects = [];
+            $enabledClients = [];
+            $allClients = [];
+            $enabledProjects = [];
+            $allProjects = [];
             $users = [];
         }
 
@@ -51,7 +52,7 @@ class ForecastReminderType extends AbstractType
                 'help' => 'Type here the text to display when a user is assigned one of the "time off projects".',
             ])
             ->add('timeOffProjects', ChoiceType::class, [
-                'choices' => $projects,
+                'choices' => $enabledProjects,
                 'required' => false,
                 'multiple' => true,
                 'help' => 'Please choose here time off projects. They will display as configured in the "Time-off activity name" field.',
@@ -59,7 +60,8 @@ class ForecastReminderType extends AbstractType
             ->add('clientOverrides', CollectionType::class, [
                 'entry_type' => ClientOverrideType::class,
                 'entry_options' => [
-                    'choices' => $clients,
+                    'enabledClients' => $enabledClients,
+                    'allClients' => $allClients,
                 ],
                 'allow_add' => true,
                 'allow_delete' => true,
@@ -69,7 +71,8 @@ class ForecastReminderType extends AbstractType
             ->add('projectOverrides', CollectionType::class, [
                 'entry_type' => ProjectOverrideType::class,
                 'entry_options' => [
-                    'choices' => $projects,
+                    'enabledProjects' => $enabledProjects,
+                    'allProjects' => $allProjects,
                 ],
                 'allow_add' => true,
                 'allow_delete' => true,

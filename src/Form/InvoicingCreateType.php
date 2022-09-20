@@ -22,11 +22,8 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class InvoicingCreateType extends AbstractType
 {
-    private $invoicingProcessRepository;
-
-    public function __construct(InvoicingProcessRepository $invoicingProcessRepository)
+    public function __construct(private InvoicingProcessRepository $invoicingProcessRepository)
     {
-        $this->invoicingProcessRepository = $invoicingProcessRepository;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
