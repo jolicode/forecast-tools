@@ -73,28 +73,30 @@ class ForecastDataSelector
     /**
      * @return Client[]
      */
-    public function getClients(): array
+    public function getClients(?bool $enabled = null): array
     {
-        return $this->client->listClients('clients')->getClients();
+        $clients = $this->client->listClients('clients')->getClients();
+
+        return array_filter($clients, function (Client $client) use ($enabled) {
+            return null === $enabled || $enabled !== $client->getArchived();
+        });
     }
 
     /**
      * @return Client[]
      */
-    public function getClientsById(): array
+    public function getClientsById(?bool $enabled = null): array
     {
-        return self::makeLookup($this->getClients());
+        return self::makeLookup($this->getClients($enabled));
     }
 
-    public function getEnabledClientsForChoice(): array
+    public function getClientsForChoice(?bool $enabled = null): array
     {
         $choices = [];
-        $clients = $this->getClients();
+        $clients = $this->getClients($enabled);
 
-        foreach ($clients as $key => $client) {
-            if (!$client->getArchived()) {
-                $choices[$client->getName()] = $client->getId();
-            }
+        foreach ($clients as $client) {
+            $choices[$client->getName()] = $client->getId();
         }
 
         ksort($choices);
@@ -102,10 +104,10 @@ class ForecastDataSelector
         return $choices;
     }
 
-    public function getEnabledPeopleForChoice(): array
+    public function getPeopleForChoice(?bool $enabled = null): array
     {
         $choices = [];
-        $people = $this->getPeople();
+        $people = $this->getPeople($enabled);
 
         foreach ($people as $person) {
             $choices[sprintf('%s %s', $person->getFirstName(), $person->getLastName())] = $person->getId();
@@ -116,10 +118,10 @@ class ForecastDataSelector
         return $choices;
     }
 
-    public function getEnabledPlaceholderForChoice(): array
+    public function getPlaceholderForChoice(?bool $enabled = null): array
     {
         $choices = [];
-        $placeholders = $this->getPlaceholders();
+        $placeholders = $this->getPlaceholders($enabled);
 
         foreach ($placeholders as $placeholder) {
             $choices[$placeholder->getName()] = $placeholder->getId();
@@ -130,11 +132,11 @@ class ForecastDataSelector
         return $choices;
     }
 
-    public function getEnabledProjectsForChoice(): array
+    public function getProjectsForChoice(?bool $enabled = null): array
     {
         $choices = [];
         $clients = $this->getClientsById();
-        $projects = $this->getProjects(true);
+        $projects = $this->getProjects($enabled);
 
         foreach ($projects as $project) {
             if (isset($clients[$project->getClientId()])) {
@@ -158,70 +160,59 @@ class ForecastDataSelector
     /**
      * @return Person[]
      */
-    public function getPeople(): array
+    public function getPeople(?bool $enabled = null): array
     {
         $people = $this->client->listPeople('people')->getPeople();
 
-        return array_filter($people, function (Person $item): bool {
-            return !$item->getArchived();
+        return array_filter($people, function (Person $person) use ($enabled) {
+            return null === $enabled || $enabled !== $person->getArchived();
         });
     }
 
     /**
-     * @param mixed|null $methodName
-     *
      * @return Person[]
      */
-    public function getPeopleById($methodName = null): array
+    public function getPeopleById(?string $methodName = null, ?bool $enabled = null): array
     {
-        return self::makeLookup($this->getPeople(), $methodName);
+        return self::makeLookup($this->getPeople($enabled), $methodName);
     }
 
     /**
      * @return Placeholder[]
      */
-    public function getPlaceholders(): array
+    public function getPlaceholders(?bool $enabled = null): array
     {
-        return $this->client->listPlaceholders('placeholders')->getPlaceholders();
+        $placeholders = $this->client->listPlaceholders('placeholders')->getPlaceholders();
+
+        return array_filter($placeholders, function (Placeholder $placeholder) use ($enabled) {
+            return null === $enabled || $enabled !== $placeholder->getArchived();
+        });
     }
 
     /**
-     * @param mixed|null $methodName
-     *
      * @return Placeholder[]
      */
-    public function getPlaceholdersById($methodName = null): array
+    public function getPlaceholdersById(?string $methodName = null, ?bool $enabled = null): array
     {
-        return self::makeLookup($this->getPlaceholders(), $methodName);
+        return self::makeLookup($this->getPlaceholders($enabled), $methodName);
     }
 
     /**
-     * @param mixed|null $enabled
-     *
      * @return Project[]
      */
-    public function getProjects($enabled = null): array
+    public function getProjects(?bool $enabled = null): array
     {
         $projects = $this->client->listProjects('projects')->getProjects();
 
-        if (null !== $enabled) {
-            foreach ($projects as $key => $project) {
-                if (!($enabled xor $project->getArchived())) {
-                    unset($projects[$key]);
-                }
-            }
-        }
-
-        return $projects;
+        return array_filter($projects, function (Project $project) use ($enabled) {
+            return null === $enabled || $enabled !== $project->getArchived();
+        });
     }
 
     /**
-     * @param mixed|null $enabled
-     * @param mixed|null $methodName
-     *
      * @return Project[]
      */
-    public function getProjectsById($methodName = null, $enabled = null): array
+    public function getProjectsById(?string $methodName = null, ?bool $enabled = null): array
     {
         return self::makeLookup($this->getProjects($enabled), $methodName);
     }
@@ -233,7 +224,7 @@ class ForecastDataSelector
         return $this;
     }
 
-    private static function makeLookup($struct, $methodName = null): array
+    private static function makeLookup($struct, ?string $methodName = null): array
     {
         if (null === $methodName) {
             $methodName = 'getId';
