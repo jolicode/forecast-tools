@@ -21,27 +21,29 @@ use JoliCode\Forecast\Api\Model\Project;
 
 class Builder
 {
-    protected PersonToWorkingDaysConverter $personToWorkingDaysConverter;
-    protected ForecastReminder $forecastReminder;
-    protected $client;
-    protected $clientOverrides;
-    protected $projectOverrides;
+    private ForecastReminder $forecastReminder;
+    private $client;
+    private array $clientOverrides = [];
+    private array $projectOverrides = [];
 
     /** @var Assignment[] */
-    protected $assignments;
+    private array $assignments = [];
 
     /** @var Client[] */
-    protected $clients;
+    private array $clients = [];
 
     /** @var Project[] */
-    protected $projects;
+    private array $projects = [];
 
     /** @var Person[] */
-    protected $users;
+    private array $users = [];
 
-    public function __construct(PersonToWorkingDaysConverter $personToWorkingDaysConverter)
+    private bool $oneLineWithOverride = false;
+
+    private bool $oneLineWithoutOverride = false;
+
+    public function __construct(private PersonToWorkingDaysConverter $personToWorkingDaysConverter)
     {
-        $this->personToWorkingDaysConverter = $personToWorkingDaysConverter;
     }
 
     public function setForecastReminder(ForecastReminder $forecastReminder)
@@ -60,6 +62,8 @@ class Builder
     {
         $report = [];
         $result = [];
+        $this->oneLineWithOverride = false;
+        $this->oneLineWithoutOverride = false;
 
         if (null === $start) {
             $start = new \DateTime('+1 day');
@@ -126,6 +130,11 @@ class Builder
         );
     }
 
+    public function mayNeedMoreOverrides(): bool
+    {
+        return $this->oneLineWithOverride && $this->oneLineWithoutOverride;
+    }
+
     private static function makeLookup($struct, $methodName = 'getId')
     {
         $lookup = [];
@@ -184,14 +193,20 @@ class Builder
 
         $activities = array_unique(array_map(function ($activity) {
             if (isset($this->projectOverrides[$activity->getProjectId()])) {
+                $this->oneLineWithOverride = true;
+
                 return $this->projectOverrides[$activity->getProjectId()];
             }
 
             $project = $this->projects[$activity->getProjectId()];
 
             if (isset($this->clientOverrides[$project->getClientId()])) {
+                $this->oneLineWithOverride = true;
+
                 return $this->clientOverrides[$project->getClientId()];
             }
+
+            $this->oneLineWithoutOverride = true;
 
             if ((null !== $project->getClientId()) && \array_key_exists($project->getClientId(), $this->clients)) {
                 $client = $this->clients[$project->getClientId()];
@@ -274,21 +289,6 @@ class Builder
         }
 
         return $activity->getEndDate();
-    }
-
-    private function getWorkingDays($user)
-    {
-        $weeklyDays = $user->getWorkingDays();
-
-        return array_flip(array_filter([
-            '1' => $weeklyDays->getMonday(),
-            '2' => $weeklyDays->getTuesday(),
-            '3' => $weeklyDays->getWednesday(),
-            '4' => $weeklyDays->getThursday(),
-            '5' => $weeklyDays->getFriday(),
-            '6' => $weeklyDays->getSaturday(),
-            '7' => $weeklyDays->getSunday(),
-        ]));
     }
 
     private function isTimeOffActivity($activity)

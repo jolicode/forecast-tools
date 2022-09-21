@@ -16,23 +16,20 @@ use App\Entity\ForecastReminder;
 use App\Repository\ForecastReminderRepository;
 use App\Slack\Sender as SlackSender;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class Handler
 {
     public const SLACK_COMMAND_NAME = '/forecast';
     public const SLACK_COMMAND_OPTION_HELP = 'help';
 
-    private Builder $builder;
-    private ForecastReminderRepository $forecastReminderRepository;
-    private SlackSender $slackSender;
-    private WordToNumberConverter $wordToNumberConverter;
-
-    public function __construct(Builder $builder, ForecastReminderRepository $forecastReminderRepository, SlackSender $slackSender, WordToNumberConverter $wordToNumberConverter)
-    {
-        $this->builder = $builder;
-        $this->forecastReminderRepository = $forecastReminderRepository;
-        $this->slackSender = $slackSender;
-        $this->wordToNumberConverter = $wordToNumberConverter;
+    public function __construct(
+        private Builder $builder,
+        private ForecastReminderRepository $forecastReminderRepository,
+        private SlackSender $slackSender,
+        private WordToNumberConverter $wordToNumberConverter,
+        private UrlGeneratorInterface $urlGenerator
+    ) {
     }
 
     public function handleRequest(Request $request)
@@ -65,7 +62,7 @@ class Handler
             $message = 'An error occured, could not compute the forecast.';
         }
 
-        return [
+        $blocks = [
             'blocks' => [
                 [
                     'type' => 'section',
@@ -84,6 +81,25 @@ class Handler
             ],
             'replace_original' => true,
         ];
+
+        if ($this->builder->mayNeedMoreOverrides()) {
+            $blocks['blocks'][] = [
+                'type' => 'context',
+                'elements' => [[
+                    'type' => 'mrkdwn',
+                    'text' => sprintf(
+                        'Missing an override? <%s|Add it in Forecast tools!>',
+                        $this->urlGenerator->generate(
+                            'organization_reminder_index',
+                            ['slug' => $forecastReminder->getForecastAccount()->getSlug()],
+                            UrlGeneratorInterface::ABSOLUTE_URL
+                        )
+                    ),
+                ]],
+            ];
+        }
+
+        return $blocks;
     }
 
     private function extractStartDateFromtext(string $text): \DateTime

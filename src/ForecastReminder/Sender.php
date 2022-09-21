@@ -23,30 +23,20 @@ use JoliCode\Slack\Exception\SlackErrorResponse;
 
 class Sender
 {
-    private $botName;
-    private Builder $builder;
-    private EntityManagerInterface $em;
-    private ForecastAccountSlackTeamRepository $forecastAccountSlackTeamRepository;
-    private ForecastReminderRepository $forecastReminderRepository;
-    private Client $bugsnagClient;
+    private string $botName;
 
     public function __construct(
-        Builder $builder,
-        EntityManagerInterface $em,
-        ForecastAccountSlackTeamRepository $forecastAccountSlackTeamRepository,
-        ForecastReminderRepository $forecastReminderRepository,
-        Client $bugsnagClient)
-    {
-        $this->builder = $builder;
-        $this->em = $em;
-        $this->forecastAccountSlackTeamRepository = $forecastAccountSlackTeamRepository;
-        $this->forecastReminderRepository = $forecastReminderRepository;
-        $this->bugsnagClient = $bugsnagClient;
-    }
-
-    public function send()
+        private Builder $builder,
+        private EntityManagerInterface $em,
+        private ForecastAccountSlackTeamRepository $forecastAccountSlackTeamRepository,
+        private ForecastReminderRepository $forecastReminderRepository,
+        private Client $bugsnagClient)
     {
         $this->botName = $this->getFunnyBotName();
+    }
+
+    public function send(): int
+    {
         $forecastReminders = $this->forecastReminderRepository->findAll();
         $forecastRemindersCount = 0;
 
@@ -72,7 +62,7 @@ class Sender
         return $forecastRemindersCount;
     }
 
-    private function sendForecastReminder(ForecastReminder $forecastReminder)
+    private function sendForecastReminder(ForecastReminder $forecastReminder): void
     {
         $forecastAccountSlackTeams = $forecastReminder->getForecastAccount()->getForecastAccountSlackTeams();
 
