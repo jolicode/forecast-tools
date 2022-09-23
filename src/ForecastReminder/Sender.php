@@ -30,8 +30,8 @@ class Sender
         private EntityManagerInterface $em,
         private ForecastAccountSlackTeamRepository $forecastAccountSlackTeamRepository,
         private ForecastReminderRepository $forecastReminderRepository,
-        private Client $bugsnagClient)
-    {
+        private Client $bugsnagClient,
+    ) {
         $this->botName = $this->getFunnyBotName();
     }
 
@@ -67,12 +67,9 @@ class Sender
         $forecastAccountSlackTeams = $forecastReminder->getForecastAccount()->getForecastAccountSlackTeams();
 
         if (\count($forecastAccountSlackTeams) > 0) {
-            $this->builder->setForecastReminder($forecastReminder);
-            $message = $this->builder->buildMessage();
+            $payload = $this->builder->buildBlocks($forecastReminder);
 
-            if (false !== $message) {
-                $title = $this->builder->buildTitle();
-
+            if (true === $payload['successful']) {
                 foreach ($forecastAccountSlackTeams as $forecastAccountSlackTeam) {
                     if (null !== $forecastAccountSlackTeam->getChannelId()) {
                         try {
@@ -82,22 +79,7 @@ class Sender
                             $slackClient->chatPostMessage([
                                 'channel' => $forecastAccountSlackTeam->getChannelId(),
                                 'username' => $this->botName,
-                                'blocks' => json_encode([
-                                    [
-                                        'type' => 'section',
-                                        'text' => [
-                                            'type' => 'mrkdwn',
-                                            'text' => $title,
-                                        ],
-                                    ],
-                                    [
-                                        'type' => 'section',
-                                        'text' => [
-                                            'type' => 'mrkdwn',
-                                            'text' => $message,
-                                        ],
-                                    ],
-                                ]),
+                                'blocks' => json_encode($payload['blocks']),
                             ]);
                             $forecastAccountSlackTeam->setErrorsCount(0);
                             $forecastReminder->setLastTimeSentAt(new \DateTime());
