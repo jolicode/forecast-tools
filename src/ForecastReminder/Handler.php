@@ -16,7 +16,6 @@ use App\Entity\ForecastReminder;
 use App\Repository\ForecastReminderRepository;
 use App\Slack\Sender as SlackSender;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class Handler
 {
@@ -28,7 +27,6 @@ class Handler
         private ForecastReminderRepository $forecastReminderRepository,
         private SlackSender $slackSender,
         private WordToNumberConverter $wordToNumberConverter,
-        private UrlGeneratorInterface $urlGenerator
     ) {
     }
 
@@ -54,50 +52,9 @@ class Handler
     public function buildReminder(ForecastReminder $forecastReminder, ?string $text = ''): array
     {
         $startDate = $this->extractStartDateFromtext($text);
-        $this->builder->setForecastReminder($forecastReminder);
-        $title = $this->builder->buildTitle($startDate);
-        $message = $this->builder->buildMessage($startDate);
-
-        if (false === $message) {
-            $message = 'An error occured, could not compute the forecast.';
-        }
-
-        $blocks = [
-            'blocks' => [
-                [
-                    'type' => 'section',
-                    'text' => [
-                        'type' => 'mrkdwn',
-                        'text' => $title,
-                    ],
-                ],
-                [
-                    'type' => 'section',
-                    'text' => [
-                        'type' => 'mrkdwn',
-                        'text' => $message,
-                    ],
-                ],
-            ],
-            'replace_original' => true,
-        ];
-
-        if ($this->builder->mayNeedMoreOverrides()) {
-            $blocks['blocks'][] = [
-                'type' => 'context',
-                'elements' => [[
-                    'type' => 'mrkdwn',
-                    'text' => sprintf(
-                        'Missing an override? <%s|Add it in Forecast tools!>',
-                        $this->urlGenerator->generate(
-                            'organization_reminder_index',
-                            ['slug' => $forecastReminder->getForecastAccount()->getSlug()],
-                            UrlGeneratorInterface::ABSOLUTE_URL
-                        )
-                    ),
-                ]],
-            ];
-        }
+        $blocks = $this->builder->buildBlocks($forecastReminder, $startDate);
+        unset($blocks['successful']);
+        $blocks['replace_original'] = true;
 
         return $blocks;
     }

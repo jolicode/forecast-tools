@@ -18,6 +18,7 @@ use JoliCode\Forecast\Api\Model\Client;
 use JoliCode\Forecast\Api\Model\Error;
 use JoliCode\Forecast\Api\Model\Person;
 use JoliCode\Forecast\Api\Model\Project;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class Builder
 {
@@ -42,23 +43,66 @@ class Builder
 
     private bool $oneLineWithoutOverride = false;
 
-    public function __construct(private PersonToWorkingDaysConverter $personToWorkingDaysConverter)
-    {
+    public function __construct(
+        private PersonToWorkingDaysConverter $personToWorkingDaysConverter,
+        private UrlGeneratorInterface $urlGenerator
+    ) {
     }
 
-    public function setForecastReminder(ForecastReminder $forecastReminder)
+    public function buildBlocks(ForecastReminder $forecastReminder, \DateTime $start = null): array
     {
-        $this->forecastReminder = $forecastReminder;
-        $this->clientOverrides = self::makeLookup($forecastReminder->getClientOverrides(), 'getClientId');
-        $this->projectOverrides = self::makeLookup($forecastReminder->getProjectOverrides(), 'getProjectId');
-        $account = $forecastReminder->getForecastAccount();
-        $this->client = \JoliCode\Forecast\ClientFactory::create(
-            $account->getAccessToken(),
-            (string) $account->getForecastId()
-        );
+        $this->setForecastReminder($forecastReminder);
+        $title = $this->buildTitle($start);
+        $message = $this->buildMessage($start);
+
+        if (null === $message) {
+            $message = 'An error occured, could not compute the forecast.';
+            $successful = false;
+        } else {
+            $successful = true;
+        }
+
+        $payload = [
+            'blocks' => [
+                [
+                    'type' => 'section',
+                    'text' => [
+                        'type' => 'mrkdwn',
+                        'text' => $title,
+                    ],
+                ],
+                [
+                    'type' => 'section',
+                    'text' => [
+                        'type' => 'mrkdwn',
+                        'text' => $message,
+                    ],
+                ],
+            ],
+            'successful' => $successful,
+        ];
+
+        if ($this->mayNeedMoreOverrides()) {
+            $payload['blocks'][] = [
+                'type' => 'context',
+                'elements' => [[
+                    'type' => 'mrkdwn',
+                    'text' => sprintf(
+                        'Missing an override? <%s|Add it in Forecast tools!>',
+                        $this->urlGenerator->generate(
+                            'organization_reminder_index',
+                            ['slug' => $this->forecastReminder->getForecastAccount()->getSlug()],
+                            UrlGeneratorInterface::ABSOLUTE_URL
+                        )
+                    ),
+                ]],
+            ];
+        }
+
+        return $payload;
     }
 
-    public function buildMessage(\DateTime $start = null)
+    private function buildMessage(\DateTime $start = null): ?string
     {
         $report = [];
         $result = [];
@@ -78,7 +122,7 @@ class Builder
         ];
 
         if (!$this->fetchData($options)) {
-            return false;
+            return null;
         }
 
         $longuestNameLength = 0;
@@ -116,7 +160,7 @@ class Builder
         return implode("\n", $result);
     }
 
-    public function buildTitle(\DateTime $startDate = null)
+    private function buildTitle(\DateTime $startDate = null): string
     {
         if (null === $startDate) {
             $startDate = new \DateTime('+1 day');
@@ -128,22 +172,6 @@ class Builder
             $this->forecastReminder->getForecastAccount()->getForecastId(),
             $this->forecastReminder->getForecastAccount()->getName()
         );
-    }
-
-    public function mayNeedMoreOverrides(): bool
-    {
-        return $this->oneLineWithOverride && $this->oneLineWithoutOverride;
-    }
-
-    private static function makeLookup($struct, $methodName = 'getId')
-    {
-        $lookup = [];
-
-        foreach ($struct as $data) {
-            $lookup[\call_user_func([$data, $methodName])] = $data;
-        }
-
-        return $lookup;
     }
 
     private function fetchData($options): bool
@@ -294,5 +322,33 @@ class Builder
     private function isTimeOffActivity($activity)
     {
         return \in_array($activity->getProjectId(), $this->forecastReminder->getTimeOffProjects(), true);
+    }
+
+    private static function makeLookup($struct, $methodName = 'getId')
+    {
+        $lookup = [];
+
+        foreach ($struct as $data) {
+            $lookup[\call_user_func([$data, $methodName])] = $data;
+        }
+
+        return $lookup;
+    }
+
+    private function mayNeedMoreOverrides(): bool
+    {
+        return $this->oneLineWithOverride && $this->oneLineWithoutOverride;
+    }
+
+    private function setForecastReminder(ForecastReminder $forecastReminder)
+    {
+        $this->forecastReminder = $forecastReminder;
+        $this->clientOverrides = self::makeLookup($forecastReminder->getClientOverrides(), 'getClientId');
+        $this->projectOverrides = self::makeLookup($forecastReminder->getProjectOverrides(), 'getProjectId');
+        $account = $forecastReminder->getForecastAccount();
+        $this->client = \JoliCode\Forecast\ClientFactory::create(
+            $account->getAccessToken(),
+            (string) $account->getForecastId()
+        );
     }
 }

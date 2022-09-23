@@ -19,11 +19,6 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class OAuthUserProvider extends BaseOAuthUserProvider
 {
-    public function loadUserByIdentifier($username): UserInterface
-    {
-        return $this->loadUserByUsername($username);
-    }
-
     public function refreshUser(UserInterface $user): UserInterface
     {
         if (!$user instanceof OAuthUser && !$user instanceof BaseOAuthUser) {
