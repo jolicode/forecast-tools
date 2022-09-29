@@ -6,6 +6,9 @@
 parameters:
     locale: 'en'
 
+    router.request_context.host: "%env(resolve:APP_DOMAIN)%"
+    router.request_context.scheme: "%env(resolve:APP_SCHEME)%"
+
 services:
     # default configuration for services in *this* file
     _defaults:
