@@ -133,7 +133,7 @@ class Manager
         $diff = [];
         $totalViolations = 0;
         $period = $this->buildDatesRange($invoicingProcess);
-        $rawUsers = $this->forecastDataSelector->getPeople();
+        $rawUsers = $this->forecastDataSelector->getPeople(true);
         $rawTimeEntries = $this->harvestDataSelector->getUserTimeEntries(
             $invoicingProcess->getBillingPeriodStart(),
             $invoicingProcess->getBillingPeriodEnd()
