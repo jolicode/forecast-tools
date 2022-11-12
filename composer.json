@@ -19,7 +19,7 @@
         "easycorp/easyadmin-bundle": "^4.0",
         "eluceo/ical": "^2.5",
         "jolicode/forecast-php-api": "^6.0",
-        "jolicode/harvest-php-api": "^6.0",
+        "jolicode/harvest-php-api": "^6.1",
         "jolicode/slack-php-api": "^4.5",
         "knpuniversity/oauth2-client-bundle": "^2.10",
         "nyholm/psr7": "^1.5",
