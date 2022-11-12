@@ -722,7 +722,7 @@ class Reminder
         $users = $this->harvestDataSelector->getEnabledUsers();
 
         foreach ($users as $user) {
-            if ($user->getIsAdmin() && isset($slackUsers[$user->getEmail()])) {
+            if (\in_array('administrator', $user->getAccessRoles(), true) && isset($slackUsers[$user->getEmail()])) {
                 $ids[] = $slackUsers[$user->getEmail()]->getId();
             }
         }
