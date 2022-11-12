@@ -242,7 +242,7 @@ class HarvestAuthenticator extends OAuth2Authenticator
             $userHarvestAccount->setUser($user);
         }
 
-        $userHarvestAccount->setIsAdmin(\in_array('administrator', $harvestUser->getAccessRoles()));
+        $userHarvestAccount->setIsAdmin(\in_array('administrator', $harvestUser->getAccessRoles(), true));
         $userHarvestAccount->setIsEnabled($harvestUser->getIsActive());
         $harvestAccount->setAccessToken($user->getAccessToken());
         $harvestAccount->setRefreshToken($user->getRefreshToken());
