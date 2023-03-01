@@ -14,65 +14,45 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\PublicForecastRepository")
- */
+#[ORM\Entity(repositoryClass: \App\Repository\PublicForecastRepository::class)]
 class PublicForecast
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\ForecastAccount", inversedBy="publicForecasts")
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     */
-    private $forecastAccount;
+    #[ORM\ManyToOne(targetEntity: ForecastAccount::class, inversedBy: 'publicForecasts')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ForecastAccount $forecastAccount;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $token;
+
+    #[ORM\Column(type: 'array', nullable: true)]
+    private ?array $clients = [];
+
+    #[ORM\Column(type: 'array', nullable: true)]
+    private ?array $projects = [];
+
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'publicForecasts')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?User $createdBy = null;
 
     /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $token;
-
-    /**
-     * @ORM\Column(type="array", nullable=true)
-     */
-    private $clients = [];
-
-    /**
-     * @ORM\Column(type="array", nullable=true)
-     */
-    private $projects = [];
-
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="publicForecasts")
-     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
-     */
-    private $createdBy;
-
-    /**
-     * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
      */
-    private $createdAt;
+    #[ORM\Column(type: 'datetime')]
+    private \DateTimeInterface $createdAt;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $name;
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $name;
 
-    /**
-     * @ORM\Column(type="array", nullable=true)
-     */
-    private $people = [];
+    #[ORM\Column(type: 'array', nullable: true)]
+    private ?array $people = [];
 
-    /**
-     * @ORM\Column(type="array", nullable=true)
-     */
-    private $placeholders = [];
+    #[ORM\Column(type: 'array', nullable: true)]
+    private ?array $placeholders = [];
 
     public function getId(): ?int
     {

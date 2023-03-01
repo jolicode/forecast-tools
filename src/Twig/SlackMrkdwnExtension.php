@@ -24,7 +24,7 @@ class SlackMrkdwnExtension extends AbstractExtension
         return [
             new TwigFilter(
                 'slack_mrkdwn',
-                [$this, 'convertSlackMrkdwn'],
+                $this->convertSlackMrkdwn(...),
                 ['is_safe' => ['html']]
             ),
         ];

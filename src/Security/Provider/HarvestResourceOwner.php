@@ -21,16 +21,14 @@ class HarvestResourceOwner implements ResourceOwnerInterface
     protected string $domain;
 
     /**
-     * Raw response.
-     */
-    protected array $response;
-
-    /**
      * Creates new resource owner.
      */
-    public function __construct(array $response = [])
-    {
-        $this->response = $response;
+    public function __construct(
+        /**
+         * Raw response.
+         */
+        protected array $response = []
+    ) {
     }
 
     /**

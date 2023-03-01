@@ -13,46 +13,32 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\UserForecastAccountRepository")
- */
-class UserForecastAccount
+#[ORM\Entity(repositoryClass: \App\Repository\UserForecastAccountRepository::class)]
+class UserForecastAccount implements \Stringable
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="userForecastAccounts")
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     */
-    private $user;
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'userForecastAccounts')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private User $user;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\ForecastAccount", inversedBy="userForecastAccounts")
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     */
-    private $forecastAccount;
+    #[ORM\ManyToOne(targetEntity: ForecastAccount::class, inversedBy: 'userForecastAccounts')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ForecastAccount $forecastAccount;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private $isAdmin;
+    #[ORM\Column(type: 'boolean')]
+    private bool $isAdmin;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private $isEnabled;
+    #[ORM\Column(type: 'boolean')]
+    private bool $isEnabled;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $forecastId;
+    #[ORM\Column(type: 'integer')]
+    private int $forecastId;
 
-    public function __toString()
+    public function __toString(): string
     {
         return sprintf('%s%s%s',
             $this->forecastAccount->getName(),

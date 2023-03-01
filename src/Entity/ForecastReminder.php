@@ -16,80 +16,60 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\ForecastReminderRepository")
- */
-class ForecastReminder
+#[ORM\Entity(repositoryClass: \App\Repository\ForecastReminderRepository::class)]
+class ForecastReminder implements \Stringable
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
      * @AppAssert\CronExpression(message="The value ""{{ value }}"" is not a valid cron expression.")
      */
-    private $cronExpression = '0 18 * * *';
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $cronExpression = '0 18 * * *';
+
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'forecastReminders')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?User $updatedBy = null;
+
+    #[ORM\Column(type: 'datetime')]
+    private \DateTimeInterface $updatedAt;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $lastTimeSentAt = null;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $defaultActivityName = 'no activity defined';
+
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $timeOffActivityName = 'holidays (until %s)';
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="forecastReminders")
-     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
+     * @var Collection<ProjectOverride>
      */
-    private $updatedBy;
+    #[ORM\OneToMany(targetEntity: ProjectOverride::class, mappedBy: 'forecastReminder', orphanRemoval: true, cascade: ['persist'])]
+    private Collection $projectOverrides;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @var Collection<ClientOverride>
      */
-    private $updatedAt;
+    #[ORM\OneToMany(targetEntity: ClientOverride::class, mappedBy: 'forecastReminder', orphanRemoval: true, cascade: ['persist'])]
+    private Collection $clientOverrides;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $lastTimeSentAt = null;
+    #[ORM\Column(type: 'array', nullable: true)]
+    private ?array $timeOffProjects = [];
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $defaultActivityName = 'no activity defined';
+    #[ORM\Column(type: 'array', nullable: true)]
+    private ?array $onlyUsers = [];
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $timeOffActivityName = 'holidays (until %s)';
+    #[ORM\Column(type: 'array', nullable: true)]
+    private ?array $exceptUsers = [];
 
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\ProjectOverride", mappedBy="forecastReminder", orphanRemoval=true, cascade={"persist"})
-     */
-    private $projectOverrides;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\ClientOverride", mappedBy="forecastReminder", orphanRemoval=true, cascade={"persist"})
-     */
-    private $clientOverrides;
-
-    /**
-     * @ORM\Column(type="array", nullable=true)
-     */
-    private $timeOffProjects = [];
-
-    /**
-     * @ORM\Column(type="array", nullable=true)
-     */
-    private $onlyUsers = [];
-
-    /**
-     * @ORM\Column(type="array", nullable=true)
-     */
-    private $exceptUsers = [];
-
-    /**
-     * @ORM\OneToOne(targetEntity="App\Entity\ForecastAccount", inversedBy="forecastReminder", cascade={"persist", "remove"})
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     */
-    private $forecastAccount;
+    #[ORM\OneToOne(targetEntity: ForecastAccount::class, inversedBy: 'forecastReminder', cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ForecastAccount $forecastAccount;
 
     public function __construct()
     {
@@ -97,7 +77,7 @@ class ForecastReminder
         $this->clientOverrides = new ArrayCollection();
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return sprintf('Reminder for "%s"', $this->forecastAccount->getName());
     }
@@ -232,10 +212,6 @@ class ForecastReminder
     {
         if ($this->clientOverrides->contains($clientOverride)) {
             $this->clientOverrides->removeElement($clientOverride);
-            // set the owning side to null (unless already changed)
-            if ($clientOverride->getForecastReminder() === $this) {
-                $clientOverride->setForecastReminder(null);
-            }
         }
 
         return $this;

@@ -15,11 +15,8 @@ use App\Repository\PublicForecastRepository;
 
 class UniqueTokenGenerator
 {
-    private PublicForecastRepository $repository;
-
-    public function __construct(PublicForecastRepository $repository)
+    public function __construct(private readonly PublicForecastRepository $repository)
     {
-        $this->repository = $repository;
     }
 
     public function generate(): string

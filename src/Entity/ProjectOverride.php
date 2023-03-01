@@ -14,47 +14,35 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\ProjectOverrideRepository")
- */
-class ProjectOverride
+#[ORM\Entity(repositoryClass: \App\Repository\ProjectOverrideRepository::class)]
+class ProjectOverride implements \Stringable
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\ForecastReminder", inversedBy="projectOverrides", cascade={"persist"})
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     */
-    private $forecastReminder;
+    #[ORM\ManyToOne(targetEntity: ForecastReminder::class, inversedBy: 'projectOverrides', cascade: ['persist'])]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ForecastReminder $forecastReminder;
+
+    #[ORM\Column(type: 'integer')]
+    private int $projectId;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $name;
 
     /**
-     * @ORM\Column(type="integer")
-     */
-    private $projectId;
-
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $name;
-
-    /**
-     * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
      */
-    private $createdAt;
+    #[ORM\Column(type: 'datetime')]
+    private \DateTimeInterface $createdAt;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User")
-     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
-     */
-    private $createdBy;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?User $createdBy = null;
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->name;
     }

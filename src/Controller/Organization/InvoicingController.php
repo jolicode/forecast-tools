@@ -24,40 +24,25 @@ use App\Repository\InvoiceExplanationRepository;
 use App\Repository\InvoicingProcessRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Workflow\StateMachine;
 
-/**
- * @Route("/{slug}/invoicing", name="organization_invoicing_", defaults={"menu": "invoicing"})
- * @IsGranted("admin", subject="forecastAccount")
- * @IsGranted("harvest_admin", subject="forecastAccount")
- */
+#[Route(path: '/{slug}/invoicing', name: 'organization_invoicing_', defaults: ['menu' => 'invoicing'])]
+#[IsGranted('admin', subject: 'forecastAccount')]
+#[IsGranted('harvest_admin', subject: 'forecastAccount')]
 class InvoicingController extends AbstractController
 {
-    private $invoicingStateMachine;
-    private $em;
-    private $invoicingManager;
-    private $forecastClient;
-    private $harvestClient;
-
-    public function __construct(StateMachine $invoicingStateMachine, EntityManagerInterface $em, Manager $invoicingManager, ForecastClient $forecastClient, HarvestClient $harvestClient)
+    public function __construct(private readonly StateMachine $invoicingStateMachine, private readonly EntityManagerInterface $em, private readonly Manager $invoicingManager, private readonly ForecastClient $forecastClient, private readonly HarvestClient $harvestClient)
     {
-        $this->invoicingStateMachine = $invoicingStateMachine;
-        $this->em = $em;
-        $this->invoicingManager = $invoicingManager;
-        $this->forecastClient = $forecastClient;
-        $this->harvestClient = $harvestClient;
     }
 
-    /**
-     * @Route("/", name="index")
-     */
-    public function index(ForecastAccount $forecastAccount, InvoicingProcessRepository $invoicingProcessRepository)
+    #[Route(path: '/', name: 'index')]
+    public function index(ForecastAccount $forecastAccount, InvoicingProcessRepository $invoicingProcessRepository): Response
     {
         $invoicingProcesses = $invoicingProcessRepository->findBy([
             'forecastAccount' => $forecastAccount,
@@ -71,10 +56,8 @@ class InvoicingController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/create", name="create")
-     */
-    public function create(Request $request, ForecastAccount $forecastAccount, UserRepository $userRepository)
+    #[Route(path: '/create', name: 'create')]
+    public function create(Request $request, ForecastAccount $forecastAccount, UserRepository $userRepository): Response
     {
         $invoicingProcess = new InvoicingProcess();
         $user = $userRepository->findOneBy(['email' => $this->getUser()->getUserIdentifier()]);
@@ -97,16 +80,15 @@ class InvoicingController extends AbstractController
 
         return $this->render('organization/invoicing/create.html.twig', [
             'forecastAccount' => $forecastAccount,
-            'form' => $form->createView(),
+            'form' => $form,
             'invoicingProcess' => $invoicingProcess,
         ]);
     }
 
-    /**
-     * @Route("/{invoicingId}/clear-cache", name="clear_cache")
-     * @ParamConverter("invoicingProcess", options={"id" = "invoicingId"})
-     */
-    public function clearCache(ForecastAccount $forecastAccount, InvoicingProcess $invoicingProcess)
+    #[Route(path: '/{invoicingId}/clear-cache', name: 'clear_cache')]
+    public function clearCache(
+        ForecastAccount $forecastAccount,
+        #[MapEntity(id: 'invoicingId')] InvoicingProcess $invoicingProcess): Response
     {
         $this->forecastClient->__clearCache();
         $this->harvestClient->__clearCache();
@@ -114,11 +96,14 @@ class InvoicingController extends AbstractController
         return $this->resume($forecastAccount, $invoicingProcess);
     }
 
-    /**
-     * @Route("/{invoicingId}/explain/{explanationKey}", name="explain")
-     * @ParamConverter("invoicingProcess", options={"id" = "invoicingId"})
-     */
-    public function explain(Request $request, ForecastAccount $forecastAccount, InvoicingProcess $invoicingProcess, string $explanationKey, UserRepository $userRepository, InvoiceExplanationRepository $invoiceExplanationRepository)
+    #[Route(path: '/{invoicingId}/explain/{explanationKey}', name: 'explain')]
+    public function explain(
+        Request $request,
+        ForecastAccount $forecastAccount,
+        #[MapEntity(id: 'invoicingId')] InvoicingProcess $invoicingProcess,
+        string $explanationKey,
+        UserRepository $userRepository,
+        InvoiceExplanationRepository $invoiceExplanationRepository): Response
     {
         $invoiceExplanation = $invoiceExplanationRepository->findOneBy([
             'invoicingProcess' => $invoicingProcess,
@@ -150,17 +135,18 @@ class InvoicingController extends AbstractController
         return $this->render('organization/invoicing/explanation.html.twig', [
             'invoiceExplanation' => $invoiceExplanation,
             'forecastAccount' => $forecastAccount,
-            'form' => $form->createView(),
+            'form' => $form,
             'invoicingProcess' => $invoicingProcess,
             'explanationKey' => $explanationKey,
         ]);
     }
 
-    /**
-     * @Route("/{invoicingId}/explain/{explanationKey}/delete", name="explaination_delete")
-     * @ParamConverter("invoicingProcess", options={"id" = "invoicingId"})
-     */
-    public function deleteExplanation(Request $request, ForecastAccount $forecastAccount, InvoicingProcess $invoicingProcess, string $explanationKey, InvoiceExplanationRepository $invoiceExplanationRepository)
+    #[Route(path: '/{invoicingId}/explain/{explanationKey}/delete', name: 'explaination_delete')]
+    public function deleteExplanation(
+        ForecastAccount $forecastAccount,
+        #[MapEntity(id: 'invoicingId')] InvoicingProcess $invoicingProcess,
+        string $explanationKey,
+        InvoiceExplanationRepository $invoiceExplanationRepository): Response
     {
         $invoiceExplanation = $invoiceExplanationRepository->findOneBy([
             'invoicingProcess' => $invoicingProcess,
@@ -177,11 +163,10 @@ class InvoicingController extends AbstractController
         return new Response('');
     }
 
-    /**
-     * @Route("/{invoicingId}/resume", name="resume")
-     * @ParamConverter("invoicingProcess", options={"id" = "invoicingId"})
-     */
-    public function resume(ForecastAccount $forecastAccount, InvoicingProcess $invoicingProcess)
+    #[Route(path: '/{invoicingId}/resume', name: 'resume')]
+    public function resume(
+        ForecastAccount $forecastAccount,
+        #[MapEntity(id: 'invoicingId')] InvoicingProcess $invoicingProcess): \Symfony\Component\HttpFoundation\RedirectResponse
     {
         return $this->redirectToRoute('organization_invoicing_transition', [
             'invoicingId' => $invoicingProcess->getId(),
@@ -190,11 +175,12 @@ class InvoicingController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{invoicingId}/{transition}", name="transition", requirements={"transition": "collect|reconcile|approve|check|validate|completed"})
-     * @ParamConverter("invoicingProcess", options={"id" = "invoicingId"})
-     */
-    public function transition(Request $request, ForecastAccount $forecastAccount, InvoicingProcess $invoicingProcess, string $transition)
+    #[Route(path: '/{invoicingId}/{transition}', name: 'transition', requirements: ['transition' => 'collect|reconcile|approve|check|validate|completed'])]
+    public function transition(
+        Request $request,
+        ForecastAccount $forecastAccount,
+        #[MapEntity(id: 'invoicingId')] InvoicingProcess $invoicingProcess,
+        string $transition): Response
     {
         $form = $this->createForm(InvoicingProgressType::class, null);
         $form->handleRequest($request);

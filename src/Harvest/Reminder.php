@@ -27,26 +27,13 @@ use function Symfony\Component\String\u;
 
 class Reminder
 {
-    public const BOT_NAME = 'Your personnal Harvest timesheet assistant';
-    public const DAILY_EXPECTED_TOTAL = 8;
-    public const MESSAGE_TEMPLATE_LAST_MONTH = '👋 Hello %s! It is time to fill your missing timesheets for the last month. Could you please check the missing information below?';
-    public const MESSAGE_TEMPLATE_CURRENT_MONTH = '👋 Hello %s! Here is your timesheets report for the current month.';
+    final public const BOT_NAME = 'Your personnal Harvest timesheet assistant';
+    final public const DAILY_EXPECTED_TOTAL = 8;
+    final public const MESSAGE_TEMPLATE_LAST_MONTH = '👋 Hello %s! It is time to fill your missing timesheets for the last month. Could you please check the missing information below?';
+    final public const MESSAGE_TEMPLATE_CURRENT_MONTH = '👋 Hello %s! Here is your timesheets report for the current month.';
 
-    private ForecastDataSelector $forecastDataSelector;
-    private HarvestAccountRepository $harvestAccountRepository;
-    private HarvestClient $harvestClient;
-    private HarvestDataSelector $harvestDataSelector;
-    private SlackDataSelector $slackDataSelector;
-    private Client $bugsnagClient;
-
-    public function __construct(HarvestAccountRepository $harvestAccountRepository, HarvestClient $harvestClient, ForecastDataSelector $forecastDataSelector, HarvestDataSelector $harvestDataSelector, SlackDataSelector $slackDataSelector, Client $bugsnagClient)
+    public function __construct(private readonly HarvestAccountRepository $harvestAccountRepository, private readonly HarvestClient $harvestClient, private readonly ForecastDataSelector $forecastDataSelector, private readonly HarvestDataSelector $harvestDataSelector, private readonly SlackDataSelector $slackDataSelector, private readonly Client $bugsnagClient)
     {
-        $this->harvestAccountRepository = $harvestAccountRepository;
-        $this->harvestClient = $harvestClient;
-        $this->forecastDataSelector = $forecastDataSelector;
-        $this->harvestDataSelector = $harvestDataSelector;
-        $this->slackDataSelector = $slackDataSelector;
-        $this->bugsnagClient = $bugsnagClient;
     }
 
     public function send()
@@ -84,7 +71,7 @@ class Reminder
                                 'channel' => $adminUser,
                                 'username' => self::BOT_NAME,
                                 'text' => $missingProjectAssignmentsIssues[0]['text']['text'],
-                                'blocks' => json_encode($missingProjectAssignmentsIssues),
+                                'blocks' => json_encode($missingProjectAssignmentsIssues, \JSON_THROW_ON_ERROR),
                             ];
 
                             try {
@@ -111,7 +98,7 @@ class Reminder
                             'channel' => $issue['slackUser']->getId(),
                             'username' => self::BOT_NAME,
                             'text' => $issue['message'],
-                            'blocks' => json_encode($issue['blocks']),
+                            'blocks' => json_encode($issue['blocks'], \JSON_THROW_ON_ERROR),
                         ];
 
                         try {
@@ -299,22 +286,15 @@ class Reminder
                 }
 
                 $dailyTimeEntries = $timeEntries['entries'][$day] ?? [];
-                $dailyAssignments = array_filter($forecastAssignments, function ($assignment) use ($forecastPeople, $harvestUserId, $day): bool {
-                    return
-                        isset($forecastPeople[$assignment->getPersonId()])
-                        && $forecastPeople[$assignment->getPersonId()]->getHarvestUserId() === $harvestUserId
-                        && $assignment->getStartDate()->format('Y-m-d') <= $day
-                        && $assignment->getEndDate()->format('Y-m-d') >= $day;
-                });
+                $dailyAssignments = array_filter($forecastAssignments, fn ($assignment): bool => isset($forecastPeople[$assignment->getPersonId()])
+                && $forecastPeople[$assignment->getPersonId()]->getHarvestUserId() === $harvestUserId
+                && $assignment->getStartDate()->format('Y-m-d') <= $day
+                && $assignment->getEndDate()->format('Y-m-d') >= $day);
                 $onlyInForecast = $this->findOnlyInForecast($dailyAssignments, $dailyTimeEntries, $forecastProjects);
                 $onlyInHarvest = $this->findOnlyInHarvest($dailyAssignments, $dailyTimeEntries, $forecastProjects);
                 $duplicateTimeEntries = $this->findDuplicateTimeEntries($dailyTimeEntries);
-                $inBoth = array_filter($this->findInBoth($dailyAssignments, $dailyTimeEntries, $forecastProjects), function (TimeEntry $timeEntry) use ($duplicateTimeEntries): bool {
-                    return !\in_array($timeEntry, $duplicateTimeEntries, true);
-                });
-                $hours = array_reduce($dailyTimeEntries, function ($carry, TimeEntry $item) {
-                    return $carry + $item->getHours();
-                }, 0);
+                $inBoth = array_filter($this->findInBoth($dailyAssignments, $dailyTimeEntries, $forecastProjects), fn (TimeEntry $timeEntry): bool => !\in_array($timeEntry, $duplicateTimeEntries, true));
+                $hours = array_reduce($dailyTimeEntries, fn ($carry, TimeEntry $item) => $carry + $item->getHours(), 0);
                 $issues[$harvestUserId]['weeks'][$week]['days'][$day] = [
                     'add' => $onlyInForecast,
                     'remove' => array_merge($onlyInHarvest, $duplicateTimeEntries),
@@ -387,7 +367,7 @@ class Reminder
     {
         $blocks = [];
 
-        if (\count($issues['no_harvest_project']) + \count($issues['missing_harvest_user_assignment']) > 0) {
+        if ((is_countable($issues['no_harvest_project']) ? \count($issues['no_harvest_project']) : 0) + (is_countable($issues['missing_harvest_user_assignment']) ? \count($issues['missing_harvest_user_assignment']) : 0) > 0) {
             $blocks = [
                 [
                     'type' => 'section',
@@ -401,7 +381,7 @@ class Reminder
             ];
         }
 
-        if (\count($issues['no_harvest_project']) > 0) {
+        if ((is_countable($issues['no_harvest_project']) ? \count($issues['no_harvest_project']) : 0) > 0) {
             $blocks[] = [
                 'type' => 'section',
                 'text' => [
@@ -425,7 +405,7 @@ class Reminder
             ];
         }
 
-        if (\count($issues['missing_harvest_user_assignment']) > 0) {
+        if ((is_countable($issues['missing_harvest_user_assignment']) ? \count($issues['missing_harvest_user_assignment']) : 0) > 0) {
             $blocks[] = [
                 'type' => 'section',
                 'text' => [
@@ -510,14 +490,14 @@ class Reminder
                 $detailsMessages = [];
 
                 foreach ($weeklyIssue['days'] as $day) {
-                    if ((0.0 !== (float) $weeklyHoursDiff) || (\count($day['add']) + \count($day['remove']) > 0)) {
+                    if ((0.0 !== (float) $weeklyHoursDiff) || ((is_countable($day['add']) ? \count($day['add']) : 0) + (is_countable($day['remove']) ? \count($day['remove']) : 0) > 0)) {
                         $detailsMessages[] = sprintf(
                             '%s *%s*%s',
                             $this->getClockEmoji($day['hours_declared']),
                             $day['day'],
                             $this->buildHoursDiffSuffix(
                                 $day['hours_expected'] - $day['hours_declared'],
-                                0 === \count($day['add']) + \count($day['remove'])
+                                0 === (is_countable($day['add']) ? \count($day['add']) : 0) + (is_countable($day['remove']) ? \count($day['remove']) : 0)
                             )
                         );
 
@@ -533,7 +513,7 @@ class Reminder
                             $detailsMessages[] = sprintf('󠀠　 ➕ _%s_ (%sh)', $forecastProjects[$forecastAssignment->getProjectId()]->getName(), $forecastAssignment->getAllocation() / 3600);
                         }
 
-                        if (\count($day['add']) + \count($day['remove']) > 0) {
+                        if ((is_countable($day['add']) ? \count($day['add']) : 0) + (is_countable($day['remove']) ? \count($day['remove']) : 0) > 0) {
                             $accessory = [
                                 'type' => 'button',
                                 'text' => [
@@ -655,9 +635,7 @@ class Reminder
         }
 
         $duplicates = $timeEntries;
-        usort($timeEntries, function ($a, $b) {
-            return ($b->getUpdatedAt() > $a->getUpdatedAt()) ? 1 : -1;
-        });
+        usort($timeEntries, fn ($a, $b) => ($b->getUpdatedAt() > $a->getUpdatedAt()) ? 1 : -1);
 
         foreach ($timeEntries as $i => $timeEntry) {
             foreach ($timeEntries as $j => $value) {
@@ -678,9 +656,7 @@ class Reminder
     private function findInBoth(array $assignments, array $timeEntries, array $forecastProjects): array
     {
         return array_filter($timeEntries, function (TimeEntry $timeEntry) use ($assignments, $forecastProjects): bool {
-            $matchingAssignments = array_filter($assignments, function (Assignment $assignment) use ($timeEntry, $forecastProjects): bool {
-                return $this->isEquivalentEntries($assignment, $timeEntry, $forecastProjects);
-            });
+            $matchingAssignments = array_filter($assignments, fn (Assignment $assignment): bool => $this->isEquivalentEntries($assignment, $timeEntry, $forecastProjects));
 
             return 1 === \count($matchingAssignments);
         });
@@ -689,9 +665,7 @@ class Reminder
     private function findOnlyInForecast(array $assignments, array $timeEntries, array $forecastProjects): array
     {
         return array_filter($assignments, function (Assignment $assignment) use ($timeEntries, $forecastProjects): bool {
-            $matchingTimeEntries = array_filter($timeEntries, function (TimeEntry $timeEntry) use ($assignment, $forecastProjects): bool {
-                return $this->isEquivalentEntries($assignment, $timeEntry, $forecastProjects);
-            });
+            $matchingTimeEntries = array_filter($timeEntries, fn (TimeEntry $timeEntry): bool => $this->isEquivalentEntries($assignment, $timeEntry, $forecastProjects));
 
             return 0 === \count($matchingTimeEntries);
         });
@@ -700,9 +674,7 @@ class Reminder
     private function findOnlyInHarvest(array $assignments, array $timeEntries, array $forecastProjects): array
     {
         return array_filter($timeEntries, function (TimeEntry $timeEntry) use ($assignments, $forecastProjects): bool {
-            $matchingAssignments = array_filter($assignments, function (Assignment $assignment) use ($timeEntry, $forecastProjects): bool {
-                return $this->isEquivalentEntries($assignment, $timeEntry, $forecastProjects);
-            });
+            $matchingAssignments = array_filter($assignments, fn (Assignment $assignment): bool => $this->isEquivalentEntries($assignment, $timeEntry, $forecastProjects));
 
             return 0 === \count($matchingAssignments);
         });

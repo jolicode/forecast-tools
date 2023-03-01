@@ -18,11 +18,8 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class Sender
 {
-    private EntityManagerInterface $em;
-
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(private readonly EntityManagerInterface $em)
     {
-        $this->em = $em;
     }
 
     public function sendMessage(string $responseUrl, string $triggerId, string $message, $ephemeral = false): ResponseInterface
@@ -52,7 +49,7 @@ class Sender
         $headers = array_merge($headers, [
             'Content-Type' => 'application/json; charset=utf-8',
         ]);
-        $body = json_encode($body);
+        $body = json_encode($body, \JSON_THROW_ON_ERROR);
 
         $slackCall = new SlackCall();
         $slackCall->setUrl($url);

@@ -15,6 +15,9 @@ use JoliCode\Forecast\Api\Model\Person;
 
 class PersonToWorkingDaysConverter
 {
+    /**
+     * @return array<string>
+     */
     public function convert(?Person $person = null): array
     {
         if (null === $person || null === $person->getWorkingDays()) {

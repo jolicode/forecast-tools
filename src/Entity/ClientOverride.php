@@ -14,47 +14,35 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\ClientOverrideRepository")
- */
-class ClientOverride
+#[ORM\Entity(repositoryClass: \App\Repository\ClientOverrideRepository::class)]
+class ClientOverride implements \Stringable
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\ForecastReminder", inversedBy="clientOverrides", cascade={"persist"})
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     */
-    private $forecastReminder;
+    #[ORM\ManyToOne(targetEntity: ForecastReminder::class, inversedBy: 'clientOverrides', cascade: ['persist'])]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ForecastReminder $forecastReminder;
+
+    #[ORM\Column(type: 'integer')]
+    private int $clientId;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $name;
 
     /**
-     * @ORM\Column(type="integer")
-     */
-    private $clientId;
-
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $name;
-
-    /**
-     * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
      */
-    private $createdAt;
+    #[ORM\Column(type: 'datetime')]
+    private \DateTimeInterface $createdAt;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User")
-     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
-     */
-    private $createdBy;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?User $createdBy = null;
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->name;
     }
@@ -69,14 +57,14 @@ class ClientOverride
         return $this->forecastReminder;
     }
 
-    public function setForecastReminder(?ForecastReminder $forecastReminder): self
+    public function setForecastReminder(ForecastReminder $forecastReminder): self
     {
         $this->forecastReminder = $forecastReminder;
 
         return $this;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -88,7 +76,7 @@ class ClientOverride
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function getCreatedAt(): \DateTimeInterface
     {
         return $this->createdAt;
     }
@@ -112,7 +100,7 @@ class ClientOverride
         return $this;
     }
 
-    public function getClientId(): ?int
+    public function getClientId(): int
     {
         return $this->clientId;
     }

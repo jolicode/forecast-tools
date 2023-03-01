@@ -19,25 +19,19 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route("/slack", name="slack_")
- */
+#[Route(path: '/slack', name: 'slack_')]
 class SlackCommandController extends AbstractController
 {
-    /**
-     * @Route("/command", name="command")
-     */
-    public function command(Request $request)
+    #[Route(path: '/command', name: 'command')]
+    public function command(): Response
     {
         return new Response('');
     }
 
-    /**
-     * @Route("/data-source", name="data_source")
-     */
+    #[Route(path: '/data-source', name: 'data_source')]
     public function dataSource(Request $request, StandupMeetingReminderHandler $standupMeetingReminderHandler): JsonResponse
     {
-        $payload = json_decode($request->request->get('payload'), true);
+        $payload = json_decode($request->request->get('payload'), true, 512, \JSON_THROW_ON_ERROR);
 
         if ('selected_projects' === $payload['action_id']) {
             return new JsonResponse($standupMeetingReminderHandler->listProjects($payload));
@@ -46,27 +40,20 @@ class SlackCommandController extends AbstractController
         return new JsonResponse('<3 you, Slack');
     }
 
-    /**
-     * @Route("/interactive-endpoint", name="interactive_endpoint")
-     */
+    #[Route(path: '/interactive-endpoint', name: 'interactive_endpoint')]
     public function interactiveEndpoint(Request $request, StandupMeetingReminderHandler $standupMeetingReminderHandler, HarvestReminderHandler $harvestReminderHandler): JsonResponse
     {
-        $payload = json_decode($request->request->get('payload'), true);
+        $payload = json_decode($request->request->get('payload'), true, 512, \JSON_THROW_ON_ERROR);
 
         if ('block_actions' === $payload['type']) {
             // whenever a block kit interactive component is clicked
-            $action = explode('.', $payload['actions'][0]['action_id']);
+            $action = explode('.', (string) $payload['actions'][0]['action_id']);
 
-            switch ($action[0]) {
-                case StandupMeetingReminderHandler::ACTION_PREFIX:
-                    $standupMeetingReminderHandler->handleBlockAction($payload);
-                    break;
-                case HarvestReminderHandler::ACTION_PREFIX:
-                    $harvestReminderHandler->handleBlockAction($payload);
-                    break;
-                default:
-                    throw new \DomainException(sprintf('Could not understand the "%s" action type.', $action[0]));
-            }
+            match ($action[0]) {
+                StandupMeetingReminderHandler::ACTION_PREFIX => $standupMeetingReminderHandler->handleBlockAction($payload),
+                HarvestReminderHandler::ACTION_PREFIX => $harvestReminderHandler->handleBlockAction($payload),
+                default => throw new \DomainException(sprintf('Could not understand the "%s" action type.', $action[0])),
+            };
         }
 
         if ('view_submission' === $payload['type']) {

@@ -15,49 +15,33 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\InvoiceDueDelayRequirementRepository")
- * @UniqueEntity(
- *     fields={"harvestClientId"},
- *     errorPath="harvestClientId",
- *     message="There is already a constraint for the client ""{{ value }}""."
- * )
- */
+#[ORM\Entity(repositoryClass: \App\Repository\InvoiceDueDelayRequirementRepository::class)]
+#[UniqueEntity(fields: ['harvestClientId'], errorPath: 'harvestClientId', message: 'There is already a constraint for the client ')]
 class InvoiceDueDelayRequirement
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column(type="integer", unique=true)
-     */
-    private $harvestClientId;
+    #[ORM\Column(type: 'integer', unique: true)]
+    private int $harvestClientId;
 
     /**
-     * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="update")
      */
-    private $updatedAt;
+    #[ORM\Column(type: 'datetime')]
+    private \DateTimeInterface $updatedAt;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User")
-     */
-    private $updatedBy;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    private ?User $updatedBy = null;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $delay;
+    #[ORM\Column(type: 'integer')]
+    private int $delay;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\HarvestAccount", inversedBy="invoiceDueDelayRequirements")
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     */
-    private $harvestAccount;
+    #[ORM\ManyToOne(targetEntity: HarvestAccount::class, inversedBy: 'invoiceDueDelayRequirements')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private HarvestAccount $harvestAccount;
 
     public function getId(): ?int
     {

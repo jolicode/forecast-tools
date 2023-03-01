@@ -41,34 +41,10 @@ use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPasspor
 
 class HarvestAuthenticator extends OAuth2Authenticator
 {
-    private $clientRegistry;
-    private $em;
-    private $forecastAccountRepository;
-    private $harvestAccountRepository;
-    private $urlGenerator;
-    private $userForecastAccountRepository;
-    private $userHarvestAccountRepository;
-    private $userRepository;
-    private $harvestIdToForecastAccountRelationships = [];
+    private array $harvestIdToForecastAccountRelationships = [];
 
-    public function __construct(
-        EntityManagerInterface $em,
-        ClientRegistry $clientRegistry,
-        UrlGeneratorInterface $urlGenerator,
-        UserRepository $userRepository,
-        ForecastAccountRepository $forecastAccountRepository,
-        UserForecastAccountRepository $userForecastAccountRepository,
-        HarvestAccountRepository $harvestAccountRepository,
-        UserHarvestAccountRepository $userHarvestAccountRepository
-    ) {
-        $this->clientRegistry = $clientRegistry;
-        $this->em = $em;
-        $this->forecastAccountRepository = $forecastAccountRepository;
-        $this->harvestAccountRepository = $harvestAccountRepository;
-        $this->urlGenerator = $urlGenerator;
-        $this->userRepository = $userRepository;
-        $this->userForecastAccountRepository = $userForecastAccountRepository;
-        $this->userHarvestAccountRepository = $userHarvestAccountRepository;
+    public function __construct(private readonly EntityManagerInterface $em, private readonly ClientRegistry $clientRegistry, private readonly UrlGeneratorInterface $urlGenerator, private readonly UserRepository $userRepository, private readonly ForecastAccountRepository $forecastAccountRepository, private readonly UserForecastAccountRepository $userForecastAccountRepository, private readonly HarvestAccountRepository $harvestAccountRepository, private readonly UserHarvestAccountRepository $userHarvestAccountRepository)
+    {
     }
 
     public function start(Request $request, AuthenticationException $authException = null)
@@ -123,7 +99,7 @@ class HarvestAuthenticator extends OAuth2Authenticator
                 $user = $this->userRepository->findOneBy(['email' => $email]);
                 $roles = ['ROLE_USER', 'ROLE_OAUTH_USER'];
 
-                if (!$user) {
+                if (null === $user) {
                     $user = new User();
                     $this->em->persist($user);
                     $user->setEmail($email);
@@ -135,9 +111,7 @@ class HarvestAuthenticator extends OAuth2Authenticator
                 $user->setExpires($accessToken->getExpires());
                 $user->setName($harvestUser->getName());
 
-                usort($userData['accounts'], function ($a, $b): int {
-                    return strcmp($a['product'], $b['product']);
-                });
+                usort($userData['accounts'], fn ($a, $b): int => strcmp((string) $a['product'], (string) $b['product']));
 
                 $forecastAccounts = [];
                 $harvestAccounts = [];
@@ -166,7 +140,7 @@ class HarvestAuthenticator extends OAuth2Authenticator
     {
         $forecastAccount = $this->forecastAccountRepository->findOneBy(['forecastId' => $account['id']]);
 
-        if (!$forecastAccount) {
+        if (null === $forecastAccount) {
             $forecastAccount = new ForecastAccount();
             $forecastAccount->setName($account['name']);
             $forecastAccount->setForecastId($account['id']);
@@ -182,7 +156,7 @@ class HarvestAuthenticator extends OAuth2Authenticator
             'forecastId' => $currentUser->getId(),
         ]);
 
-        if (!$userForecastAccount) {
+        if (null === $userForecastAccount) {
             $userForecastAccount = new UserForecastAccount();
             $userForecastAccount->setForecastId($currentUser->getId());
             $userForecastAccount->setForecastAccount($forecastAccount);
@@ -224,7 +198,7 @@ class HarvestAuthenticator extends OAuth2Authenticator
 
         $harvestAccount = $this->harvestAccountRepository->findOneBy(['harvestId' => $account['id']]);
 
-        if (!$harvestAccount) {
+        if (null === $harvestAccount) {
             $harvestAccount = new HarvestAccount();
             $harvestAccount->setHarvestId($account['id']);
         }
@@ -235,7 +209,7 @@ class HarvestAuthenticator extends OAuth2Authenticator
             'harvestId' => $harvestUser->getId(),
         ]);
 
-        if (!$userHarvestAccount) {
+        if (null === $userHarvestAccount) {
             $userHarvestAccount = new UserHarvestAccount();
             $userHarvestAccount->setHarvestId($harvestUser->getId());
             $userHarvestAccount->setHarvestAccount($harvestAccount);

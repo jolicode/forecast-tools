@@ -33,9 +33,7 @@ abstract class AbstractClient
                 $this->pool->save($item);
             }
         } else {
-            $this->pool->get($this->__namespace(), function (ItemInterface $item) use ($key): array {
-                return [$key];
-            });
+            $this->pool->get($this->__namespace(), fn (ItemInterface $item): array => [$key]);
         }
     }
 

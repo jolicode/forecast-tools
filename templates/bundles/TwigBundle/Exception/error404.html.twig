@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Error | {{ parent() }}{% endblock %}
+
+{% block body %}
+    <div class="p-3 m-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="mb-0 card-title">Page not found</h1>
+            </div>
+            <div class="card-body pb-0">
+                <p>
+                    The requested page couldn't be found. Please <a href="{{ path('homepage') }}">return to the homepage</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

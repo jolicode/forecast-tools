@@ -25,7 +25,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class HarvestTimesheetsReminderType extends AbstractType
 {
-    public function __construct(private HarvestDataSelector $harvestDataSelector)
+    public function __construct(private readonly HarvestDataSelector $harvestDataSelector)
     {
     }
 
@@ -40,14 +40,11 @@ class HarvestTimesheetsReminderType extends AbstractType
             ])
             ->add('timesheetReminderSlackTeam', EntityType::class, [
                 'class' => ForecastAccountSlackTeam::class,
-                'query_builder' => function (EntityRepository $er) use ($options): QueryBuilder {
-                    return $er->createQueryBuilder('fast')
-                        ->leftJoin('fast.slackTeam', 'st')
-                        ->andWhere('fast.forecastAccount = :forecastAccount')
-                        ->setParameter('forecastAccount', $options['data']->getForecastAccount())
-                        ->orderBy('st.teamName', 'ASC')
-                    ;
-                },
+                'query_builder' => fn (EntityRepository $er): QueryBuilder => $er->createQueryBuilder('fast')
+                    ->leftJoin('fast.slackTeam', 'st')
+                    ->andWhere('fast.forecastAccount = :forecastAccount')
+                    ->setParameter('forecastAccount', $options['data']->getForecastAccount())
+                    ->orderBy('st.teamName', 'ASC'),
                 'choice_label' => 'slackTeam.teamName',
                 'help' => 'Please choose a Slack team to send the notifications to. Please note that only the users having the exact same email address in Harvest and in this Slack organization will receive notifications.',
                 'placeholder' => 'Do not send the Harvest timesheets reminder',

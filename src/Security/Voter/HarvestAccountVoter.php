@@ -19,13 +19,10 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class HarvestAccountVoter extends Voter
 {
-    public const ADMIN = 'admin';
+    final public const ADMIN = 'admin';
 
-    private $userHarvestAccountRepository;
-
-    public function __construct(UserHarvestAccountRepository $userHarvestAccountRepository)
+    public function __construct(private readonly UserHarvestAccountRepository $userHarvestAccountRepository)
     {
-        $this->userHarvestAccountRepository = $userHarvestAccountRepository;
     }
 
     protected function supports(string $attribute, mixed $subject): bool
@@ -50,7 +47,7 @@ class HarvestAccountVoter extends Voter
             case self::ADMIN:
                 $userHarvestAccount = $this->userHarvestAccountRepository->findOneByEmailAndForecastAccount($user->getUserIdentifier(), $harvestAccount);
 
-                return $userHarvestAccount && $userHarvestAccount->getIsAdmin();
+                return $userHarvestAccount?->getIsAdmin();
         }
 
         return false;

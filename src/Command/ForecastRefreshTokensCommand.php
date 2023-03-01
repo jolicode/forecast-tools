@@ -20,12 +20,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class ForecastRefreshTokensCommand extends Command
 {
     protected static $defaultName = 'forecast:refresh-tokens';
-    private $refresher;
 
-    public function __construct(HarvestTokenRefresher $refresher)
+    public function __construct(private readonly HarvestTokenRefresher $refresher)
     {
-        $this->refresher = $refresher;
-
         parent::__construct();
     }
 

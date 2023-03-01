@@ -24,11 +24,8 @@ use JoliCode\Harvest\Api\Model\User;
 
 class HarvestDataSelector
 {
-    private $client;
-
-    public function __construct(HarvestClient $harvestClient)
+    public function __construct(private readonly HarvestClient $client)
     {
-        $this->client = $harvestClient;
     }
 
     public function disableCache(): self
@@ -94,9 +91,7 @@ class HarvestDataSelector
      */
     public function getEnabledClients(): array
     {
-        return array_filter($this->getClientsById(), function (Client $client): ?bool {
-            return $client->getIsActive();
-        });
+        return array_filter($this->getClientsById(), fn (Client $client): ?bool => $client->getIsActive());
     }
 
     public function getClientsForChoice(?bool $enabled): array
@@ -130,10 +125,10 @@ class HarvestDataSelector
 
         usort($users, function ($a, $b): int {
             if ($a->getFirstName() === $b->getFirstName()) {
-                return strcmp($a->getLastName(), $b->getLastName());
+                return strcmp((string) $a->getLastName(), (string) $b->getLastName());
             }
 
-            return strcmp($a->getFirstName(), $b->getFirstName());
+            return strcmp((string) $a->getFirstName(), (string) $b->getFirstName());
         });
 
         return $users;
@@ -141,9 +136,7 @@ class HarvestDataSelector
 
     public function getUserByEmail(string $email): ?User
     {
-        $users = array_filter($this->getEnabledUsers(), function (User $user) use ($email): bool {
-            return $email === $user->getEmail();
-        });
+        $users = array_filter($this->getEnabledUsers(), fn (User $user): bool => $email === $user->getEmail());
 
         if (\count($users) > 0) {
             return array_pop($users);
@@ -236,11 +229,9 @@ class HarvestDataSelector
     }
 
     /**
-     * @param mixed $projectId
-     *
      * @return TaskAssignment[]
      */
-    public function getTaskAssignmentsForProjectId($projectId): array
+    public function getTaskAssignmentsForProjectId(mixed $projectId): array
     {
         $taskAssignmentsById = [];
         $taskAssignments = $this->client->listTaskAssignmentsForSpecificProject((string) $projectId, 'taskAssignments')->getTaskAssignments();
@@ -274,9 +265,7 @@ class HarvestDataSelector
             'from' => $from->format('Y-m-d'),
             'to' => $to->format('Y-m-d'),
         ], 'results')->getResults();
-        $uninvoiced = array_filter($uninvoiced, function (UninvoicedReportResult $a): bool {
-            return ($a->getUninvoicedAmount() + $a->getUninvoicedExpenses()) > 0;
-        });
+        $uninvoiced = array_filter($uninvoiced, fn (UninvoicedReportResult $a): bool => ($a->getUninvoicedAmount() + $a->getUninvoicedExpenses()) > 0);
 
         return $uninvoiced;
     }

@@ -16,10 +16,10 @@ use App\Repository\UserRepository;
 use JoliCode\Forecast\Api\Model\Error;
 use JoliCode\Forecast\Client;
 use JoliCode\Forecast\ClientFactory;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authorization\Voter\AuthenticatedVoter;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Contracts\Cache\ItemInterface;
 
 /**
@@ -32,20 +32,17 @@ use Symfony\Contracts\Cache\ItemInterface;
 class ForecastClient extends AbstractClient
 {
     /** @var Client[] */
-    private $client = [];
-    private $requestStack;
-    private $security;
-    private $userRepository;
+    private array $client = [];
+    /**
+     * @var mixed|\App\Entity\ForecastAccount
+     */
     private $forecastAccount = null;
     private bool $cacheEnabled = true;
-    private $cacheStatusForNextRequestOnly = null;
+    private ?bool $cacheStatusForNextRequestOnly = null;
 
-    public function __construct(RequestStack $requestStack, AdapterInterface $pool, Security $security, UserRepository $userRepository)
+    public function __construct(private readonly RequestStack $requestStack, AdapterInterface $pool, private readonly Security $security, private readonly UserRepository $userRepository)
     {
-        $this->requestStack = $requestStack;
         $this->pool = $pool;
-        $this->security = $security;
-        $this->userRepository = $userRepository;
     }
 
     public function __disableCache(): void
@@ -76,12 +73,12 @@ class ForecastClient extends AbstractClient
             $user = null;
             $forecastAccount = $this->getForecastAccount();
 
-            if ($this->security->getUser() && !$this->security->isGranted(AuthenticatedVoter::IS_IMPERSONATOR)) {
+            if (null !== $this->security->getUser() && !$this->security->isGranted(AuthenticatedVoter::IS_IMPERSONATOR)) {
                 $email = $this->security->getUser()->getUserIdentifier();
                 $user = $this->userRepository->findOneBy(['email' => $email]);
             }
 
-            if ($user) {
+            if (null !== $user) {
                 $accessToken = $user->getAccessToken();
             } else {
                 $accessToken = $forecastAccount->getAccessToken();
@@ -111,9 +108,7 @@ class ForecastClient extends AbstractClient
             // The callable will only be executed on a cache miss.
             $this->__addKey($cacheKey);
 
-            $response = $this->pool->get($cacheKey, function (ItemInterface $item) use ($name, $arguments, $nodeName) {
-                return $this->call($name, $arguments, $nodeName);
-            });
+            $response = $this->pool->get($cacheKey, fn (ItemInterface $item) => $this->call($name, $arguments, $nodeName));
         } else {
             $response = $this->call($name, $arguments, $nodeName);
         }
@@ -150,14 +145,12 @@ class ForecastClient extends AbstractClient
         $setter = sprintf('set%s', ucfirst($nodeName));
         $expectedClass = sprintf('JoliCode\Forecast\Api\Model\%s', ucfirst($nodeName));
 
-        if (Error::class === \get_class($response)) {
+        if (Error::class === $response::class) {
             return $responseToUpdate ?? \call_user_func([new $expectedClass(), $setter], []);
         }
 
         $data = \call_user_func([$response, $getter]);
-        $ids = array_map(function ($a) {
-            return $a->getId();
-        }, $data);
+        $ids = array_map(fn ($a) => $a->getId(), $data);
         $indicedData = array_combine($ids, $data);
 
         if (null !== $responseToUpdate) {

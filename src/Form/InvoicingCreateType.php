@@ -22,7 +22,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class InvoicingCreateType extends AbstractType
 {
-    public function __construct(private InvoicingProcessRepository $invoicingProcessRepository)
+    public function __construct(private readonly InvoicingProcessRepository $invoicingProcessRepository)
     {
     }
 
@@ -49,7 +49,7 @@ class InvoicingCreateType extends AbstractType
         $resolver->setDefaults([
             'data_class' => InvoicingProcess::class,
             'constraints' => [
-                new Assert\Callback([$this, 'validateOverlappingDates']),
+                new Assert\Callback($this->validateOverlappingDates(...)),
             ],
         ]);
     }
@@ -58,7 +58,7 @@ class InvoicingCreateType extends AbstractType
     {
         $conflicts = $this->invoicingProcessRepository->findOverlapping($invoicingProcess);
 
-        if (\count($conflicts) > 0) {
+        if ((is_countable($conflicts) ? \count($conflicts) : 0) > 0) {
             $context->buildViolation('There is already an invoicing process for this period')
                 ->atPath('startDate')
                 ->addViolation();

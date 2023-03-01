@@ -20,16 +20,11 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class ForecastAccountVoter extends Voter
 {
-    public const ADMIN = 'admin';
-    public const HARVEST_ADMIN = 'harvest_admin';
+    final public const ADMIN = 'admin';
+    final public const HARVEST_ADMIN = 'harvest_admin';
 
-    private $userForecastAccountRepository;
-    private $userHarvestAccountRepository;
-
-    public function __construct(UserForecastAccountRepository $userForecastAccountRepository, UserHarvestAccountRepository $userHarvestAccountRepository)
+    public function __construct(private readonly UserForecastAccountRepository $userForecastAccountRepository, private readonly UserHarvestAccountRepository $userHarvestAccountRepository)
     {
-        $this->userForecastAccountRepository = $userForecastAccountRepository;
-        $this->userHarvestAccountRepository = $userHarvestAccountRepository;
     }
 
     protected function supports(string $attribute, mixed $subject): bool
@@ -54,7 +49,7 @@ class ForecastAccountVoter extends Voter
             case self::ADMIN:
                 $userForecastAccount = $this->userForecastAccountRepository->findOneByEmailAndForecastAccount($user->getUserIdentifier(), $forecastAccount);
 
-                return $userForecastAccount && $userForecastAccount->getIsAdmin();
+                return $userForecastAccount?->getIsAdmin();
             case self::HARVEST_ADMIN:
                 if (null === $forecastAccount->getHarvestAccount()) {
                     return false;
@@ -62,7 +57,7 @@ class ForecastAccountVoter extends Voter
 
                 $userHarvestAccount = $this->userHarvestAccountRepository->findOneByEmailAndForecastAccount($user->getUserIdentifier(), $forecastAccount->getHarvestAccount());
 
-                return $userHarvestAccount && $userHarvestAccount->getIsAdmin();
+                return $userHarvestAccount?->getIsAdmin();
         }
 
         return false;

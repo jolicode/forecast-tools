@@ -17,99 +17,78 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\HarvestAccountRepository")
- */
-class HarvestAccount
+#[ORM\Entity(repositoryClass: \App\Repository\HarvestAccountRepository::class)]
+class HarvestAccount implements \Stringable
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $name;
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $name;
+
+    #[ORM\Column(type: 'integer')]
+    private int $harvestId;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $accessToken;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $refreshToken;
+
+    #[ORM\Column(type: 'integer')]
+    private int $expires;
+
+    #[ORM\OneToOne(targetEntity: ForecastAccount::class, inversedBy: 'harvestAccount', cascade: ['persist', 'remove'])]
+    private ?ForecastAccount $forecastAccount = null;
 
     /**
-     * @ORM\Column(type="integer")
+     * @var Collection<UserHarvestAccount>
      */
-    private $harvestId;
+    #[ORM\OneToMany(targetEntity: UserHarvestAccount::class, mappedBy: 'harvestAccount', orphanRemoval: true)]
+    private Collection $userHarvestAccounts;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $baseUri;
+
+    #[ORM\Column(type: 'array', nullable: true)]
+    private ?array $doNotCheckTimesheetsFor = [];
+
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private ?bool $hideSkippedUsers = null;
 
     /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $accessToken;
-
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $refreshToken;
-
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $expires;
-
-    /**
-     * @ORM\OneToOne(targetEntity="App\Entity\ForecastAccount", inversedBy="harvestAccount", cascade={"persist", "remove"})
-     */
-    private $forecastAccount;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\UserHarvestAccount", mappedBy="harvestAccount", orphanRemoval=true)
-     */
-    private $userHarvestAccounts;
-
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $baseUri;
-
-    /**
-     * @ORM\Column(type="array", nullable=true)
-     */
-    private $doNotCheckTimesheetsFor = [];
-
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
-    private $hideSkippedUsers;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\InvoiceDueDelayRequirement", mappedBy="harvestAccount", orphanRemoval=true, cascade={"persist"})
-     * @Assert\Valid
+     * @var Collection<InvoiceDueDelayRequirement>
+     *
      * @AppAssert\UniqueClient(message="There is already a due delay requirement for the client ""{{ value }}"".")
      */
-    private $invoiceDueDelayRequirements;
+    #[ORM\OneToMany(targetEntity: InvoiceDueDelayRequirement::class, mappedBy: 'harvestAccount', orphanRemoval: true, cascade: ['persist'])]
+    #[Assert\Valid]
+    private Collection $invoiceDueDelayRequirements;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\InvoiceNotesRequirement", mappedBy="harvestAccount", orphanRemoval=true, cascade={"persist"})
-     * @Assert\Valid
+     * @var Collection<InvoiceNotesRequirement>
      */
-    private $invoiceNotesRequirements;
+    #[ORM\OneToMany(targetEntity: InvoiceNotesRequirement::class, mappedBy: 'harvestAccount', orphanRemoval: true, cascade: ['persist'])]
+    #[Assert\Valid]
+    private Collection $invoiceNotesRequirements;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=ForecastAccountSlackTeam::class, cascade={"persist"})
-     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
-     */
-    private $timesheetReminderSlackTeam;
+    #[ORM\ManyToOne(targetEntity: ForecastAccountSlackTeam::class, cascade: ['persist'])]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?ForecastAccountSlackTeam $timesheetReminderSlackTeam = null;
 
-    /**
-     * @ORM\Column(type="array", nullable=true)
-     */
-    private $doNotSendTimesheetReminderFor = [];
+    #[ORM\Column(type: 'array', nullable: true)]
+    private ?array $doNotSendTimesheetReminderFor = [];
 
     public function __construct()
     {
         $this->invoiceDueDelayRequirements = new ArrayCollection();
         $this->invoiceNotesRequirements = new ArrayCollection();
+        $this->userHarvestAccounts = new ArrayCollection();
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->name;
     }
@@ -202,7 +181,7 @@ class HarvestAccount
     public function addUserHarvestAccount(UserHarvestAccount $userHarvestAccount): self
     {
         if (!$this->userHarvestAccounts->contains($userHarvestAccount)) {
-            $this->userHarvestAccounts[] = $userHarvestAccount;
+            $this->userHarvestAccounts->add($userHarvestAccount);
             $userHarvestAccount->setHarvestAccount($this);
         }
 

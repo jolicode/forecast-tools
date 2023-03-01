@@ -40,7 +40,7 @@ class UserRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('u');
 
         return $qb
-            ->delete('App\Entity\UserForecastAccount', 'ufa')
+            ->delete(\App\Entity\UserForecastAccount::class, 'ufa')
             ->andWhere('ufa.user = :user')
             ->andWhere($qb->expr()->notIn('ufa.forecastAccount', ':forecastAccounts'))
             ->setParameter('forecastAccounts', $forecastAccounts)
@@ -54,7 +54,7 @@ class UserRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('u');
 
         return $qb
-            ->delete('App\Entity\UserHarvestAccount', 'uha')
+            ->delete(\App\Entity\UserHarvestAccount::class, 'uha')
             ->andWhere('uha.user = :user')
             ->andWhere($qb->expr()->notIn('uha.harvestAccount', ':harvestAccounts'))
             ->setParameter('harvestAccounts', $harvestAccounts)

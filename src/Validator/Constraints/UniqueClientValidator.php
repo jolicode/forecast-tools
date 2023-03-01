@@ -19,17 +19,14 @@ use Symfony\Component\Validator\Exception\UnexpectedValueException;
 
 class UniqueClientValidator extends ConstraintValidator
 {
-    private $harvestDataSelector;
-
-    public function __construct(HarvestDataSelector $harvestDataSelector)
+    public function __construct(private readonly HarvestDataSelector $harvestDataSelector)
     {
-        $this->harvestDataSelector = $harvestDataSelector;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function validate($value, Constraint $constraint)
+    public function validate(mixed $value, Constraint $constraint): void
     {
         if (!$constraint instanceof UniqueClient) {
             throw new UnexpectedTypeException($constraint, UniqueClient::class);

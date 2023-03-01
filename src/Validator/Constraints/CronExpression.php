@@ -18,7 +18,7 @@ use Symfony\Component\Validator\Constraint;
  */
 class CronExpression extends Constraint
 {
-    public const IS_NOT_VALID = '8af4b295-bd7e-41be-a600-9cb531ad8752';
+    final public const IS_NOT_VALID = '8af4b295-bd7e-41be-a600-9cb531ad8752';
 
-    public $message = 'The value "{{ value }}" is not a valid cron expression.';
+    public string $message = 'The value "{{ value }}" is not a valid cron expression.';
 }

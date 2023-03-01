@@ -14,54 +14,38 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\StandupMeetingReminderRepository")
- */
+#[ORM\Entity(repositoryClass: \App\Repository\StandupMeetingReminderRepository::class)]
 class StandupMeetingReminder
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
     /**
-     * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="update")
      */
-    private $updatedAt;
+    #[ORM\Column(type: 'datetime')]
+    private \DateTimeInterface $updatedAt;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private $isEnabled;
+    #[ORM\Column(type: 'boolean')]
+    private bool $isEnabled;
 
-    /**
-     * @ORM\Column(type="string", length=15)
-     */
-    private $channelId;
+    #[ORM\Column(type: 'string', length: 15)]
+    private string $channelId;
 
-    /**
-     * @ORM\Column(type="array")
-     */
-    private $forecastProjects = [];
+    #[ORM\Column(type: 'array')]
+    private array $forecastProjects = [];
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $updatedBy;
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $updatedBy;
 
-    /**
-     * @ORM\Column(type="string", length=5)
-     */
-    private $time;
+    #[ORM\Column(type: 'string', length: 5)]
+    private string $time;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\SlackTeam", inversedBy="standupMeetingReminders")
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     */
-    private $slackTeam;
+    #[ORM\ManyToOne(targetEntity: SlackTeam::class, inversedBy: 'standupMeetingReminders')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private SlackTeam $slackTeam;
 
     public function getId(): ?int
     {

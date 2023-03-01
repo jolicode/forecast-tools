@@ -20,38 +20,22 @@ use App\Form\MassInsertType;
 use JoliCode\Forecast\Api\Model\Assignment;
 use JoliCode\Forecast\Api\Model\AssignmentsPostBody;
 use JoliCode\Harvest\Api\Model\TimeEntriesPostBody;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-/**
- * @Route("/{slug}/mass-insertion", name="organization_mass_insertion_", defaults={"menu": "mass-insertion"})
- * @IsGranted("admin", subject="forecastAccount")
- * @IsGranted("harvest_admin", subject="forecastAccount")
- */
+#[Route(path: '/{slug}/mass-insertion', name: 'organization_mass_insertion_', defaults: ['menu' => 'mass-insertion'])]
+#[IsGranted('admin', subject: 'forecastAccount')]
+#[IsGranted('harvest_admin', subject: 'forecastAccount')]
 class MassInsertionController extends AbstractController
 {
-    private ForecastClient $forecastClient;
-
-    private ForecastDataSelector $forecastDataSelector;
-
-    private HarvestClient $harvestClient;
-
-    private HarvestDataSelector $harvestDataSelector;
-
-    public function __construct(ForecastClient $forecastClient, HarvestClient $harvestClient, ForecastDataSelector $forecastDataSelector, HarvestDataSelector $harvestDataSelector)
+    public function __construct(private readonly ForecastClient $forecastClient, private readonly HarvestClient $harvestClient, private readonly ForecastDataSelector $forecastDataSelector, private readonly HarvestDataSelector $harvestDataSelector)
     {
-        $this->forecastClient = $forecastClient;
-        $this->harvestClient = $harvestClient;
-        $this->forecastDataSelector = $forecastDataSelector;
-        $this->harvestDataSelector = $harvestDataSelector;
     }
 
-    /**
-     * @Route("/", name="index")
-     */
-    public function index(Request $request, ForecastAccount $forecastAccount)
+    #[Route(path: '/', name: 'index')]
+    public function index(Request $request, ForecastAccount $forecastAccount): \Symfony\Component\HttpFoundation\Response
     {
         $form = $this->createForm(MassInsertType::class);
         $form->handleRequest($request);
@@ -88,17 +72,14 @@ class MassInsertionController extends AbstractController
 
                 if (true === $data['harvest']) {
                     // search the harvest user
-                    /** @phpstan-ignore-next-line */
                     $harvestUserId = $forecastPeople[$personId]->getHarvestUserId();
 
                     // create the harvest timeEntry
                     $harvestBody = new TimeEntriesPostBody();
                     $harvestBody->setHours($data['duration']);
                     $harvestBody->setNotes($data['comment']);
-                    /* @phpstan-ignore-next-line */
                     $harvestBody->setProjectId($harvestProjectId);
                     $harvestBody->setSpentDate($data['date']);
-                    /* @phpstan-ignore-next-line */
                     $harvestBody->setTaskId($harvestTaskAssignment->getTask()->getId());
                     $harvestBody->setUserId($harvestUserId);
                     $this->harvestClient->__client()->createTimeEntry($harvestBody);
@@ -115,7 +96,7 @@ class MassInsertionController extends AbstractController
 
         return $this->render('organization/mass_insertion/index.html.twig', [
             'forecastAccount' => $forecastAccount,
-            'form' => $form->createView(),
+            'form' => $form,
             'controller_name' => 'MassInsertionController',
         ]);
     }

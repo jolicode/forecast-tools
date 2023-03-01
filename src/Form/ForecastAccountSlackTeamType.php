@@ -22,7 +22,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ForecastAccountSlackTeamType extends AbstractType
 {
-    public function __construct(private SlackDataSelector $slackDataSelector)
+    public function __construct(private readonly SlackDataSelector $slackDataSelector)
     {
     }
 

@@ -14,44 +14,32 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\InvoiceNotesRequirementRepository")
- */
+#[ORM\Entity(repositoryClass: \App\Repository\InvoiceNotesRequirementRepository::class)]
 class InvoiceNotesRequirement
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $harvestClientId;
+    #[ORM\Column(type: 'integer')]
+    private int $harvestClientId;
 
     /**
-     * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="update")
      */
-    private $updatedAt;
+    #[ORM\Column(type: 'datetime')]
+    private \DateTimeInterface $updatedAt;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User")
-     */
-    private $updatedBy;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    private ?User $updatedBy = null;
 
-    /**
-     * @ORM\Column(type="text")
-     */
-    private $requirement;
+    #[ORM\Column(type: 'text')]
+    private string $requirement;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\HarvestAccount", inversedBy="invoiceNotesRequirements")
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     */
-    private $harvestAccount;
+    #[ORM\ManyToOne(targetEntity: HarvestAccount::class, inversedBy: 'invoiceNotesRequirements')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private HarvestAccount $harvestAccount;
 
     public function getId(): ?int
     {

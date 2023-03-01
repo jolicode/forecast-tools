@@ -14,43 +14,31 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\SlackCallRepository")
- */
+#[ORM\Entity(repositoryClass: \App\Repository\SlackCallRepository::class)]
 class SlackCall
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
     /**
-     * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
      */
-    private $createdAt;
+    #[ORM\Column(type: 'datetime')]
+    private \DateTimeInterface $createdAt;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $url;
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $url;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
-    private $requestBody;
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $requestBody = null;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
-    private $responseBody;
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $responseBody = null;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
-    private $statusCode;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $statusCode = null;
 
     public function getId(): ?int
     {

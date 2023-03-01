@@ -14,58 +14,40 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\SlackRequestRepository")
- */
+#[ORM\Entity(repositoryClass: \App\Repository\SlackRequestRepository::class)]
 class SlackRequest
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
     /**
-     * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
      */
-    private $createdAt;
+    #[ORM\Column(type: 'datetime')]
+    private \DateTimeInterface $createdAt;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $url;
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $url;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
-    private $response;
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $response = null;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
-    private $requestPayload;
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $requestPayload = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $XSlackSignature;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $XSlackSignature = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $XSlackRequestTimestamp;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $XSlackRequestTimestamp = null;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private $isSignatureValid;
+    #[ORM\Column(type: 'boolean')]
+    private bool $isSignatureValid;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
-    private $requestContent;
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $requestContent = null;
 
     public function getId(): ?int
     {

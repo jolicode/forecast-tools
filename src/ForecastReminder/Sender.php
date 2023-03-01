@@ -23,14 +23,14 @@ use JoliCode\Slack\Exception\SlackErrorResponse;
 
 class Sender
 {
-    private string $botName;
+    private readonly string $botName;
 
     public function __construct(
-        private Builder $builder,
-        private EntityManagerInterface $em,
-        private ForecastAccountSlackTeamRepository $forecastAccountSlackTeamRepository,
-        private ForecastReminderRepository $forecastReminderRepository,
-        private Client $bugsnagClient,
+        private readonly Builder $builder,
+        private readonly EntityManagerInterface $em,
+        private readonly ForecastAccountSlackTeamRepository $forecastAccountSlackTeamRepository,
+        private readonly ForecastReminderRepository $forecastReminderRepository,
+        private readonly Client $bugsnagClient,
     ) {
         $this->botName = $this->getFunnyBotName();
     }
@@ -79,12 +79,12 @@ class Sender
                             $slackClient->chatPostMessage([
                                 'channel' => $forecastAccountSlackTeam->getChannelId(),
                                 'username' => $this->botName,
-                                'blocks' => json_encode($payload['blocks']),
+                                'blocks' => json_encode($payload['blocks'], \JSON_THROW_ON_ERROR),
                             ]);
                             $forecastAccountSlackTeam->setErrorsCount(0);
                             $forecastReminder->setLastTimeSentAt(new \DateTime());
                             $this->em->persist($forecastReminder);
-                        } catch (SlackErrorResponse $e) {
+                        } catch (SlackErrorResponse) {
                             $forecastAccountSlackTeam->increaseErrorsCount();
 
                             if ($forecastAccountSlackTeam->getErrorsCount() > ForecastAccountSlackTeam::MAX_ERRORS_ALLOWED) {

@@ -14,58 +14,42 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\ForecastAccountSlackTeamRepository")
- */
-class ForecastAccountSlackTeam
+#[ORM\Entity(repositoryClass: \App\Repository\ForecastAccountSlackTeamRepository::class)]
+class ForecastAccountSlackTeam implements \Stringable
 {
-    public const MAX_ERRORS_ALLOWED = 3;
+    final public const MAX_ERRORS_ALLOWED = 3;
 
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\SlackTeam", inversedBy="forecastAccountSlackTeams")
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     */
-    private $slackTeam;
+    #[ORM\ManyToOne(targetEntity: SlackTeam::class, inversedBy: 'forecastAccountSlackTeams')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private SlackTeam $slackTeam;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?User $updatedBy = null;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User")
-     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
-     */
-    private $updatedBy;
-
-    /**
-     * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="update")
      */
-    private $updatedAt;
+    #[ORM\Column(type: 'datetime')]
+    private \DateTimeInterface $updatedAt;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $channel;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $channel = null;
 
-    /**
-     * @ORM\Column(type="string", length=15, nullable=true)
-     */
-    private $channelId;
+    #[ORM\Column(type: 'string', length: 15, nullable: true)]
+    private ?string $channelId = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\ForecastAccount", inversedBy="forecastAccountSlackTeams")
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     */
-    private $forecastAccount;
+    #[ORM\ManyToOne(targetEntity: ForecastAccount::class, inversedBy: 'forecastAccountSlackTeams')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ForecastAccount $forecastAccount;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $errorsCount = 0;
+    #[ORM\Column(type: 'integer')]
+    private int $errorsCount = 0;
 
     public function __toString(): string
     {

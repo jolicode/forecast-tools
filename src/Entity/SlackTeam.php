@@ -15,42 +15,34 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\SlackTeamRepository")
- */
-class SlackTeam
+#[ORM\Entity(repositoryClass: \App\Repository\SlackTeamRepository::class)]
+class SlackTeam implements \Stringable
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column(type="string", length=15)
-     */
-    private $teamId;
+    #[ORM\Column(type: 'string', length: 15)]
+    private string $teamId;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $teamName;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $accessToken;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @var Collection<ForecastAccountSlackTeam>
      */
-    private $teamName;
+    #[ORM\OneToMany(targetEntity: ForecastAccountSlackTeam::class, mappedBy: 'slackTeam', orphanRemoval: true)]
+    private Collection $forecastAccountSlackTeams;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @var Collection<StandupMeetingReminder>
      */
-    private $accessToken;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\ForecastAccountSlackTeam", mappedBy="slackTeam", orphanRemoval=true)
-     */
-    private $forecastAccountSlackTeams;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\StandupMeetingReminder", mappedBy="slackTeam", orphanRemoval=true)
-     */
-    private $standupMeetingReminders;
+    #[ORM\OneToMany(targetEntity: StandupMeetingReminder::class, mappedBy: 'slackTeam', orphanRemoval: true)]
+    private Collection $standupMeetingReminders;
 
     public function __construct()
     {
@@ -58,7 +50,7 @@ class SlackTeam
         $this->standupMeetingReminders = new ArrayCollection();
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->teamName;
     }

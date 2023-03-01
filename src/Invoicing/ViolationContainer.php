@@ -13,8 +13,8 @@ namespace App\Invoicing;
 
 class ViolationContainer
 {
-    private $violations = [];
-    private $descViolationContainers = [];
+    private array $violations = [];
+    private array $descViolationContainers = [];
 
     public function __construct($parentViolationContainer = null)
     {

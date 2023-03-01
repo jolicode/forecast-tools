@@ -22,7 +22,7 @@ return $config
         'echo_tag_syntax' => ['format' => 'long'],
         'header_comment' => ['header' => $header],
         'heredoc_to_nowdoc' => true,
-        'list_syntax' => ['syntax' => 'long'],
+        'list_syntax' => ['syntax' => 'short'],
         'no_extra_blank_lines' => ['tokens' => ['break', 'continue', 'extra', 'return', 'throw', 'use', 'parenthesis_brace_block', 'square_brace_block', 'curly_brace_block']],
         'no_unreachable_default_argument_value' => true,
         'no_useless_else' => true,

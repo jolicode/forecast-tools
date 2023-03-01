@@ -18,92 +18,74 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
- * @UniqueEntity("email")
- * @UniqueEntity("forecastId")
- */
-class User
+#[ORM\Entity(repositoryClass: \App\Repository\UserRepository::class)]
+#[UniqueEntity('email')]
+#[UniqueEntity('forecastId')]
+class User implements \Stringable
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column(type="integer", unique=true)
-     */
-    private $forecastId;
+    #[ORM\Column(type: 'integer', unique: true)]
+    private int $forecastId;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $name;
+
+    #[ORM\Column(type: 'string', length: 255, unique: true)]
+    #[Assert\Email]
+    private string $email;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $accessToken;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $refreshToken;
+
+    #[ORM\Column(type: 'integer')]
+    private int $expires;
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $isEnabled = false;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @var Collection<ForecastReminder>
      */
-    private $name;
+    #[ORM\OneToMany(targetEntity: ForecastReminder::class, mappedBy: 'updatedBy')]
+    private Collection $forecastReminders;
 
     /**
-     * @ORM\Column(type="string", length=255, unique=true)
-     * @Assert\Email
-     */
-    private $email;
-
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $accessToken;
-
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $refreshToken;
-
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $expires;
-
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private $isEnabled = false;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\ForecastReminder", mappedBy="updatedBy")
-     */
-    private $forecastReminders;
-
-    /**
-     * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
      */
-    private $createdAt;
+    #[ORM\Column(type: 'datetime')]
+    private \DateTimeInterface $createdAt;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\PublicForecast", mappedBy="createdBy")
+     * @var Collection<PublicForecast>
      */
-    private $publicForecasts;
+    #[ORM\OneToMany(targetEntity: PublicForecast::class, mappedBy: 'createdBy')]
+    private Collection $publicForecasts;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\UserForecastAccount", mappedBy="user", orphanRemoval=true)
+     * @var Collection<UserForecastAccount>
      */
-    private $userForecastAccounts;
+    #[ORM\OneToMany(targetEntity: UserForecastAccount::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $userForecastAccounts;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\UserHarvestAccount", mappedBy="user", orphanRemoval=true)
+     * @var Collection<UserHarvestAccount>
      */
-    private $userHarvestAccounts;
+    #[ORM\OneToMany(targetEntity: UserHarvestAccount::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $userHarvestAccounts;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=ForecastAccount::class)
-     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
-     */
-    private $defaultForecastAccount = null;
+    #[ORM\ManyToOne(targetEntity: ForecastAccount::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?ForecastAccount $defaultForecastAccount = null;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private $isSuperAdmin = false;
+    #[ORM\Column(type: 'boolean')]
+    private bool $isSuperAdmin = false;
 
     public function __construct()
     {
@@ -113,7 +95,7 @@ class User
         $this->userHarvestAccounts = new ArrayCollection();
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->name;
     }

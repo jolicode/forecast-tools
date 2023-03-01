@@ -13,7 +13,7 @@ namespace App\Converter;
 
 class WordToNumberConverter
 {
-    public const WORDS_NUMBER = [
+    final public const WORDS_NUMBER = [
         'one' => '1',
         'two' => '2',
         'three' => '3',
@@ -48,18 +48,16 @@ class WordToNumberConverter
         'billion' => '1000000000',
     ];
 
-    public function convert($value)
+    public function convert(string $value): string
     {
         preg_match_all('#((?:^|and|,| |-)*(\b' . implode('\b|\b', array_keys(self::WORDS_NUMBER)) . '\b))+#i', $value, $tokens);
         $tokens = $tokens[0];
-        usort($tokens, function ($a, $b): int {
-            return \strlen($a) - \strlen($b);
-        });
+        usort($tokens, fn ($a, $b): int => \strlen((string) $a) - \strlen((string) $b));
 
         foreach ($tokens as $token) {
-            $token = trim(strtolower($token));
+            $token = trim(strtolower((string) $token));
 
-            if (0 === strncmp($token, 'and ', 4)) {
+            if (str_starts_with($token, 'and ')) {
                 $token = trim(substr($token, 4));
             }
 
@@ -69,7 +67,7 @@ class WordToNumberConverter
             $total = 0;
 
             foreach ($words as $word) {
-                $word = trim($word);
+                $word = trim((string) $word);
                 $val = self::WORDS_NUMBER[$word];
 
                 if (-1 === bccomp($val, '100')) {
@@ -86,7 +84,7 @@ class WordToNumberConverter
             }
 
             $total = bcadd($total, $num);
-            $value = preg_replace("#\b$token\b#i", $total, $value);
+            $value = preg_replace("#\b$token\b#i", $total, (string) $value);
         }
 
         return $value;

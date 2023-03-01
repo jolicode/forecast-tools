@@ -22,7 +22,7 @@ class OAuthUserProvider extends BaseOAuthUserProvider
     public function refreshUser(UserInterface $user): UserInterface
     {
         if (!$user instanceof OAuthUser && !$user instanceof BaseOAuthUser) {
-            throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', \get_class($user)));
+            throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', $user::class));
         }
 
         return new OAuthUser($user->getUsername(), $user->getRoles());

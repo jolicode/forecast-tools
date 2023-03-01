@@ -21,18 +21,10 @@ use Psr\Log\LoggerInterface;
 
 class HarvestTokenRefresher
 {
-    public const DELAY = 7 * 86400;
-    private $clientRegistry;
-    private $em;
-    private $logger;
-    private $forecastAccountRepository;
+    final public const DELAY = 7 * 86400;
 
-    public function __construct(EntityManagerInterface $em, ClientRegistry $clientRegistry, LoggerInterface $logger, ForecastAccountRepository $forecastAccountRepository)
+    public function __construct(private readonly EntityManagerInterface $em, private readonly ClientRegistry $clientRegistry, private readonly LoggerInterface $logger, private readonly ForecastAccountRepository $forecastAccountRepository)
     {
-        $this->clientRegistry = $clientRegistry;
-        $this->em = $em;
-        $this->logger = $logger;
-        $this->forecastAccountRepository = $forecastAccountRepository;
     }
 
     public function refresh()
@@ -48,7 +40,7 @@ class HarvestTokenRefresher
                     ++$updated;
                 }
             } catch (HarvestIdentityProviderException $e) {
-                $response = json_decode($e->getResponseBody(), true);
+                $response = json_decode($e->getResponseBody(), true, 512, \JSON_THROW_ON_ERROR);
                 $response['account_id'] = $forecastAccount->getId();
                 $this->logger->error(sprintf('Could not refresh token: "%s"', $e->getMessage()), $response);
                 ++$failed;

@@ -19,14 +19,14 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Handler
 {
-    public const SLACK_COMMAND_NAME = '/forecast';
-    public const SLACK_COMMAND_OPTION_HELP = 'help';
+    final public const SLACK_COMMAND_NAME = '/forecast';
+    final public const SLACK_COMMAND_OPTION_HELP = 'help';
 
     public function __construct(
-        private Builder $builder,
-        private ForecastReminderRepository $forecastReminderRepository,
-        private SlackSender $slackSender,
-        private WordToNumberConverter $wordToNumberConverter,
+        private readonly Builder $builder,
+        private readonly ForecastReminderRepository $forecastReminderRepository,
+        private readonly SlackSender $slackSender,
+        private readonly WordToNumberConverter $wordToNumberConverter,
     ) {
     }
 
@@ -68,11 +68,11 @@ class Handler
         $text = $this->wordToNumberConverter->convert($text);
         $sign = '';
 
-        if (0 === strncmp($text, 'in ', 3)) {
+        if (str_starts_with($text, 'in ')) {
             $text = '+' . substr($text, 3);
         }
 
-        if (0 === substr_compare($text, ' ago', -4)) {
+        if (str_ends_with($text, ' ago')) {
             $text = '-' . substr($text, 0, \strlen($text) - 4);
             $sign = '-';
         }
@@ -116,7 +116,7 @@ EOT,
     {
         $forecastReminders = $this->forecastReminderRepository->findByTeamId($request->request->get('team_id'));
 
-        if (0 === \count($forecastReminders)) {
+        if (0 === (is_countable($forecastReminders) ? \count($forecastReminders) : 0)) {
             $this->slackSender->sendMessage(
                 $request->request->get('response_url'),
                 $request->request->get('trigger_id'),

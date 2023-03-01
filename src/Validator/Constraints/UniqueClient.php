@@ -18,5 +18,5 @@ use Symfony\Component\Validator\Constraints\Unique;
  */
 class UniqueClient extends Unique
 {
-    public $accessor = 'getHarvestClientId';
+    public string $accessor = 'getHarvestClientId';
 }
