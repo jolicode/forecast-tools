@@ -27,11 +27,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 
 class UserCrudController extends AbstractCrudController
 {
-    private $adminUrlGenerator;
-
-    public function __construct(AdminUrlGenerator $adminUrlGenerator)
+    public function __construct(private readonly AdminUrlGenerator $adminUrlGenerator)
     {
-        $this->adminUrlGenerator = $adminUrlGenerator;
     }
 
     public static function getEntityFqcn(): string
@@ -113,7 +110,7 @@ class UserCrudController extends AbstractCrudController
                     ];
                     $tmp = [];
 
-                    foreach ($mapping as list($format, $toDisplay)) {
+                    foreach ($mapping as [$format, $toDisplay]) {
                         if ($interval->format('%' . $format) > 0) {
                             $tmp[] = sprintf('%s%s', $interval->format("%$format"), $toDisplay);
                         }
@@ -133,9 +130,7 @@ class UserCrudController extends AbstractCrudController
     public function configureActions(Actions $actions): Actions
     {
         $impersonate = Action::new('impersonate', 'Impersonate')
-            ->linkToUrl(function (User $entity) {
-                return '/?_switch_user=' . $entity->getEmail();
-            })
+            ->linkToUrl(fn (User $entity) => '/?_switch_user=' . $entity->getEmail())
         ;
 
         return $actions

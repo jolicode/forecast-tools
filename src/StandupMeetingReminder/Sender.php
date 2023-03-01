@@ -20,19 +20,8 @@ use Bugsnag\Client;
 
 class Sender
 {
-    private ForecastAccountRepository $forecastAccountRepository;
-    private ForecastDataSelector $forecastDataSelector;
-    private SlackDataSelector $slackDataSelector;
-    private StandupMeetingReminderRepository $standupMeetingReminderRepository;
-    private Client $bugsnagClient;
-
-    public function __construct(StandupMeetingReminderRepository $standupMeetingReminderRepository, ForecastAccountRepository $forecastAccountRepository, ForecastDataSelector $forecastDataSelector, SlackDataSelector $slackDataSelector, Client $bugsnagClient)
+    public function __construct(private readonly StandupMeetingReminderRepository $standupMeetingReminderRepository, private readonly ForecastAccountRepository $forecastAccountRepository, private readonly ForecastDataSelector $forecastDataSelector, private readonly SlackDataSelector $slackDataSelector, private readonly Client $bugsnagClient)
     {
-        $this->standupMeetingReminderRepository = $standupMeetingReminderRepository;
-        $this->forecastAccountRepository = $forecastAccountRepository;
-        $this->forecastDataSelector = $forecastDataSelector;
-        $this->slackDataSelector = $slackDataSelector;
-        $this->bugsnagClient = $bugsnagClient;
     }
 
     public function send()
@@ -68,7 +57,7 @@ class Sender
         }
 
         // format a string to ping the lucky winners
-        if (\count($participants) > 1) {
+        if ((is_countable($participants) ? \count($participants) : 0) > 1) {
             $lastParticipant = ' and ' . array_pop($participants);
             $participants = implode(', ', $participants) . $lastParticipant;
             $message = sprintf("🕘 It's time for the stand-up meeting!\nToday's participants: %s", $participants);
@@ -107,9 +96,7 @@ class Sender
             $placeholders = $this->forecastDataSelector->getPlaceholdersById();
             $today = new \DateTime('today');
             $assignments = $this->forecastDataSelector->getAssignments($today, new \DateTime('tomorrow'));
-            $assignments = array_values(array_filter($assignments, function ($assignment) use ($today): bool {
-                return $assignment->getStartDate()->format('Y-m-d') <= $today->format('Y-m-d') && $assignment->getEndDate()->format('Y-m-d') >= $today->format('Y-m-d');
-            }));
+            $assignments = array_values(array_filter($assignments, fn ($assignment): bool => $assignment->getStartDate()->format('Y-m-d') <= $today->format('Y-m-d') && $assignment->getEndDate()->format('Y-m-d') >= $today->format('Y-m-d')));
 
             foreach ($assignments as $assignment) {
                 if (\in_array((string) $assignment->getProjectId(), $standupMeetingReminder->getForecastProjects(), true)) {

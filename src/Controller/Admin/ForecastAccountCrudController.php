@@ -27,11 +27,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 
 class ForecastAccountCrudController extends AbstractCrudController
 {
-    private $adminUrlGenerator;
-
-    public function __construct(AdminUrlGenerator $adminUrlGenerator)
+    public function __construct(private readonly AdminUrlGenerator $adminUrlGenerator)
     {
-        $this->adminUrlGenerator = $adminUrlGenerator;
     }
 
     public static function getEntityFqcn(): string
@@ -52,9 +49,7 @@ class ForecastAccountCrudController extends AbstractCrudController
             IdField::new('id'),
             TextField::new('name'),
             IntegerField::new('forecastId')
-                ->formatValue(function ($value): string {
-                    return sprintf('<a href="https://forecastapp.com/%s/schedule/team">%s</a>', $value, $value);
-                })->onlyOnDetail(),
+                ->formatValue(fn ($value): string => sprintf('<a href="https://forecastapp.com/%s/schedule/team">%s</a>', $value, $value))->onlyOnDetail(),
             AssociationField::new('harvestAccount'),
             AssociationField::new('userForecastAccounts', 'Users')->onlyOnIndex(),
             AssociationField::new('publicForecasts', 'Public forecasts')->onlyOnIndex(),
@@ -66,9 +61,7 @@ class ForecastAccountCrudController extends AbstractCrudController
                 ->formatValue(function ($value, $entity): string {
                     $formattedValue = [];
                     $users = $entity->getUserForecastAccounts()->toArray();
-                    usort($users, function ($a, $b) {
-                        return strcmp($a->getUser()->getName(), $b->getUser()->getName());
-                    });
+                    usort($users, fn ($a, $b) => strcmp((string) $a->getUser()->getName(), (string) $b->getUser()->getName()));
 
                     foreach ($users as $user) {
                         $url = $this->adminUrlGenerator
@@ -93,9 +86,7 @@ class ForecastAccountCrudController extends AbstractCrudController
             TextField::new('accessToken')->onlyOnDetail(),
             TextField::new('refreshToken')->onlyOnDetail(),
             BooleanField::new('refreshToken', 'Refreshable')
-                ->formatValue(function ($value): bool {
-                    return null !== $value;
-                })->setCustomOptions([
+                ->formatValue(fn ($value): bool => null !== $value)->setCustomOptions([
                     'renderAsSwitch' => false,
                 ]),
             IntegerField::new('expires', 'Token expiration')
@@ -111,7 +102,7 @@ class ForecastAccountCrudController extends AbstractCrudController
                     ];
                     $tmp = [];
 
-                    foreach ($mapping as list($format, $toDisplay)) {
+                    foreach ($mapping as [$format, $toDisplay]) {
                         if ($interval->format('%' . $format) > 0) {
                             $tmp[] = sprintf('%s%s', $interval->format("%$format"), $toDisplay);
                         }

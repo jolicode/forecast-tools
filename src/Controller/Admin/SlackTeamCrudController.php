@@ -24,11 +24,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 
 class SlackTeamCrudController extends AbstractCrudController
 {
-    private $adminUrlGenerator;
-
-    public function __construct(AdminUrlGenerator $adminUrlGenerator)
+    public function __construct(private readonly AdminUrlGenerator $adminUrlGenerator)
     {
-        $this->adminUrlGenerator = $adminUrlGenerator;
     }
 
     public static function getEntityFqcn(): string
@@ -69,9 +66,7 @@ class SlackTeamCrudController extends AbstractCrudController
                     return implode(', ', $formattedValue);
                 }),
             BooleanField::new('accessToken', 'usable')
-                ->formatValue(function ($value): bool {
-                    return '' !== $value;
-                })->setCustomOptions([
+                ->formatValue(fn ($value): bool => '' !== $value)->setCustomOptions([
                     'renderAsSwitch' => false,
                 ]),
             TextField::new('teamName'),

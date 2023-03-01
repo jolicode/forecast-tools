@@ -21,7 +21,7 @@ class HarvestIdentityProviderException extends IdentityProviderException
      *
      * @param array|string $data Parsed response data
      */
-    public static function clientException(ResponseInterface $response, $data): self
+    public static function clientException(ResponseInterface $response, array|string $data): self
     {
         return static::fromResponse(
             $response,
@@ -34,7 +34,7 @@ class HarvestIdentityProviderException extends IdentityProviderException
      *
      * @param array|string $data Parsed response data
      */
-    public static function oauthException(ResponseInterface $response, $data): self
+    public static function oauthException(ResponseInterface $response, array|string $data): self
     {
         return static::fromResponse(
             $response,

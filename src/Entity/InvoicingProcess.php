@@ -17,63 +17,48 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\InvoicingProcessRepository")
- */
+#[ORM\Entity(repositoryClass: \App\Repository\InvoicingProcessRepository::class)]
 class InvoicingProcess
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
     /**
-     * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
      */
-    private $createdAt;
+    #[ORM\Column(type: 'datetime')]
+    private \DateTimeInterface $createdAt;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?User $createdBy = null;
+
+    #[ORM\Column(type: 'date')]
+    #[Assert\LessThanOrEqual(propertyPath: 'billingPeriodEnd')]
+    private \DateTimeInterface $billingPeriodStart;
+
+    #[ORM\Column(type: 'date')]
+    #[Assert\LessThanOrEqual('today')]
+    private \DateTimeInterface $billingPeriodEnd;
+
+    #[ORM\ManyToOne(targetEntity: ForecastAccount::class, inversedBy: 'invoicingProcesses')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ForecastAccount $forecastAccount;
+
+    #[ORM\ManyToOne(targetEntity: HarvestAccount::class)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private HarvestAccount $harvestAccount;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $currentPlace;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User")
-     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
+     * @var Collection<InvoiceExplanation>
      */
-    private $createdBy;
-
-    /**
-     * @ORM\Column(type="date")
-     * @Assert\LessThanOrEqual(propertyPath="billingPeriodEnd")
-     */
-    private $billingPeriodStart;
-
-    /**
-     * @ORM\Column(type="date")
-     * @Assert\LessThanOrEqual("today")
-     */
-    private $billingPeriodEnd;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\ForecastAccount", inversedBy="invoicingProcesses")
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     */
-    private $forecastAccount;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\HarvestAccount")
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     */
-    private $harvestAccount;
-
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $currentPlace;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\InvoiceExplanation", mappedBy="invoicingProcess", orphanRemoval=true)
-     */
-    private $invoiceExplanations;
+    #[ORM\OneToMany(targetEntity: InvoiceExplanation::class, mappedBy: 'invoicingProcess', orphanRemoval: true)]
+    private Collection $invoiceExplanations;
 
     public function __construct()
     {

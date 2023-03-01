@@ -22,7 +22,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class HarvestSettingsType extends AbstractType
 {
-    public function __construct(private HarvestDataSelector $harvestDataSelector)
+    public function __construct(private readonly HarvestDataSelector $harvestDataSelector)
     {
     }
 

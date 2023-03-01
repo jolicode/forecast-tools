@@ -24,14 +24,8 @@ class ForecastPromoteAdminCommand extends Command
 {
     protected static $defaultName = 'forecast:promote-admin';
 
-    private EntityManagerInterface $em;
-    private UserRepository $userRepository;
-
-    public function __construct(EntityManagerInterface $em, UserRepository $userRepository)
+    public function __construct(private readonly EntityManagerInterface $em, private readonly UserRepository $userRepository)
     {
-        $this->em = $em;
-        $this->userRepository = $userRepository;
-
         parent::__construct();
     }
 

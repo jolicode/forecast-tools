@@ -13,12 +13,10 @@ namespace App\Slack;
 
 class SignatureComputer
 {
-    public const VERSION = 'v0';
-    private string $signingSecret;
+    final public const VERSION = 'v0';
 
-    public function __construct(string $signingSecret)
+    public function __construct(private readonly string $signingSecret)
     {
-        $this->signingSecret = $signingSecret;
     }
 
     public function compute(string $timestamp, string $payload): string

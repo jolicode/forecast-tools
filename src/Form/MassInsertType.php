@@ -32,8 +32,8 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 class MassInsertType extends AbstractType
 {
     public function __construct(
-        private ForecastDataSelector $forecastDataSelector,
-        private HarvestDataSelector $harvestDataSelector
+        private readonly ForecastDataSelector $forecastDataSelector,
+        private readonly HarvestDataSelector $harvestDataSelector
     ) {
     }
 
@@ -123,8 +123,8 @@ class MassInsertType extends AbstractType
     {
         $resolver->setDefaults([
             'constraints' => [
-                new Callback([$this, 'validateForecastOrHarvest']),
-                new Callback([$this, 'validatePreexisting']),
+                new Callback($this->validateForecastOrHarvest(...)),
+                new Callback($this->validatePreexisting(...)),
             ],
         ]);
     }

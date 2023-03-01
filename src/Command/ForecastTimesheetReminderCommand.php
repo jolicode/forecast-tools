@@ -20,12 +20,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class ForecastTimesheetReminderCommand extends Command
 {
     protected static $defaultName = 'forecast:timesheet-reminder';
-    private $timesheetReminder;
 
-    public function __construct(Reminder $timesheetReminder)
+    public function __construct(private readonly Reminder $timesheetReminder)
     {
-        $this->timesheetReminder = $timesheetReminder;
-
         parent::__construct();
     }
 

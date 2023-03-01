@@ -21,7 +21,7 @@ class CronExpressionValidator extends ConstraintValidator
     /**
      * {@inheritdoc}
      */
-    public function validate($value, Constraint $constraint)
+    public function validate(mixed $value, Constraint $constraint): void
     {
         if (!$constraint instanceof CronExpression) {
             throw new UnexpectedTypeException($constraint, CronExpression::class);

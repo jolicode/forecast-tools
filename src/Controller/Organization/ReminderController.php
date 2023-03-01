@@ -21,15 +21,11 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route("/{slug}/reminder", name="organization_reminder_", defaults={"menu": "reminder"})
- */
+#[Route(path: '/{slug}/reminder', name: 'organization_reminder_', defaults: ['menu' => 'reminder'])]
 class ReminderController extends AbstractController
 {
-    /**
-     * @Route("/", name="index")
-     */
-    public function index(Request $request, ForecastAccount $forecastAccount, UserRepository $userRepository, EntityManagerInterface $em)
+    #[Route(path: '/', name: 'index')]
+    public function index(Request $request, ForecastAccount $forecastAccount, UserRepository $userRepository, EntityManagerInterface $em): \Symfony\Component\HttpFoundation\Response
     {
         $forecastReminder = $forecastAccount->getForecastReminder();
 
@@ -67,7 +63,7 @@ class ReminderController extends AbstractController
 
         return $this->render('organization/reminder/index.html.twig', [
             'forecastAccount' => $forecastAccount,
-            'form' => $form->createView(),
+            'form' => $form,
         ]);
     }
 }

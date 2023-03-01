@@ -21,13 +21,8 @@ use Twig\TwigFunction;
 
 class OrganizationRoutingExtension extends AbstractExtension
 {
-    private $generator;
-    private $requestStack;
-
-    public function __construct(UrlGeneratorInterface $generator, RequestStack $requestStack)
+    public function __construct(private readonly UrlGeneratorInterface $generator, private readonly RequestStack $requestStack)
     {
-        $this->generator = $generator;
-        $this->requestStack = $requestStack;
     }
 
     /**
@@ -36,8 +31,8 @@ class OrganizationRoutingExtension extends AbstractExtension
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('organization_url', [$this, 'getUrl'], ['is_safe_callback' => [$this, 'isUrlGenerationSafe']]),
-            new TwigFunction('organization_path', [$this, 'getPath'], ['is_safe_callback' => [$this, 'isUrlGenerationSafe']]),
+            new TwigFunction('organization_url', $this->getUrl(...), ['is_safe_callback' => $this->isUrlGenerationSafe(...)]),
+            new TwigFunction('organization_path', $this->getPath(...), ['is_safe_callback' => $this->isUrlGenerationSafe(...)]),
         ];
     }
 

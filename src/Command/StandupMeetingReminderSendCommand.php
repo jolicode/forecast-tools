@@ -20,12 +20,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class StandupMeetingReminderSendCommand extends Command
 {
     protected static $defaultName = 'forecast:standup-meeting-reminder-send';
-    private $standupMeetingReminderSender;
 
-    public function __construct(Sender $standupMeetingReminderSender)
+    public function __construct(private readonly Sender $standupMeetingReminderSender)
     {
-        $this->standupMeetingReminderSender = $standupMeetingReminderSender;
-
         parent::__construct();
     }
 

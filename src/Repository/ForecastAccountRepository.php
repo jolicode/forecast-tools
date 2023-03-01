@@ -75,11 +75,9 @@ class ForecastAccountRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param mixed $user
-     *
      * @return ForecastAccount[] Returns an array of ForecastAccount objects
      */
-    public function findForecastAccountsForUser($user)
+    public function findForecastAccountsForUser(mixed $user)
     {
         return $this->findForecastAccountsForEmail($user->getEmail());
     }

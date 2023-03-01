@@ -20,24 +20,21 @@ use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
 /**
- * @method \JoliCode\Slack\Api\Model\ConversationsInfoGetResponse200|\JoliCode\Slack\Api\Model\ConversationsInfoGetResponsedefault|\Psr\Http\Message\ResponseInterface      conversationsInfo(array $queryParameters = [])
+ * @method \JoliCode\Slack\Api\Model\ConversationsInfoGetResponse200|\JoliCode\Slack\Api\Model\ConversationsInfoGetResponsedefault|\Psr\Http\Message\ResponseInterface|null conversationsInfo(array $queryParameters = [])
  * @method \JoliCode\Slack\Api\Model\ConversationsListGetResponse200|\JoliCode\Slack\Api\Model\ConversationsListGetResponsedefault|\Psr\Http\Message\ResponseInterface|null conversationsList(array $queryParameters = [])
  * @method \JoliCode\Slack\Api\Model\UsersInfoGetResponse200|\JoliCode\Slack\Api\Model\UsersInfoGetResponsedefault|\Psr\Http\Message\ResponseInterface|null                 usersInfo(array $queryParameters = [])
  * @method \JoliCode\Slack\Api\Model\UsersListGetResponse200|\JoliCode\Slack\Api\Model\UsersListGetResponsedefault|\Psr\Http\Message\ResponseInterface|null                 usersList(array $queryParameters = [])
  */
 class SlackClient extends AbstractClient
 {
-    private EntityManagerInterface $em;
-
     /** @var Client[] */
-    private $clients = [];
+    private array $clients = [];
 
     private ?SlackTeam $slackTeam = null;
 
-    public function __construct(AdapterInterface $pool, EntityManagerInterface $em)
+    public function __construct(AdapterInterface $pool, private readonly EntityManagerInterface $em)
     {
         $this->pool = $pool;
-        $this->em = $em;
     }
 
     protected function __client(): Client
@@ -63,9 +60,7 @@ class SlackClient extends AbstractClient
         $cacheKey = sprintf('%s-%s-%s', $this->__namespace(), $name, md5(serialize($arguments)));
         $this->__addKey($cacheKey);
 
-        return $this->pool->get($cacheKey, function (ItemInterface $item) use ($name, $arguments) {
-            return $this->call($name, $arguments);
-        });
+        return $this->pool->get($cacheKey, fn (ItemInterface $item) => $this->call($name, $arguments));
     }
 
     public function getSlackTeam(): SlackTeam

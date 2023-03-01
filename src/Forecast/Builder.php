@@ -21,13 +21,8 @@ use function Symfony\Component\String\u;
 
 class Builder
 {
-    protected PersonToWorkingDaysConverter $personToWorkingDaysConverter;
-    private ForecastDataSelector $forecastDataSelector;
-
-    public function __construct(ForecastDataSelector $forecastDataSelector, PersonToWorkingDaysConverter $personToWorkingDaysConverter)
+    public function __construct(private readonly ForecastDataSelector $forecastDataSelector, protected PersonToWorkingDaysConverter $personToWorkingDaysConverter)
     {
-        $this->forecastDataSelector = $forecastDataSelector;
-        $this->personToWorkingDaysConverter = $personToWorkingDaysConverter;
     }
 
     public function buildAssignments(PublicForecast $publicForecast, \DateTime $start, \DateTime $end)
@@ -90,33 +85,25 @@ class Builder
             ],
         ];
 
-        if (\count($publicForecast->getClients()) > 0) {
+        if ((is_countable($publicForecast->getClients()) ? \count($publicForecast->getClients()) : 0) > 0) {
             // filter by clients
-            $allowedProjects = array_filter($allowedProjects, function ($project) use ($publicForecast): bool {
-                return \in_array($project->getClientId(), $publicForecast->getClients(), true);
-            });
+            $allowedProjects = array_filter($allowedProjects, fn ($project): bool => \in_array($project->getClientId(), $publicForecast->getClients(), true));
         }
 
-        if (\count($publicForecast->getProjects()) > 0) {
+        if ((is_countable($publicForecast->getProjects()) ? \count($publicForecast->getProjects()) : 0) > 0) {
             // filter by projects
-            $allowedProjects = array_filter($allowedProjects, function ($project) use ($publicForecast): bool {
-                return \in_array($project->getId(), $publicForecast->getProjects(), true);
-            });
+            $allowedProjects = array_filter($allowedProjects, fn ($project): bool => \in_array($project->getId(), $publicForecast->getProjects(), true));
         }
 
         foreach ($allowedProjects as $allowedProject) {
             $allowedProjectIds[] = $allowedProject->getId();
         }
 
-        $assignments = array_filter($assignments, function ($assignment) use ($allowedProjectIds): bool {
-            return \in_array($assignment->getProjectId(), $allowedProjectIds, true);
-        });
+        $assignments = array_filter($assignments, fn ($assignment): bool => \in_array($assignment->getProjectId(), $allowedProjectIds, true));
 
-        if (\count($publicForecast->getPeople()) + \count($publicForecast->getPlaceholders()) > 0) {
+        if ((is_countable($publicForecast->getPeople()) ? \count($publicForecast->getPeople()) : 0) + (is_countable($publicForecast->getPlaceholders()) ? \count($publicForecast->getPlaceholders()) : 0) > 0) {
             // filter by people
-            $assignments = array_filter($assignments, function ($assignment) use ($publicForecast): bool {
-                return \in_array($assignment->getPersonId(), $publicForecast->getPeople(), true) || \in_array($assignment->getPlaceholderId(), $publicForecast->getPlaceholders(), true);
-            });
+            $assignments = array_filter($assignments, fn ($assignment): bool => \in_array($assignment->getPersonId(), $publicForecast->getPeople(), true) || \in_array($assignment->getPlaceholderId(), $publicForecast->getPlaceholders(), true));
         }
 
         foreach ($assignments as $assignment) {
@@ -237,23 +224,21 @@ class Builder
         }
 
         foreach ($userAssignments as $projectId => $projectAssignments) {
-            uasort($userAssignments[$projectId]['users'], function ($a, $b): int {
-                return strcmp(u($a['name'])->folded(), u($b['name'])->folded());
-            });
+            uasort($userAssignments[$projectId]['users'], fn ($a, $b): int => strcmp((string) u($a['name'])->folded(), (string) u($b['name'])->folded()));
         }
 
         uasort($userAssignments, function ($a, $b): int {
             /* @phpstan-ignore-next-line */
             if ($a['firstDay'] === $b['firstDay']) {
                 if (u($a['client'])->folded() === u($b['client'])->folded()) {
-                    return strcmp(u($a['project']->getName())->folded(), u($b['project']->getName())->folded());
+                    return strcmp((string) u($a['project']->getName())->folded(), (string) u($b['project']->getName())->folded());
                 }
 
-                return strcmp(u($a['client'])->folded(), u($b['client'])->folded());
+                return strcmp((string) u($a['client'])->folded(), (string) u($b['client'])->folded());
             }
 
             /* @phpstan-ignore-next-line */
-            return strcmp($a['firstDay'], $b['firstDay']);
+            return strcmp((string) $a['firstDay'], (string) $b['firstDay']);
         });
 
         return $userAssignments;

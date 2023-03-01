@@ -16,10 +16,10 @@ use App\Repository\UserRepository;
 use JoliCode\Harvest\Api\Client;
 use JoliCode\Harvest\Api\Model\Error;
 use JoliCode\Harvest\ClientFactory;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authorization\Voter\AuthenticatedVoter;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Contracts\Cache\ItemInterface;
 
 /**
@@ -35,21 +35,15 @@ use Symfony\Contracts\Cache\ItemInterface;
 class HarvestClient extends AbstractClient
 {
     /** @var Client[] */
-    private $clients = [];
-    private $defaultClient = null;
-    private $namespace = '';
-    private $requestStack;
-    private $security;
-    private $userRepository;
+    private array $clients = [];
+    private ?\JoliCode\Harvest\Api\Client $defaultClient = null;
+    private string $namespace = '';
     private bool $cacheEnabled = true;
-    private $cacheStatusForNextRequestOnly = null;
+    private ?bool $cacheStatusForNextRequestOnly = null;
 
-    public function __construct(RequestStack $requestStack, AdapterInterface $pool, Security $security, UserRepository $userRepository)
+    public function __construct(private readonly RequestStack $requestStack, AdapterInterface $pool, private readonly Security $security, private readonly UserRepository $userRepository)
     {
-        $this->requestStack = $requestStack;
         $this->pool = $pool;
-        $this->security = $security;
-        $this->userRepository = $userRepository;
     }
 
     public function __disableCache(): void
@@ -88,12 +82,12 @@ class HarvestClient extends AbstractClient
             $forecastAccount = $this->requestStack->getCurrentRequest()->attributes->get('forecastAccount');
             $harvestAccount = $forecastAccount->getHarvestAccount();
 
-            if ($this->security->getUser() && !$this->security->isGranted(AuthenticatedVoter::IS_IMPERSONATOR)) {
+            if (null !== $this->security->getUser() && !$this->security->isGranted(AuthenticatedVoter::IS_IMPERSONATOR)) {
                 $email = $this->security->getUser()->getUserIdentifier();
                 $user = $this->userRepository->findOneBy(['email' => $email]);
             }
 
-            if ($user) {
+            if (null !== $user) {
                 $accessToken = $user->getAccessToken();
             } else {
                 $accessToken = $forecastAccount->getAccessToken();
@@ -151,7 +145,7 @@ class HarvestClient extends AbstractClient
             // if more than 60 seconds, try to check if something has changed
             if ($now->getTimestamp() - $value['time']->getTimestamp() > 60) {
                 // get the last updated_at from the current objects
-                $getter = sprintf('get%s', ucfirst($nodeName));
+                $getter = sprintf('get%s', ucfirst((string) $nodeName));
                 $lastUpdated = array_reduce(\call_user_func([$response, $getter]), function ($carry, $item) {
                     if (!method_exists($item, 'getUpdatedAt')) {
                         return null;
@@ -209,7 +203,7 @@ class HarvestClient extends AbstractClient
                 $name,
             ], $arguments);
 
-            if (Error::class === \get_class($response)) {
+            if (Error::class === $response::class) {
                 return $responseToUpdate ?? \call_user_func([new $expectedClass(), $setter], []);
             }
 

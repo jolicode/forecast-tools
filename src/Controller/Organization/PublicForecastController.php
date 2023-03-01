@@ -18,22 +18,20 @@ use App\Form\PublicForecastType;
 use App\Repository\PublicForecastRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-/**
- * @Route("/{slug}/public-forecasts", name="organization_public_forecasts_", defaults={"menu": "public-forecasts"})
- */
+#[Route(path: '/{slug}/public-forecasts', name: 'organization_public_forecasts_', defaults: ['menu' => 'public-forecasts'])]
 class PublicForecastController extends AbstractController
 {
-    /**
-     * @Route("/", name="list")
-     */
-    public function publicForecasts(ForecastAccount $forecastAccount, PublicForecastRepository $publicForecastRepository)
+    #[Route(path: '/', name: 'list')]
+    public function publicForecasts(ForecastAccount $forecastAccount, PublicForecastRepository $publicForecastRepository): Response
     {
         $publicForecasts = $publicForecastRepository->findBy([
             'forecastAccount' => $forecastAccount,
@@ -47,11 +45,9 @@ class PublicForecastController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/create", name="create")
-     * @Security("is_granted('admin', forecastAccount) or forecastAccount.getAllowNonAdmins()")
-     */
-    public function create(Request $request, ForecastAccount $forecastAccount, UserRepository $userRepository, EntityManagerInterface $em, UniqueTokenGenerator $tokenGenerator)
+    #[Route(path: '/create', name: 'create')]
+    #[IsGranted(new Expression('is_granted("admin", subject) or subject.getAllowNonAdmins()'), subject: 'forecastAccount')]
+    public function create(Request $request, ForecastAccount $forecastAccount, UserRepository $userRepository, EntityManagerInterface $em, UniqueTokenGenerator $tokenGenerator): Response
     {
         $publicForecast = new PublicForecast();
         $publicForecast->setToken($tokenGenerator->generate());
@@ -78,16 +74,17 @@ class PublicForecastController extends AbstractController
 
         return $this->render('organization/public_forecast/create.html.twig', [
             'forecastAccount' => $forecastAccount,
-            'form' => $form->createView(),
+            'form' => $form,
         ]);
     }
 
-    /**
-     * @Route("/edit/{publicForecastId}", name="edit")
-     * @ParamConverter("publicForecast", options={"id" = "publicForecastId"})
-     * @Security("is_granted('admin', forecastAccount) or forecastAccount.getAllowNonAdmins()")
-     */
-    public function edit(Request $request, ForecastAccount $forecastAccount, PublicForecast $publicForecast, EntityManagerInterface $em)
+    #[Route(path: '/edit/{publicForecastId}', name: 'edit')]
+    #[IsGranted(new Expression('is_granted("admin", subject) or subject.getAllowNonAdmins()'), subject: 'forecastAccount')]
+    public function edit(
+        Request $request,
+        ForecastAccount $forecastAccount,
+        #[MapEntity(id: 'publicForecastId')] PublicForecast $publicForecast,
+        EntityManagerInterface $em): Response
     {
         $form = $this->createForm(PublicForecastType::class, $publicForecast);
         $form->add('save', SubmitType::class, ['label' => 'Save public forecast', 'attr' => ['class' => 'btn btn-primary']]);
@@ -103,17 +100,18 @@ class PublicForecastController extends AbstractController
 
         return $this->render('organization/public_forecast/edit.html.twig', [
             'forecastAccount' => $forecastAccount,
-            'form' => $form->createView(),
+            'form' => $form,
             'publicForecast' => $publicForecast,
         ]);
     }
 
-    /**
-     * @Route("/delete/{publicForecastId}", name="delete")
-     * @ParamConverter("publicForecast", options={"id" = "publicForecastId"})
-     * @Security("is_granted('admin', forecastAccount) or forecastAccount.getAllowNonAdmins()")
-     */
-    public function delete(Request $request, ForecastAccount $forecastAccount, PublicForecast $publicForecast, EntityManagerInterface $em)
+    #[Route(path: '/delete/{publicForecastId}', name: 'delete')]
+    #[IsGranted(new Expression('is_granted("admin", subject) or subject.getAllowNonAdmins()'), subject: 'forecastAccount')]
+    public function delete(
+        Request $request,
+        ForecastAccount $forecastAccount,
+        #[MapEntity(id: 'publicForecastId')] PublicForecast $publicForecast,
+        EntityManagerInterface $em): Response
     {
         $form = $this->createFormBuilder(null)
             ->setAction($this->generateUrl('organization_public_forecasts_delete', ['slug' => $forecastAccount->getSlug(), 'publicForecastId' => $publicForecast->getId()]))
@@ -134,7 +132,7 @@ class PublicForecastController extends AbstractController
 
         return $this->render('organization/public_forecast/delete.html.twig', [
             'forecastAccount' => $forecastAccount,
-            'form' => $form->createView(),
+            'form' => $form,
             'publicForecast' => $publicForecast,
         ]);
     }

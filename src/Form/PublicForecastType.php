@@ -23,7 +23,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class PublicForecastType extends AbstractType
 {
-    public function __construct(private ForecastDataSelector $forecastDataSelector)
+    public function __construct(private readonly ForecastDataSelector $forecastDataSelector)
     {
     }
 

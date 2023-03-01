@@ -13,25 +13,20 @@ namespace App\Controller;
 
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 class AuthController extends AbstractController
 {
-    /**
-     * @Route("/connect", name="connect_harvest")
-     */
-    public function connectAction(ClientRegistry $clientRegistry)
+    #[Route(path: '/connect', name: 'connect_harvest')]
+    public function connectAction(ClientRegistry $clientRegistry): \Symfony\Component\HttpFoundation\Response
     {
         return $clientRegistry
             ->getClient('harvest')
             ->redirect(['all'], []);
     }
 
-    /**
-     * @Route("/connect/check", name="connect_harvest_check")
-     */
-    public function connectCheckAction(Request $request)
+    #[Route(path: '/connect/check', name: 'connect_harvest_check')]
+    public function connectCheckAction()
     {
     }
 }

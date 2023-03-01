@@ -20,12 +20,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class ForecastReminderSendCommand extends Command
 {
     protected static $defaultName = 'forecast:reminder-send';
-    private $forecastReminderSender;
 
-    public function __construct(Sender $forecastReminderSender)
+    public function __construct(private readonly Sender $forecastReminderSender)
     {
-        $this->forecastReminderSender = $forecastReminderSender;
-
         parent::__construct();
     }
 

@@ -18,28 +18,21 @@ use App\Repository\InvoiceExplanationRepository;
 
 class Manager
 {
-    public const TIME_ENTRY_STATUS_INCOMPLETE = 'incomplete';
-    public const TIME_ENTRY_STATUS_MISSING = 'missing';
-    public const TIME_ENTRY_STATUS_OK = 'ok';
-    public const TIME_ENTRY_STATUS_OVERFLOW = 'overflow';
-    public const TIME_ENTRY_STATUS_SKIP = 'skip';
-    public const TIME_ENTRY_STATUS_WEEKEND = 'weekend';
+    final public const TIME_ENTRY_STATUS_INCOMPLETE = 'incomplete';
+    final public const TIME_ENTRY_STATUS_MISSING = 'missing';
+    final public const TIME_ENTRY_STATUS_OK = 'ok';
+    final public const TIME_ENTRY_STATUS_OVERFLOW = 'overflow';
+    final public const TIME_ENTRY_STATUS_SKIP = 'skip';
+    final public const TIME_ENTRY_STATUS_WEEKEND = 'weekend';
 
-    public const INVOICE_EXPLAINED = 'explained';
-    public const INVOICE_OK = 'ok';
-    public const INVOICE_OTHER_MONTH = 'notice';
-    public const INVOICE_NON_RECONCILIABLE = 'notice';
-    public const INVOICE_WRONG = 'wrong';
+    final public const INVOICE_EXPLAINED = 'explained';
+    final public const INVOICE_OK = 'ok';
+    final public const INVOICE_OTHER_MONTH = 'notice';
+    final public const INVOICE_NON_RECONCILIABLE = 'notice';
+    final public const INVOICE_WRONG = 'wrong';
 
-    private $forecastDataSelector;
-    private $harvestDataSelector;
-    private $invoiceExplanationRepository;
-
-    public function __construct(ForecastDataSelector $forecastDataSelector, HarvestDataSelector $harvestDataSelector, InvoiceExplanationRepository $invoiceExplanationRepository)
+    public function __construct(private readonly ForecastDataSelector $forecastDataSelector, private readonly HarvestDataSelector $harvestDataSelector, private readonly InvoiceExplanationRepository $invoiceExplanationRepository)
     {
-        $this->forecastDataSelector = $forecastDataSelector;
-        $this->harvestDataSelector = $harvestDataSelector;
-        $this->invoiceExplanationRepository = $invoiceExplanationRepository;
     }
 
     public function collect(InvoicingProcess $invoicingProcess)
@@ -111,15 +104,9 @@ class Manager
             }
         }
 
-        $errorsCount = array_reduce($timeEntries, function ($carry, $item) {
-            return $carry + array_reduce($item['entries'], function ($before, $after) {
-                return $before + $after['error'];
-            }, 0);
-        }, 0);
+        $errorsCount = array_reduce($timeEntries, fn ($carry, $item) => $carry + array_reduce($item['entries'], fn ($before, $after) => $before + $after['error'], 0), 0);
 
-        usort($timeEntries, function ($a, $b): int {
-            return strcasecmp($a['user']->getName(), $b['user']->getName());
-        });
+        usort($timeEntries, fn ($a, $b): int => strcasecmp((string) $a['user']->getName(), (string) $b['user']->getName()));
 
         return [
             'timeEntries' => $timeEntries,
@@ -261,9 +248,7 @@ class Manager
             $timeEntries[$userId] = $timeEntry;
         }
 
-        usort($timeEntries, function ($a, $b): int {
-            return strcasecmp($a['user']->getName(), $b['user']->getName());
-        });
+        usort($timeEntries, fn ($a, $b): int => strcasecmp((string) $a['user']->getName(), (string) $b['user']->getName()));
 
         return [
             'days' => $period,
@@ -306,7 +291,7 @@ class Manager
             $client = $clients[$rawTimeEntry->getClient()->getId()];
             $project = $projects[$rawTimeEntry->getProject()->getId()];
 
-            if ($rawTimeEntry->getInvoice()) {
+            if (null !== $rawTimeEntry->getInvoice()) {
                 // drop timeentries invoiced in another month
                 if (isset($invoices[$rawTimeEntry->getInvoice()->getId()])) {
                     if (!isset($clientInvoices[$rawTimeEntry->getInvoice()->getId()])) {
@@ -342,7 +327,7 @@ class Manager
                             'explanationKey' => 'orphan-' . $project->getId(),
                         ]);
 
-                        if ($explanation) {
+                        if (null !== $explanation) {
                             $orphanTimeEntries[$project->getId()]['explanation'] = $explanation;
                         } else {
                             ++$unexplainedErrorsCount;
@@ -382,7 +367,7 @@ class Manager
 
             $invoicesTotal += $invoice['invoiceAmount'];
 
-            if ($explanation) {
+            if (null !== $explanation) {
                 $clientInvoices[$invoiceId]['explanation'] = $explanation;
             }
 
@@ -409,7 +394,7 @@ class Manager
                 'explanationKey' => 'uninvoiced-' . $uninvoicedItem->getProjectId(),
             ]);
 
-            if ($explanation) {
+            if (null !== $explanation) {
                 $item['explanation'] = $explanation;
             } else {
                 ++$unexplainedErrorsCount;
@@ -421,9 +406,7 @@ class Manager
             $uninvoiced[] = $item;
         }
 
-        usort($clientInvoices, function ($a, $b): int {
-            return -strcmp($a['invoice']->getNumber(), $b['invoice']->getNumber());
-        });
+        usort($clientInvoices, fn ($a, $b): int => -strcmp((string) $a['invoice']->getNumber(), (string) $b['invoice']->getNumber()));
 
         usort($orphanTimeEntries, function ($a, $b): int {
             if ($a['project']->getClient()->getName() === $b['project']->getClient()->getName()) {
@@ -485,7 +468,7 @@ class Manager
 
         foreach ($invoiceNotesRequirements as $invoiceNotesRequirement) {
             if ($invoiceNotesRequirement->getHarvestClientId() === $invoice->getClient()->getId()) {
-                if (false === strpos($invoice->getNotes(), $invoiceNotesRequirement->getRequirement())) {
+                if (!str_contains((string) $invoice->getNotes(), (string) $invoiceNotesRequirement->getRequirement())) {
                     $violationContainer->add(sprintf('The footnotes of the invoice must contain "%s".', $invoiceNotesRequirement->getRequirement()));
                 }
             }
@@ -516,7 +499,7 @@ class Manager
         }
 
         if (isset($invoice['invoiceAmount'])) {
-            if (0 === \count($invoice['timeEntries'])) {
+            if (0 === (is_countable($invoice['timeEntries']) ? \count($invoice['timeEntries']) : 0)) {
                 return self::INVOICE_NON_RECONCILIABLE;
             }
 

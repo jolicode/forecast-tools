@@ -18,11 +18,8 @@ use JoliCode\Slack\Api\Model\ObjsUserProfile;
 
 class SlackDataSelector
 {
-    private $client;
-
-    public function __construct(SlackClient $slackClient)
+    public function __construct(private readonly SlackClient $client)
     {
-        $this->client = $slackClient;
     }
 
     public function getConversationInfos(SlackTeam $slackTeam, string $channelId): ?ObjsConversation
@@ -33,7 +30,7 @@ class SlackDataSelector
             'channel' => $channelId,
         ]);
 
-        return $conversationsInfo ? $conversationsInfo->getChannel() : [];
+        return null !== $conversationsInfo ? $conversationsInfo->getChannel() : [];
     }
 
     /**
@@ -46,7 +43,7 @@ class SlackDataSelector
             'exclude_archived' => true,
         ]);
 
-        return $conversationsList ? $conversationsList->getChannels() : [];
+        return null !== $conversationsList ? $conversationsList->getChannels() : [];
     }
 
     public function getConversationsForChoice(SlackTeam $slackTeam): array
@@ -70,7 +67,7 @@ class SlackDataSelector
             'user' => $userId,
         ]);
 
-        return $usersInfo ? $usersInfo->getUser()->getProfile() : new ObjsUserProfile();
+        return null !== $usersInfo ? $usersInfo->getUser()->getProfile() : new ObjsUserProfile();
     }
 
     /**
@@ -81,7 +78,7 @@ class SlackDataSelector
         $this->client->setSlackTeam($slackTeam);
         $usersList = $this->client->usersList();
 
-        return $usersList ? $usersList->getMembers() : [];
+        return null !== $usersList ? $usersList->getMembers() : [];
     }
 
     /**

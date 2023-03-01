@@ -23,7 +23,6 @@ use Eluceo\iCal\Domain\ValueObject\UniqueIdentifier;
 use Eluceo\iCal\Presentation\Factory\CalendarFactory;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -32,10 +31,8 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 
 class HomeController extends AbstractController
 {
-    /**
-     * @Route("/", name="homepage")
-     */
-    public function index(Request $request, AuthorizationCheckerInterface $authChecker, ForecastAccountRepository $forecastAccountRepository, UserRepository $userRepository)
+    #[Route(path: '/', name: 'homepage')]
+    public function index(AuthorizationCheckerInterface $authChecker, ForecastAccountRepository $forecastAccountRepository, UserRepository $userRepository): Response
     {
         if (true === $authChecker->isGranted('ROLE_USER')) {
             $user = $userRepository->findOneBy(['email' => $this->getUser()->getUserIdentifier()]);
@@ -43,7 +40,7 @@ class HomeController extends AbstractController
 
             if (null === $defaultForecastAccount) {
                 $forecastAccounts = $forecastAccountRepository->findForecastAccountsForUser($user);
-                $defaultForecastAccount = isset($forecastAccounts[0]) ? $forecastAccounts[0] : null;
+                $defaultForecastAccount = $forecastAccounts[0] ?? null;
             }
 
             if (null === $defaultForecastAccount) {
@@ -62,10 +59,8 @@ class HomeController extends AbstractController
         return $this->render('home/index.html.twig');
     }
 
-    /**
-     * @Route("/forecast/{token}.ical", name="public_forecast_ical")
-     */
-    public function forecastIcal(Builder $forecastBuilder, PublicForecast $publicForecast, SluggerInterface $asciiSlugger)
+    #[Route(path: '/forecast/{token}.ical', name: 'public_forecast_ical')]
+    public function forecastIcal(Builder $forecastBuilder, PublicForecast $publicForecast, SluggerInterface $asciiSlugger): Response
     {
         $start = new \DateTime('-6 months');
         $end = new \DateTime('+6 months');
@@ -107,13 +102,12 @@ class HomeController extends AbstractController
     }
 
     /**
-     * @Route("/forecast/{token}", name="public_forecast")
-     * @Route("/forecast/{token}/{start}/{end}", name="public_forecast_start_end")
-     *
      * @param mixed|null $start
      * @param mixed|null $end
      */
-    public function forecast(Builder $forecastBuilder, PublicForecast $publicForecast, $start = null, $end = null)
+    #[Route(path: '/forecast/{token}', name: 'public_forecast')]
+    #[Route(path: '/forecast/{token}/{start}/{end}', name: 'public_forecast_start_end')]
+    public function forecast(Builder $forecastBuilder, PublicForecast $publicForecast, $start = null, $end = null): Response
     {
         if (null === $start) {
             $start = new \DateTime('first day of last month');
@@ -139,7 +133,7 @@ class HomeController extends AbstractController
         }
 
         $assignments = $forecastBuilder->buildAssignments($publicForecast, $start, $end);
-        list($days, $weeks, $months) = $forecastBuilder->buildDays($start, $end);
+        [$days, $weeks, $months] = $forecastBuilder->buildDays($start, $end);
 
         return $this->render('home/public-forecast.html.twig', [
             'assignments' => $assignments,
@@ -164,18 +158,14 @@ class HomeController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/privacy-policy", name="privacy_policy")
-     */
-    public function privacy()
+    #[Route(path: '/privacy-policy', name: 'privacy_policy')]
+    public function privacy(): Response
     {
         return $this->render('home/privacy-policy.html.twig');
     }
 
-    /**
-     * @Route("/terms-of-service", name="terms")
-     */
-    public function terms()
+    #[Route(path: '/terms-of-service', name: 'terms')]
+    public function terms(): Response
     {
         return $this->render('home/terms.html.twig');
     }

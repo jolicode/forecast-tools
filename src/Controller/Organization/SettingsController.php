@@ -26,37 +26,27 @@ use App\Repository\UserForecastAccountRepository;
 use App\Repository\UserRepository;
 use App\Security\Provider\Slack;
 use Doctrine\ORM\EntityManagerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-/**
- * @Route("/{slug}/settings", name="organization_settings_", defaults={"menu": "settings"})
- */
+#[Route(path: '/{slug}/settings', name: 'organization_settings_', defaults: ['menu' => 'settings'])]
 class SettingsController extends AbstractController
 {
-    public const SESSION_STATE_KEY = 'slack.state';
+    final public const SESSION_STATE_KEY = 'slack.state';
 
-    private $slackClientId;
-    private $slackClientSecret;
-    private $router;
-
-    public function __construct(string $slackClientId, string $slackClientSecret, RouterInterface $router)
+    public function __construct(private readonly string $slackClientId, private readonly string $slackClientSecret, private readonly RouterInterface $router)
     {
-        $this->router = $router;
-        $this->slackClientId = $slackClientId;
-        $this->slackClientSecret = $slackClientSecret;
     }
 
-    /**
-     * @Route("/account", name="account")
-     */
-    public function account(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em, UserRepository $userRepository)
+    #[Route(path: '/account', name: 'account')]
+    public function account(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em, UserRepository $userRepository): Response
     {
         $user = $userRepository->findOneBy(['email' => $this->getUser()->getUserIdentifier()]);
         $form = $this->createForm(UserSettingsType::class, $user);
@@ -72,14 +62,12 @@ class SettingsController extends AbstractController
 
         return $this->render('organization/settings/account.html.twig', [
             'forecastAccount' => $forecastAccount,
-            'form' => $form->createView(),
+            'form' => $form,
         ]);
     }
 
-    /**
-     * @Route("/account/delete", name="delete_account")
-     */
-    public function deleteAccount(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em, UserRepository $userRepository, UserForecastAccountRepository $userForecastAccountRepository)
+    #[Route(path: '/account/delete', name: 'delete_account')]
+    public function deleteAccount(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em, UserRepository $userRepository, UserForecastAccountRepository $userForecastAccountRepository): Response
     {
         $user = $userRepository->findOneBy(['email' => $this->getUser()->getUserIdentifier()]);
         $forecastAccountsToDelete = $userForecastAccountRepository->findForecastAccountsWithoutOtherAdmin($user);
@@ -101,16 +89,14 @@ class SettingsController extends AbstractController
 
         return $this->render('organization/settings/delete_account.html.twig', [
             'forecastAccount' => $forecastAccount,
-            'form' => $form->createView(),
+            'form' => $form,
             'forecastAccountsToDelete' => $forecastAccountsToDelete,
         ]);
     }
 
-    /**
-     * @Route("/forecast", name="forecast")
-     * @IsGranted("admin", subject="forecastAccount")
-     */
-    public function forecast(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em)
+    #[Route(path: '/forecast', name: 'forecast')]
+    #[IsGranted('admin', subject: 'forecastAccount')]
+    public function forecast(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em): Response
     {
         $form = $this->createForm(ForecastSettingsType::class, $forecastAccount);
         $form->handleRequest($request);
@@ -125,16 +111,14 @@ class SettingsController extends AbstractController
 
         return $this->render('organization/settings/forecast.html.twig', [
             'forecastAccount' => $forecastAccount,
-            'form' => $form->createView(),
+            'form' => $form,
         ]);
     }
 
-    /**
-     * @Route("/harvest", name="harvest")
-     * @IsGranted("admin", subject="forecastAccount")
-     * @IsGranted("harvest_admin", subject="forecastAccount")
-     */
-    public function harvest(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em)
+    #[Route(path: '/harvest', name: 'harvest')]
+    #[IsGranted('admin', subject: 'forecastAccount')]
+    #[IsGranted('harvest_admin', subject: 'forecastAccount')]
+    public function harvest(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em): Response
     {
         $form = $this->createForm(HarvestSettingsType::class, $forecastAccount->getHarvestAccount());
         $form->handleRequest($request);
@@ -149,16 +133,14 @@ class SettingsController extends AbstractController
 
         return $this->render('organization/settings/harvest.html.twig', [
             'forecastAccount' => $forecastAccount,
-            'form' => $form->createView(),
+            'form' => $form,
         ]);
     }
 
-    /**
-     * @Route("/harvest-timesheets-reminder", name="harvest_timesheets_reminder")
-     * @IsGranted("admin", subject="forecastAccount")
-     * @IsGranted("harvest_admin", subject="forecastAccount")
-     */
-    public function harvestTimesheetsReminder(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em, Reminder $harvestReminder)
+    #[Route(path: '/harvest-timesheets-reminder', name: 'harvest_timesheets_reminder')]
+    #[IsGranted('admin', subject: 'forecastAccount')]
+    #[IsGranted('harvest_admin', subject: 'forecastAccount')]
+    public function harvestTimesheetsReminder(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em, Reminder $harvestReminder): Response
     {
         $form = $this->createForm(HarvestTimesheetsReminderType::class, $forecastAccount->getHarvestAccount());
         $form->handleRequest($request);
@@ -173,16 +155,14 @@ class SettingsController extends AbstractController
 
         return $this->render('organization/settings/harvest_timesheets_reminder.html.twig', [
             'forecastAccount' => $forecastAccount,
-            'form' => $form->createView(),
+            'form' => $form,
             'issues' => $harvestReminder->buildForHarvestAccount($forecastAccount->getHarvestAccount()),
         ]);
     }
 
-    /**
-     * @Route("/slack", name="slack")
-     * @IsGranted("admin", subject="forecastAccount")
-     */
-    public function slack(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em, UserRepository $userRepository, SlackTeamRepository $slackTeamRepository, ForecastAccountSlackTeamRepository $forecastAccountSlackTeamRepository)
+    #[Route(path: '/slack', name: 'slack')]
+    #[IsGranted('admin', subject: 'forecastAccount')]
+    public function slack(Request $request, ForecastAccount $forecastAccount, EntityManagerInterface $em, UserRepository $userRepository, SlackTeamRepository $slackTeamRepository, ForecastAccountSlackTeamRepository $forecastAccountSlackTeamRepository): Response
     {
         if ($request->query->has('code')) {
             $session = $request->getSession();
@@ -241,12 +221,13 @@ class SettingsController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/slack/delete/{forecastAccountSlackTeamId}", name="slack_delete")
-     * @IsGranted("admin", subject="forecastAccount")
-     * @ParamConverter("forecastAccountSlackTeam", options={"id" = "forecastAccountSlackTeamId"})
-     */
-    public function slackDelete(ForecastAccount $forecastAccount, ForecastAccountSlackTeam $forecastAccountSlackTeam, ForecastAccountSlackTeamRepository $forecastAccountSlackTeamRepository, EntityManagerInterface $em)
+    #[Route(path: '/slack/delete/{forecastAccountSlackTeamId}', name: 'slack_delete')]
+    #[IsGranted('admin', subject: 'forecastAccount')]
+    public function slackDelete(
+        ForecastAccount $forecastAccount,
+        #[MapEntity(id: 'forecastAccountSlackTeamId')] ForecastAccountSlackTeam $forecastAccountSlackTeam,
+        ForecastAccountSlackTeamRepository $forecastAccountSlackTeamRepository,
+        EntityManagerInterface $em): Response
     {
         if ($forecastAccountSlackTeam->getForecastAccount() !== $forecastAccount) {
             throw new NotFoundHttpException('Could not find this Slack channel.');
@@ -260,11 +241,9 @@ class SettingsController extends AbstractController
         ]));
     }
 
-    /**
-     * @Route("/slack/install", name="slack_install")
-     * @IsGranted("admin", subject="forecastAccount")
-     */
-    public function slackInstall(Request $request, ForecastAccount $forecastAccount)
+    #[Route(path: '/slack/install', name: 'slack_install')]
+    #[IsGranted('admin', subject: 'forecastAccount')]
+    public function slackInstall(Request $request, ForecastAccount $forecastAccount): Response
     {
         $provider = $this->getSlackProvider($forecastAccount);
 

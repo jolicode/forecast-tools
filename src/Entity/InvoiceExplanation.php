@@ -14,45 +14,33 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\InvoiceExplanationRepository")
- */
+#[ORM\Entity(repositoryClass: \App\Repository\InvoiceExplanationRepository::class)]
 class InvoiceExplanation
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column(type="string", length=20)
-     */
-    private $explanationKey;
+    #[ORM\Column(type: 'string', length: 20)]
+    private string $explanationKey;
+
+    #[ORM\Column(type: 'text')]
+    private string $explanation;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?User $createdBy = null;
 
     /**
-     * @ORM\Column(type="text")
-     */
-    private $explanation;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User")
-     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
-     */
-    private $createdBy;
-
-    /**
-     * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
      */
-    private $createdAt;
+    #[ORM\Column(type: 'datetime')]
+    private \DateTimeInterface $createdAt;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\InvoicingProcess", inversedBy="invoiceExplanations")
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     */
-    private $invoicingProcess;
+    #[ORM\ManyToOne(targetEntity: InvoicingProcess::class, inversedBy: 'invoiceExplanations')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private InvoicingProcess $invoicingProcess;
 
     public function getId(): ?int
     {

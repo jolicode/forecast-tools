@@ -13,46 +13,32 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\UserHarvestAccountRepository")
- */
-class UserHarvestAccount
+#[ORM\Entity(repositoryClass: \App\Repository\UserHarvestAccountRepository::class)]
+class UserHarvestAccount implements \Stringable
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="userHarvestAccounts")
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     */
-    private $user;
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'userHarvestAccounts')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private User $user;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\HarvestAccount", inversedBy="userHarvestAccounts")
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
-     */
-    private $harvestAccount;
+    #[ORM\ManyToOne(targetEntity: HarvestAccount::class, inversedBy: 'userHarvestAccounts')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private HarvestAccount $harvestAccount;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $harvestId;
+    #[ORM\Column(type: 'integer')]
+    private int $harvestId;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private $isAdmin;
+    #[ORM\Column(type: 'boolean')]
+    private bool $isAdmin;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private $isEnabled;
+    #[ORM\Column(type: 'boolean')]
+    private bool $isEnabled;
 
-    public function __toString()
+    public function __toString(): string
     {
         return sprintf('%s%s%s',
             $this->harvestAccount->getName(),

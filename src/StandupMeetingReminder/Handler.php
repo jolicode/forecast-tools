@@ -25,31 +25,16 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Handler
 {
-    public const ACTION_PREFIX = 'standup-reminder';
-    public const ACTION_CHANGE = 'change';
-    public const ACTION_CREATE = 'create';
+    final public const ACTION_PREFIX = 'standup-reminder';
+    final public const ACTION_CHANGE = 'change';
+    final public const ACTION_CREATE = 'create';
 
-    public const SLACK_COMMAND_NAME = '/standup-reminder';
-    public const SLACK_COMMAND_OPTION_HELP = 'help';
-    public const SLACK_COMMAND_OPTION_LIST = 'list';
+    final public const SLACK_COMMAND_NAME = '/standup-reminder';
+    final public const SLACK_COMMAND_OPTION_HELP = 'help';
+    final public const SLACK_COMMAND_OPTION_LIST = 'list';
 
-    private EntityManagerInterface $em;
-    private ForecastAccountRepository $forecastAccountRepository;
-    private ForecastDataSelector $forecastDataSelector;
-    private SlackDataSelector $slackDataSelector;
-    private SlackSender $slackSender;
-    private SlackTeamRepository $slackTeamRepository;
-    private StandupMeetingReminderRepository $standupMeetingReminderRepository;
-
-    public function __construct(EntityManagerInterface $em, ForecastAccountRepository $forecastAccountRepository, ForecastDataSelector $forecastDataSelector, SlackDataSelector $slackDataSelector, SlackSender $slackSender, SlackTeamRepository $slackTeamRepository, StandupMeetingReminderRepository $standupMeetingReminderRepository)
+    public function __construct(private readonly EntityManagerInterface $em, private readonly ForecastAccountRepository $forecastAccountRepository, private readonly ForecastDataSelector $forecastDataSelector, private readonly SlackDataSelector $slackDataSelector, private readonly SlackSender $slackSender, private readonly SlackTeamRepository $slackTeamRepository, private readonly StandupMeetingReminderRepository $standupMeetingReminderRepository)
     {
-        $this->em = $em;
-        $this->forecastAccountRepository = $forecastAccountRepository;
-        $this->forecastDataSelector = $forecastDataSelector;
-        $this->slackDataSelector = $slackDataSelector;
-        $this->slackSender = $slackSender;
-        $this->slackTeamRepository = $slackTeamRepository;
-        $this->standupMeetingReminderRepository = $standupMeetingReminderRepository;
     }
 
     public function handleRequest(Request $request)
@@ -144,7 +129,7 @@ class Handler
         $slackTeam = $this->slackTeamRepository->findOneBy([
             'teamId' => $payload['team']['id'],
         ]);
-        $privateMetadata = json_decode($payload['view']['private_metadata'], true);
+        $privateMetadata = json_decode((string) $payload['view']['private_metadata'], true, 512, \JSON_THROW_ON_ERROR);
 
         if (isset($payload['view']['state']['values']['channel']['selected_channel']['selected_channel'])) {
             $channelId = $payload['view']['state']['values']['channel']['selected_channel']['selected_channel'];
@@ -215,7 +200,7 @@ class Handler
                     $payload['trigger_id'],
                     $privateMetadata['response_url']
                 );
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 // silence, the window might just be opened since a long time
             }
         }
@@ -226,7 +211,7 @@ class Handler
     public function listProjects(array $payload)
     {
         $availableProjects = [];
-        $searched = mb_strtolower($payload['value']);
+        $searched = mb_strtolower((string) $payload['value']);
         $projectsByAccount = $this->loadProjects($payload['team']['id']);
 
         foreach ($projectsByAccount as $data) {
@@ -235,7 +220,7 @@ class Handler
             foreach ($data['projects'] as $project) {
                 $clientName = isset($data['clients'][$project->getClientId()]) ? $data['clients'][$project->getClientId()]->getName() : '';
 
-                if (false !== mb_strpos(mb_strtolower($project->getName()), $searched) || false !== mb_strpos(mb_strtolower($project->getCode()), $searched) || false !== mb_strpos(mb_strtolower($clientName), $searched)) {
+                if (false !== mb_strpos(mb_strtolower((string) $project->getName()), $searched) || false !== mb_strpos(mb_strtolower((string) $project->getCode()), $searched) || false !== mb_strpos(mb_strtolower((string) $clientName), $searched)) {
                     $projectCode = $project->getCode() ? '[' . $project->getCode() . '] ' : '';
                     $accountProjects[] = [
                         'text' => [
@@ -295,9 +280,7 @@ class Handler
             ];
         }
 
-        usort($projectsByAccount, function ($a, $b) {
-            return $a['forecastAccount']->getName() < $b['forecastAccount']->getName() ? -1 : 1;
-        });
+        usort($projectsByAccount, fn ($a, $b) => $a['forecastAccount']->getName() < $b['forecastAccount']->getName() ? -1 : 1);
 
         return $projectsByAccount;
     }
@@ -331,7 +314,7 @@ EOT,
 
         try {
             $this->slackDataSelector->getConversationInfos($slackTeam, $channelId);
-        } catch (SlackErrorResponse $e) {
+        } catch (SlackErrorResponse) {
             // this is not a public channel, do not prefill it in the modal
             $channelId = null;
         }
@@ -376,7 +359,7 @@ EOT,
             ];
 
             if (null !== $standupMeetingReminder) {
-                list($initialHour, $initialMinute) = explode(':', $standupMeetingReminder->getTime());
+                [$initialHour, $initialMinute] = explode(':', $standupMeetingReminder->getTime());
 
                 foreach ($forecastAccounts as $forecastAccount) {
                     $this->forecastDataSelector->setForecastAccount($forecastAccount);
@@ -481,7 +464,7 @@ EOT,
             'trigger_id' => $triggerId,
             'view' => [
                 'type' => 'modal',
-                'private_metadata' => json_encode($privateMetadata),
+                'private_metadata' => json_encode($privateMetadata, \JSON_THROW_ON_ERROR),
                 'title' => [
                     'type' => 'plain_text',
                     'text' => 'Stand-up Reminder',

@@ -29,14 +29,11 @@ class UserSettingsType extends AbstractType
             ->add('defaultForecastAccount', EntityType::class, [
                 'class' => ForecastAccount::class,
                 'label' => 'Default account on login',
-                'query_builder' => function (EntityRepository $er) use ($options): QueryBuilder {
-                    return $er->createQueryBuilder('fa')
-                        ->leftJoin('fa.userForecastAccounts', 'ufa')
-                        ->andWhere('ufa.user = :user')
-                        ->orderBy('fa.name', 'ASC')
-                        ->setParameter('user', $options['data'])
-                    ;
-                },
+                'query_builder' => fn (EntityRepository $er): QueryBuilder => $er->createQueryBuilder('fa')
+                    ->leftJoin('fa.userForecastAccounts', 'ufa')
+                    ->andWhere('ufa.user = :user')
+                    ->orderBy('fa.name', 'ASC')
+                    ->setParameter('user', $options['data']),
                 'help' => 'Choose here the Forecast account that you want to be connected to when authenticating.',
             ])
             ->add('save', SubmitType::class, [

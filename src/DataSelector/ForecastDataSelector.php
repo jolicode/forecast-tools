@@ -21,11 +21,8 @@ use JoliCode\Forecast\Api\Model\Project;
 
 class ForecastDataSelector
 {
-    private ForecastClient $client;
-
-    public function __construct(ForecastClient $forecastClient)
+    public function __construct(private readonly ForecastClient $client)
     {
-        $this->client = $forecastClient;
     }
 
     public function disableCache(): self
@@ -77,9 +74,7 @@ class ForecastDataSelector
     {
         $clients = $this->client->listClients('clients')->getClients();
 
-        return array_filter($clients, function (Client $client) use ($enabled) {
-            return null === $enabled || $enabled !== $client->getArchived();
-        });
+        return array_filter($clients, fn (Client $client) => null === $enabled || $enabled !== $client->getArchived());
     }
 
     /**
@@ -164,9 +159,7 @@ class ForecastDataSelector
     {
         $people = $this->client->listPeople('people')->getPeople();
 
-        return array_filter($people, function (Person $person) use ($enabled) {
-            return null === $enabled || $enabled !== $person->getArchived();
-        });
+        return array_filter($people, fn (Person $person) => null === $enabled || $enabled !== $person->getArchived());
     }
 
     /**
@@ -184,9 +177,7 @@ class ForecastDataSelector
     {
         $placeholders = $this->client->listPlaceholders('placeholders')->getPlaceholders();
 
-        return array_filter($placeholders, function (Placeholder $placeholder) use ($enabled) {
-            return null === $enabled || $enabled !== $placeholder->getArchived();
-        });
+        return array_filter($placeholders, fn (Placeholder $placeholder) => null === $enabled || $enabled !== $placeholder->getArchived());
     }
 
     /**
@@ -204,9 +195,7 @@ class ForecastDataSelector
     {
         $projects = $this->client->listProjects('projects')->getProjects();
 
-        return array_filter($projects, function (Project $project) use ($enabled) {
-            return null === $enabled || $enabled !== $project->getArchived();
-        });
+        return array_filter($projects, fn (Project $project) => null === $enabled || $enabled !== $project->getArchived());
     }
 
     /**

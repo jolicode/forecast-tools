@@ -25,11 +25,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 
 class HarvestAccountCrudController extends AbstractCrudController
 {
-    private $adminUrlGenerator;
-
-    public function __construct(AdminUrlGenerator $adminUrlGenerator)
+    public function __construct(private readonly AdminUrlGenerator $adminUrlGenerator)
     {
-        $this->adminUrlGenerator = $adminUrlGenerator;
     }
 
     public static function getEntityFqcn(): string
@@ -59,9 +56,7 @@ class HarvestAccountCrudController extends AbstractCrudController
                 ->formatValue(function ($value, $entity): string {
                     $formattedValue = [];
                     $users = $entity->getUserHarvestAccounts()->toArray();
-                    usort($users, function ($a, $b) {
-                        return strcmp($a->getUser()->getName(), $b->getUser()->getName());
-                    });
+                    usort($users, fn ($a, $b) => strcmp((string) $a->getUser()->getName(), (string) $b->getUser()->getName()));
 
                     foreach ($users as $user) {
                         $url = $this->adminUrlGenerator

@@ -22,29 +22,16 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Handler
 {
-    public const ACTION_PREFIX = 'timesheet-reminder';
-    public const ACTION_COPY = 'copy';
-    public const ACTION_RELOAD = 'reload';
+    final public const ACTION_PREFIX = 'timesheet-reminder';
+    final public const ACTION_COPY = 'copy';
+    final public const ACTION_RELOAD = 'reload';
 
-    public const SLACK_COMMAND_NAME = '/check-timesheets';
-    public const SLACK_COMMAND_OPTION_HELP = 'help';
-    public const SLACK_COMMAND_OPTION_CURRENT = 'current';
+    final public const SLACK_COMMAND_NAME = '/check-timesheets';
+    final public const SLACK_COMMAND_OPTION_HELP = 'help';
+    final public const SLACK_COMMAND_OPTION_CURRENT = 'current';
 
-    private HarvestAccountRepository $harvestAccountRepository;
-    private HarvestDataSelector $harvestDataSelector;
-    private Reminder $harvestTimesheetReminder;
-    private SlackDataSelector $slackDataSelector;
-    private SlackSender $slackSender;
-    private SlackTeamRepository $slackTeamRepository;
-
-    public function __construct(HarvestAccountRepository $harvestAccountRepository, HarvestDataSelector $harvestDataSelector, Reminder $harvestTimesheetReminder, SlackDataSelector $slackDataSelector, SlackSender $slackSender, SlackTeamRepository $slackTeamRepository)
+    public function __construct(private readonly HarvestAccountRepository $harvestAccountRepository, private readonly HarvestDataSelector $harvestDataSelector, private readonly Reminder $harvestTimesheetReminder, private readonly SlackDataSelector $slackDataSelector, private readonly SlackSender $slackSender, private readonly SlackTeamRepository $slackTeamRepository)
     {
-        $this->harvestAccountRepository = $harvestAccountRepository;
-        $this->harvestDataSelector = $harvestDataSelector;
-        $this->harvestTimesheetReminder = $harvestTimesheetReminder;
-        $this->slackDataSelector = $slackDataSelector;
-        $this->slackSender = $slackSender;
-        $this->slackTeamRepository = $slackTeamRepository;
     }
 
     public function handleRequest(Request $request)
@@ -116,7 +103,7 @@ class Handler
                             $payload['response_url'],
                             self::SLACK_COMMAND_OPTION_CURRENT === $action['value']
                         );
-                    } catch (\Exception $e) {
+                    } catch (\Exception) {
                         // silence, the initial reminder might be sent since a long time
                     }
                 }
@@ -145,7 +132,7 @@ class Handler
                     $payload['response_url'],
                     $current
                 );
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 // silence, the initial reminder might be sent since a long time
             }
         }

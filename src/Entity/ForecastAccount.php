@@ -17,90 +17,74 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\ForecastAccountRepository")
- * @UniqueEntity("slug")
- */
-class ForecastAccount
+#[ORM\Entity(repositoryClass: \App\Repository\ForecastAccountRepository::class)]
+#[UniqueEntity('slug')]
+class ForecastAccount implements \Stringable
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $name;
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $name;
+
+    #[ORM\Column(type: 'integer')]
+    private int $forecastId;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $accessToken;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $refreshToken;
+
+    #[ORM\Column(type: 'integer')]
+    private int $expires;
 
     /**
-     * @ORM\Column(type="integer")
-     */
-    private $forecastId;
-
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $accessToken;
-
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $refreshToken;
-
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $expires;
-
-    /**
-     * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
      */
-    private $createdAt;
+    #[ORM\Column(type: 'datetime')]
+    private \DateTimeInterface $createdAt;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\PublicForecast", mappedBy="forecastAccount", orphanRemoval=true)
+     * @var Collection<PublicForecast>
      */
-    private $publicForecasts;
+    #[ORM\OneToMany(targetEntity: PublicForecast::class, mappedBy: 'forecastAccount', orphanRemoval: true)]
+    private Collection $publicForecasts;
 
     /**
      * @Gedmo\Slug(fields={"name"})
-     * @ORM\Column(type="string", length=255, unique=true)
      */
-    private $slug;
+    #[ORM\Column(type: 'string', length: 255, unique: true)]
+    private string $slug;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\UserForecastAccount", mappedBy="forecastAccount", orphanRemoval=true)
+     * @var Collection<UserForecastAccount>
      */
-    private $userForecastAccounts;
+    #[ORM\OneToMany(targetEntity: UserForecastAccount::class, mappedBy: 'forecastAccount', orphanRemoval: true)]
+    private Collection $userForecastAccounts;
+
+    #[ORM\OneToOne(targetEntity: ForecastReminder::class, mappedBy: 'forecastAccount', cascade: ['persist', 'remove'])]
+    private ?ForecastReminder $forecastReminder = null;
+
+    #[ORM\OneToOne(targetEntity: HarvestAccount::class, mappedBy: 'forecastAccount', cascade: ['persist', 'remove'])]
+    private ?HarvestAccount $harvestAccount = null;
 
     /**
-     * @ORM\OneToOne(targetEntity="App\Entity\ForecastReminder", mappedBy="forecastAccount", cascade={"persist", "remove"})
+     * @var Collection<InvoicingProcess>
      */
-    private $forecastReminder;
+    #[ORM\OneToMany(targetEntity: InvoicingProcess::class, mappedBy: 'forecastAccount', orphanRemoval: true)]
+    private Collection $invoicingProcesses;
 
     /**
-     * @ORM\OneToOne(targetEntity="App\Entity\HarvestAccount", mappedBy="forecastAccount", cascade={"persist", "remove"})
+     * @var Collection<ForecastAccountSlackTeam>
      */
-    private $harvestAccount;
+    #[ORM\OneToMany(targetEntity: ForecastAccountSlackTeam::class, mappedBy: 'forecastAccount', orphanRemoval: true)]
+    private Collection $forecastAccountSlackTeams;
 
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\InvoicingProcess", mappedBy="forecastAccount", orphanRemoval=true)
-     */
-    private $invoicingProcesses;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\ForecastAccountSlackTeam", mappedBy="forecastAccount", orphanRemoval=true)
-     */
-    private $forecastAccountSlackTeams;
-
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
-    private $allowNonAdmins = false;
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private ?bool $allowNonAdmins = false;
 
     public function __construct()
     {
@@ -110,7 +94,7 @@ class ForecastAccount
         $this->forecastAccountSlackTeams = new ArrayCollection();
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->name;
     }

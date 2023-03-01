@@ -26,29 +26,17 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 class SlackCommandListener implements EventSubscriberInterface
 {
-    private EntityManagerInterface $em;
-    private ForecastReminderHandler $forecastReminderHandler;
-    private HarvestTimesheetReminderHandler $harvestTimesheetReminderHandler;
-    private SignatureComputer $signatureComputer;
-    private SlackSender $slackSender;
-    private StandupMeetingReminderHandler $standupMeetingReminderHandler;
-    private $slackRequest;
+    private ?\App\Entity\SlackRequest $slackRequest = null;
 
-    public function __construct(EntityManagerInterface $em, ForecastReminderHandler $forecastReminderHandler, HarvestTimesheetReminderHandler $harvestTimesheetReminderHandler, SignatureComputer $signatureComputer, SlackSender $slackSender, StandupMeetingReminderHandler $standupMeetingReminderHandler)
+    public function __construct(private readonly EntityManagerInterface $em, private readonly ForecastReminderHandler $forecastReminderHandler, private readonly HarvestTimesheetReminderHandler $harvestTimesheetReminderHandler, private readonly SignatureComputer $signatureComputer, private readonly SlackSender $slackSender, private readonly StandupMeetingReminderHandler $standupMeetingReminderHandler)
     {
-        $this->em = $em;
-        $this->forecastReminderHandler = $forecastReminderHandler;
-        $this->harvestTimesheetReminderHandler = $harvestTimesheetReminderHandler;
-        $this->signatureComputer = $signatureComputer;
-        $this->slackSender = $slackSender;
-        $this->standupMeetingReminderHandler = $standupMeetingReminderHandler;
     }
 
     public function onRequest(RequestEvent $event)
     {
         $request = $event->getRequest();
 
-        if (0 === strpos($request->attributes->get('_route'), 'slack_')) {
+        if (str_starts_with((string) $request->attributes->get('_route'), 'slack_')) {
             $timestamp = $request->headers->get('X-Slack-Request-Timestamp', '');
             $signature = $request->headers->get('X-Slack-Signature', '');
             $signatureValid = $signature === $this->signatureComputer->compute($timestamp, $request->getContent());
@@ -64,7 +52,7 @@ class SlackCommandListener implements EventSubscriberInterface
             $this->em->flush();
 
             if (!$signatureValid) {
-                $event->setResponse(new Response('D\'oh!', 418));
+                $event->setResponse(new Response('D\'oh!', \Symfony\Component\HttpFoundation\Response::HTTP_I_AM_A_TEAPOT));
             }
         }
     }
