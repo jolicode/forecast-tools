@@ -47,7 +47,7 @@ class HarvestAccountVoter extends Voter
             case self::ADMIN:
                 $userHarvestAccount = $this->userHarvestAccountRepository->findOneByEmailAndForecastAccount($user->getUserIdentifier(), $harvestAccount);
 
-                return $userHarvestAccount?->getIsAdmin();
+                return null !== $userHarvestAccount ? $userHarvestAccount->getIsAdmin() : false;
         }
 
         return false;
