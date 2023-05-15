@@ -194,7 +194,19 @@ EOT,
                 'blocks' => $issues[$harvestUser->getId()]['blocks'],
             ]);
         } else {
-            $message = sprintf('🏆 %s, your timesheets are all good, thank you!', $harvestUser->getFirstName());
+            if ($currentMonth) {
+                $targetDate = new \DateTime('first day of this month');
+            } else {
+                $targetDate = new \DateTime('first day of last month');
+            }
+
+            $message = sprintf(
+                '🏆 %s, your timesheets are all good, thank you! Don\'t forget to <%s/time/week/%s/%s/01|validate your timesheets>.',
+                $harvestUser->getFirstName(),
+                $harvestAccount->getBaseUri(),
+                $targetDate->format('Y'),
+                $targetDate->format('m')
+            );
             $this->slackSender->sendMessage($responseUrl, $triggerId, $message);
         }
     }
