@@ -30,8 +30,8 @@
 
                     {% for key, project in assignments %}
                         {% if key != 'total' %}
-                            {% if project.client %}
-                                {% set title = project.client ~ ' / ' ~ project.project.name %}
+                            {% if project.project.code %}
+                                {% set title = '[' ~ project.project.code ~ '] ' ~ project.project.name %}
                             {% else %}
                                 {% set title = project.project.name %}
                             {% endif %}
