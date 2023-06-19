@@ -123,6 +123,24 @@ def phpstan(c):
 
 
 @task
+def rector(c):
+    """
+    Run the rector upgrade
+    """
+    with Builder(c):
+        docker_compose_run(c, 'php ./vendor/bin/rector process', no_deps=True)
+
+
+@task
+def twiglint(c):
+    """
+    Fix the code CS
+    """
+    with Builder(c):
+        docker_compose_run(c, 'bin/console lint:twig --show-deprecations templates/', no_deps=True)
+
+
+@task
 def watch(c):
     """
     Run Yarn watcher
