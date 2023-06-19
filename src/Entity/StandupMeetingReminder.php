@@ -20,7 +20,7 @@ class StandupMeetingReminder
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private $id;
+    private ?int $id = null;
 
     /**
      * @Gedmo\Timestampable(on="update")
@@ -34,6 +34,9 @@ class StandupMeetingReminder
     #[ORM\Column(type: 'string', length: 15)]
     private string $channelId;
 
+    /**
+     * @var array<array-key, int>
+     */
     #[ORM\Column(type: 'array')]
     private array $forecastProjects = [];
 
@@ -88,11 +91,17 @@ class StandupMeetingReminder
         return $this;
     }
 
+    /**
+     * @return array<array-key, int>
+     */
     public function getForecastProjects(): ?array
     {
         return $this->forecastProjects;
     }
 
+    /**
+     * @param array<array-key, int> $forecastProjects
+     */
     public function setForecastProjects(array $forecastProjects): self
     {
         $this->forecastProjects = $forecastProjects;

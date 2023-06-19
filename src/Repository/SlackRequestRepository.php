@@ -16,6 +16,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * @extends ServiceEntityRepository<SlackRequest>
+ *
  * @method SlackRequest|null find($id, $lockMode = null, $lockVersion = null)
  * @method SlackRequest|null findOneBy(array $criteria, array $orderBy = null)
  * @method SlackRequest[]    findAll()

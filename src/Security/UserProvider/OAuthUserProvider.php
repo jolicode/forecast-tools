@@ -28,6 +28,9 @@ class OAuthUserProvider extends BaseOAuthUserProvider
         return new OAuthUser($user->getUsername(), $user->getRoles());
     }
 
+    /**
+     * @param string $class
+     */
     public function supportsClass($class): bool
     {
         return OAuthUser::class === $class || BaseOAuthUser::class === $class;

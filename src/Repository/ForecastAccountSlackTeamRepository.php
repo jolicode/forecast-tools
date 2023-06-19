@@ -16,6 +16,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * @extends ServiceEntityRepository<ForecastAccountSlackTeam>
+ *
  * @method ForecastAccountSlackTeam|null find($id, $lockMode = null, $lockVersion = null)
  * @method ForecastAccountSlackTeam|null findOneBy(array $criteria, array $orderBy = null)
  * @method ForecastAccountSlackTeam[]    findAll()
@@ -28,7 +30,7 @@ class ForecastAccountSlackTeamRepository extends ServiceEntityRepository
         parent::__construct($registry, ForecastAccountSlackTeam::class);
     }
 
-    public function remove(ForecastAccountSlackTeam $forecastAccountSlackTeam)
+    public function remove(ForecastAccountSlackTeam $forecastAccountSlackTeam): void
     {
         $slackTeam = $forecastAccountSlackTeam->getSlackTeam();
         $this->_em->remove($forecastAccountSlackTeam);

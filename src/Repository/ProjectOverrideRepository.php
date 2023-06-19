@@ -16,6 +16,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * @extends ServiceEntityRepository<ProjectOverride>
+ *
  * @method ProjectOverride|null find($id, $lockMode = null, $lockVersion = null)
  * @method ProjectOverride|null findOneBy(array $criteria, array $orderBy = null)
  * @method ProjectOverride[]    findAll()

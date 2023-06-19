@@ -16,6 +16,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * @extends ServiceEntityRepository<User>
+ *
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
  * @method User|null findOneBy(array $criteria, array $orderBy = null)
  * @method User|null findOneByEmail(string $value)
@@ -29,13 +31,20 @@ class UserRepository extends ServiceEntityRepository
         parent::__construct($registry, User::class);
     }
 
-    public function cleanupExtraneousAccountsForUser(User $user, array $forecastAccounts, array $harvestAccounts)
+    /**
+     * @param array<\App\Entity\ForecastAccount> $forecastAccounts
+     * @param array<\App\Entity\HarvestAccount>  $harvestAccounts
+     */
+    public function cleanupExtraneousAccountsForUser(User $user, array $forecastAccounts, array $harvestAccounts): void
     {
         $this->cleanupExtraneousForecastAccountsForUser($user, $forecastAccounts);
         $this->cleanupExtraneousHarvestAccountsForUser($user, $harvestAccounts);
     }
 
-    public function cleanupExtraneousForecastAccountsForUser(User $user, array $forecastAccounts)
+    /**
+     * @param array<\App\Entity\ForecastAccount> $forecastAccounts
+     */
+    public function cleanupExtraneousForecastAccountsForUser(User $user, array $forecastAccounts): int
     {
         $qb = $this->createQueryBuilder('u');
 
@@ -49,7 +58,10 @@ class UserRepository extends ServiceEntityRepository
             ->execute();
     }
 
-    public function cleanupExtraneousHarvestAccountsForUser(User $user, array $harvestAccounts)
+    /**
+     * @param array<\App\Entity\HarvestAccount> $harvestAccounts
+     */
+    public function cleanupExtraneousHarvestAccountsForUser(User $user, array $harvestAccounts): int
     {
         $qb = $this->createQueryBuilder('u');
 

@@ -13,8 +13,12 @@ namespace App\Invoicing;
 
 use App\DataSelector\ForecastDataSelector;
 use App\DataSelector\HarvestDataSelector;
+use App\Entity\InvoiceDueDelayRequirement;
+use App\Entity\InvoiceNotesRequirement;
 use App\Entity\InvoicingProcess;
 use App\Repository\InvoiceExplanationRepository;
+use Doctrine\Common\Collections\Collection;
+use JoliCode\Harvest\Api\Model\Invoice;
 
 class Manager
 {
@@ -35,7 +39,10 @@ class Manager
     {
     }
 
-    public function collect(InvoicingProcess $invoicingProcess)
+    /**
+     * @return array<string, mixed>
+     */
+    public function collect(InvoicingProcess $invoicingProcess): array
     {
         $period = $this->buildDatesRange($invoicingProcess);
         $rawUsers = $this->harvestDataSelector->getEnabledUsersAsTimeEntryUsers();
@@ -44,6 +51,9 @@ class Manager
             $invoicingProcess->getBillingPeriodEnd()
         );
         $timeEntries = [];
+
+        // filter out disabled users
+        $rawTimeEntries = array_filter($rawTimeEntries, fn ($userTimeEntries, $userId) => \count(array_filter($rawUsers, fn ($user) => $user->getId() === $userId)) > 0, \ARRAY_FILTER_USE_BOTH);
 
         foreach ($rawTimeEntries as $userTimeEntries) {
             $timeEntry = [
@@ -115,7 +125,10 @@ class Manager
         ];
     }
 
-    public function reconcile(InvoicingProcess $invoicingProcess)
+    /**
+     * @return array<string, mixed>
+     */
+    public function reconcile(InvoicingProcess $invoicingProcess): array
     {
         $diff = [];
         $totalViolations = 0;
@@ -130,7 +143,6 @@ class Manager
             $invoicingProcess->getBillingPeriodEnd()
         );
         $projects = $this->forecastDataSelector->getProjects();
-        $clients = $this->forecastDataSelector->getClients();
 
         foreach ($rawUsers as $user) {
             $skipErrors = $this->skipErrorsForUser($invoicingProcess, $user->getHarvestUserId());
@@ -201,7 +213,10 @@ class Manager
         ];
     }
 
-    public function approve(InvoicingProcess $invoicingProcess)
+    /**
+     * @return array<string, mixed>
+     */
+    public function approve(InvoicingProcess $invoicingProcess): array
     {
         $period = $this->buildDatesRange($invoicingProcess);
         $rawTimeEntries = $this->harvestDataSelector->getUserTimeEntries(
@@ -257,7 +272,10 @@ class Manager
         ];
     }
 
-    public function check(InvoicingProcess $invoicingProcess)
+    /**
+     * @return array<string, mixed>
+     */
+    public function check(InvoicingProcess $invoicingProcess): array
     {
         $timeEntries = $this->harvestDataSelector->getTimeEntries(
             $invoicingProcess->getBillingPeriodStart(),
@@ -437,17 +455,23 @@ class Manager
         ];
     }
 
-    public function validate(InvoicingProcess $invoicingProcess)
+    /**
+     * @return array<string, mixed>
+     */
+    public function validate(InvoicingProcess $invoicingProcess): array
     {
         return [];
     }
 
-    public function completed(InvoicingProcess $invoicingProcess)
+    /**
+     * @return array<string, mixed>
+     */
+    public function completed(InvoicingProcess $invoicingProcess): array
     {
         return [];
     }
 
-    private function buildDatesRange(InvoicingProcess $invoicingProcess)
+    private function buildDatesRange(InvoicingProcess $invoicingProcess): \DatePeriod
     {
         $periodEnd = $invoicingProcess->getBillingPeriodEnd();
 
@@ -462,7 +486,13 @@ class Manager
         );
     }
 
-    private function computeInvoiceRequirementsViolations($invoice, $invoiceDueDelayRequirements, $invoiceNotesRequirements): ViolationContainer
+    /**
+     * Undocumented function.
+     *
+     * @param Collection<array-key, InvoiceDueDelayRequirement> $invoiceDueDelayRequirements
+     * @param Collection<array-key, InvoiceNotesRequirement>    $invoiceNotesRequirements
+     */
+    private function computeInvoiceRequirementsViolations(Invoice $invoice, Collection $invoiceDueDelayRequirements, Collection $invoiceNotesRequirements): ViolationContainer
     {
         $violationContainer = new ViolationContainer();
 
@@ -488,6 +518,9 @@ class Manager
         return $violationContainer;
     }
 
+    /**
+     * @param array<string, mixed> $invoice
+     */
     private function computeInvoiceStatus(array $invoice): string
     {
         if (isset($invoice['violations']) && ($invoice['violations']->hasViolations() > 0)) {
@@ -517,6 +550,8 @@ class Manager
      * @param \JoliCode\Harvest\Api\Model\TimeEntry[]   $harvestEntries
      * @param \JoliCode\Forecast\Api\Model\Assignment[] $forecastEntries
      * @param \JoliCode\Forecast\Api\Model\Project[]    $projects
+     *
+     * @return array<string, mixed>
      */
     private function computeViolations(array $harvestEntries, array $forecastEntries, array $projects, bool $isWeekend): array
     {
@@ -574,7 +609,7 @@ class Manager
         return $result;
     }
 
-    private function getTimeEntryStatus(\DateTime $date, int $total): string
+    private function getTimeEntryStatus(\DateTimeInterface $date, int $total): string
     {
         if ($date->format('N') >= 6) {
             if ($total > 0) {
@@ -593,7 +628,7 @@ class Manager
         return self::TIME_ENTRY_STATUS_OK;
     }
 
-    private function hasErrors(\DateTime $date, int $total, bool $skipErrors): bool
+    private function hasErrors(\DateTimeInterface $date, int $total, bool $skipErrors): bool
     {
         if ($skipErrors) {
             return false;

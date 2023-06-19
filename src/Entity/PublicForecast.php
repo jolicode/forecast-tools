@@ -20,7 +20,7 @@ class PublicForecast
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private $id;
+    private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: ForecastAccount::class, inversedBy: 'publicForecasts')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
@@ -29,9 +29,15 @@ class PublicForecast
     #[ORM\Column(type: 'string', length: 255)]
     private string $token;
 
+    /**
+     * @var array<array-key, int>
+     */
     #[ORM\Column(type: 'array', nullable: true)]
     private ?array $clients = [];
 
+    /**
+     * @var array<array-key, int>
+     */
     #[ORM\Column(type: 'array', nullable: true)]
     private ?array $projects = [];
 
@@ -48,9 +54,15 @@ class PublicForecast
     #[ORM\Column(type: 'string', length: 255)]
     private string $name;
 
+    /**
+     * @var array<array-key, int>
+     */
     #[ORM\Column(type: 'array', nullable: true)]
     private ?array $people = [];
 
+    /**
+     * @var array<array-key, int>
+     */
     #[ORM\Column(type: 'array', nullable: true)]
     private ?array $placeholders = [];
 
@@ -83,11 +95,17 @@ class PublicForecast
         return $this;
     }
 
+    /**
+     * @return array<array-key, int>
+     */
     public function getClients(): ?array
     {
         return $this->clients;
     }
 
+    /**
+     * @param array<array-key, int> $clients
+     */
     public function setClients(?array $clients): self
     {
         $this->clients = $clients;
@@ -95,11 +113,17 @@ class PublicForecast
         return $this;
     }
 
+    /**
+     * @return array<array-key, int>
+     */
     public function getProjects(): ?array
     {
         return $this->projects;
     }
 
+    /**
+     * @param array<array-key, int> $projects
+     */
     public function setProjects(?array $projects): self
     {
         $this->projects = $projects;
@@ -143,11 +167,17 @@ class PublicForecast
         return $this;
     }
 
+    /**
+     * @return array<array-key, int>
+     */
     public function getPeople(): ?array
     {
         return $this->people;
     }
 
+    /**
+     * @param array<array-key, int> $people
+     */
     public function setPeople(?array $people): self
     {
         $this->people = $people;
@@ -155,11 +185,17 @@ class PublicForecast
         return $this;
     }
 
+    /**
+     * @return array<array-key, int>
+     */
     public function getPlaceholders(): ?array
     {
         return $this->placeholders;
     }
 
+    /**
+     * @param array<array-key, int> $placeholders
+     */
     public function setPlaceholders(?array $placeholders): self
     {
         $this->placeholders = $placeholders;

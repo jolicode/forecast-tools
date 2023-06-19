@@ -16,6 +16,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * @extends ServiceEntityRepository<StandupMeetingReminder>
+ *
  * @method StandupMeetingReminder|null find($id, $lockMode = null, $lockVersion = null)
  * @method StandupMeetingReminder|null findOneBy(array $criteria, array $orderBy = null)
  * @method StandupMeetingReminder[]    findAll()
@@ -28,7 +30,10 @@ class StandupMeetingReminderRepository extends ServiceEntityRepository
         parent::__construct($registry, StandupMeetingReminder::class);
     }
 
-    public function findByTime(string $time)
+    /**
+     * @return StandupMeetingReminder[]
+     */
+    public function findByTime(string $time): array
     {
         return $this->createQueryBuilder('smr')
             ->select('smr')

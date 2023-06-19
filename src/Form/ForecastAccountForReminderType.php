@@ -19,7 +19,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ForecastAccountForReminderType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('forecastAccountSlackTeams', CollectionType::class, [

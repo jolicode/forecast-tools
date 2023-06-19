@@ -15,7 +15,11 @@ use App\Converter\PersonToWorkingDaysConverter;
 use App\DataSelector\ForecastDataSelector;
 use App\Entity\ForecastAccount;
 use App\Entity\PublicForecast;
+use JoliCode\Forecast\Api\Model\Assignment;
+use JoliCode\Forecast\Api\Model\Client;
 use JoliCode\Forecast\Api\Model\Person;
+use JoliCode\Forecast\Api\Model\Placeholder;
+use JoliCode\Forecast\Api\Model\Project;
 
 use function Symfony\Component\String\u;
 
@@ -25,7 +29,10 @@ class Builder
     {
     }
 
-    public function buildAssignments(PublicForecast $publicForecast, \DateTime $start, \DateTime $end)
+    /**
+     * @return array<mixed, array<string, mixed>>
+     */
+    public function buildAssignments(PublicForecast $publicForecast, \DateTime $start, \DateTime $end): array
     {
         $days = $this->buildPrettyDays($start, $end);
         $forecastDataSelector = $this->getForecastDataSelector($publicForecast->getForecastAccount());
@@ -38,6 +45,9 @@ class Builder
         return $this->buildPublicForecast($publicForecast, $days, $assignments, $clients, $projects, $users, $placeholders);
     }
 
+    /**
+     * @return array<array-key, array<string, \DateTimeInterface|array<string, array<string, mixed>>>>
+     */
     public function buildDays(\DateTime $start, \DateTime $end): array
     {
         $days = $this->buildPrettyDays($start, $end);
@@ -70,7 +80,17 @@ class Builder
         return $this->forecastDataSelector;
     }
 
-    private function buildPublicForecast($publicForecast, $days, $assignments, $clients, $projects, $users, $placeholders)
+    /**
+     * @param array<string, array<string, mixed>> $days
+     * @param Assignment[]                        $assignments
+     * @param array<int, Client>                  $clients
+     * @param array<int, Project>                 $projects
+     * @param array<int, Person>                  $users
+     * @param array<int, Placeholder>             $placeholders
+     *
+     * @return array<mixed, array<string, mixed>>
+     */
+    private function buildPublicForecast(PublicForecast $publicForecast, array $days, array $assignments, array $clients, array $projects, array $users, array $placeholders): array
     {
         $allowedProjects = $projects;
         $allowedProjectIds = [];
@@ -244,7 +264,10 @@ class Builder
         return $userAssignments;
     }
 
-    private function buildAssignmentInterval($assignment, Person $user = null)
+    /**
+     * @return array<array-key, \DateTime>
+     */
+    private function buildAssignmentInterval(Assignment $assignment, Person $user = null): array
     {
         $current = $assignment->getStartDate();
         $end = $assignment->getEndDate();
@@ -262,6 +285,9 @@ class Builder
         return $days;
     }
 
+    /**
+     * @return array<string, array<string, mixed>>
+     */
     private function buildPrettyDays(\DateTime $start, \DateTime $end): array
     {
         if ($start >= $end) {

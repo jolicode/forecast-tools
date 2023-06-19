@@ -21,7 +21,7 @@ class SlackTeam implements \Stringable
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private $id;
+    private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 15)]
     private string $teamId;
@@ -33,13 +33,13 @@ class SlackTeam implements \Stringable
     private string $accessToken;
 
     /**
-     * @var Collection<ForecastAccountSlackTeam>
+     * @var Collection<int, ForecastAccountSlackTeam>
      */
     #[ORM\OneToMany(targetEntity: ForecastAccountSlackTeam::class, mappedBy: 'slackTeam', orphanRemoval: true)]
     private Collection $forecastAccountSlackTeams;
 
     /**
-     * @var Collection<StandupMeetingReminder>
+     * @var Collection<int, StandupMeetingReminder>
      */
     #[ORM\OneToMany(targetEntity: StandupMeetingReminder::class, mappedBy: 'slackTeam', orphanRemoval: true)]
     private Collection $standupMeetingReminders;
@@ -97,7 +97,7 @@ class SlackTeam implements \Stringable
     }
 
     /**
-     * @return Collection|ForecastAccountSlackTeam[]
+     * @return Collection<int, ForecastAccountSlackTeam>|ForecastAccountSlackTeam[]
      */
     public function getForecastAccountSlackTeams(): Collection
     {
@@ -128,7 +128,7 @@ class SlackTeam implements \Stringable
     }
 
     /**
-     * @return Collection|StandupMeetingReminder[]
+     * @return Collection<int, StandupMeetingReminder>|StandupMeetingReminder[]
      */
     public function getStandupMeetingReminders(): Collection
     {

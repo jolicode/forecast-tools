@@ -13,12 +13,19 @@ namespace App\Invoicing;
 
 class ViolationContainer
 {
+    /**
+     * @var string[]
+     */
     private array $violations = [];
+
+    /**
+     * @var ViolationContainer[]
+     */
     private array $descViolationContainers = [];
 
-    public function __construct($parentViolationContainer = null)
+    public function __construct(self $parentViolationContainer = null)
     {
-        if ($parentViolationContainer) {
+        if ($parentViolationContainer instanceof self) {
             $parentViolationContainer->addDesc($this);
         }
     }
@@ -33,6 +40,9 @@ class ViolationContainer
         $this->descViolationContainers[] = $desc;
     }
 
+    /**
+     * @return string[]
+     */
     public function all(): array
     {
         return $this->violations;

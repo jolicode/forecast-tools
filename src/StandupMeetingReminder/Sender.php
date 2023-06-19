@@ -24,7 +24,7 @@ class Sender
     {
     }
 
-    public function send()
+    public function send(): int
     {
         $time = (new \DateTime())->format('H:i');
         $standupMeetingReminders = $this->standupMeetingReminderRepository->findByTime($time);
@@ -48,7 +48,7 @@ class Sender
         return $standupMeetingRemindersCount;
     }
 
-    private function sendStandupMeetingReminder(StandupMeetingReminder $standupMeetingReminder)
+    private function sendStandupMeetingReminder(StandupMeetingReminder $standupMeetingReminder): void
     {
         $participants = $this->findParticipants($standupMeetingReminder);
 
@@ -57,7 +57,7 @@ class Sender
         }
 
         // format a string to ping the lucky winners
-        if ((is_countable($participants) ? \count($participants) : 0) > 1) {
+        if (\count($participants) > 1) {
             $lastParticipant = ' and ' . array_pop($participants);
             $participants = implode(', ', $participants) . $lastParticipant;
             $message = sprintf("🕘 It's time for the stand-up meeting!\nToday's participants: %s", $participants);
@@ -81,7 +81,10 @@ class Sender
         ]);
     }
 
-    private function findParticipants(StandupMeetingReminder $standupMeetingReminder)
+    /**
+     * @return array<string>|null
+     */
+    private function findParticipants(StandupMeetingReminder $standupMeetingReminder): ?array
     {
         $forecastAccounts = $this->forecastAccountRepository->findBySlackTeamId(
             $standupMeetingReminder->getSlackTeam()->getTeamId()

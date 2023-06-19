@@ -11,17 +11,20 @@
 
 namespace App\Client;
 
-use Symfony\Contracts\Cache\ItemInterface;
+use JoliCode\Forecast\Client as ForecastClient;
+use JoliCode\Harvest\Api\Client as HarvestClient;
+use JoliCode\Slack\Client as SlackClient;
+use Symfony\Component\Cache\Adapter\TraceableAdapter;
 
 abstract class AbstractClient
 {
-    protected $pool;
+    protected TraceableAdapter $pool;
 
-    abstract protected function __client();
+    abstract protected function __client(): ForecastClient|HarvestClient|SlackClient;
 
-    abstract protected function __namespace();
+    abstract protected function __namespace(): string;
 
-    protected function __addKey(string $key)
+    protected function __addKey(string $key): void
     {
         if ($this->pool->hasItem($this->__namespace())) {
             $item = $this->pool->getItem($this->__namespace());
@@ -33,11 +36,11 @@ abstract class AbstractClient
                 $this->pool->save($item);
             }
         } else {
-            $this->pool->get($this->__namespace(), fn (ItemInterface $item): array => [$key]);
+            $this->pool->get($this->__namespace(), fn (): array => [$key]);
         }
     }
 
-    public function __clearCache()
+    public function __clearCache(): void
     {
         if ($this->pool->hasItem($this->__namespace())) {
             $value = $this->pool->getItem($this->__namespace())->get();

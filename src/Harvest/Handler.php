@@ -34,7 +34,7 @@ class Handler
     {
     }
 
-    public function handleRequest(Request $request)
+    public function handleRequest(Request $request): void
     {
         $option = $request->request->get('text', '');
 
@@ -81,7 +81,10 @@ class Handler
         }
     }
 
-    public function handleBlockAction(array $payload)
+    /**
+     * @param array<string, mixed> $payload
+     */
+    public function handleBlockAction(array $payload): void
     {
         $action = $payload['actions'][0];
 
@@ -113,7 +116,10 @@ class Handler
         }
     }
 
-    private function handleCopy(array $payload, $value)
+    /**
+     * @param array<string, mixed> $payload
+     */
+    private function handleCopy(array $payload, string $value): void
     {
         $harvestProperties = $this->retrieveHarvestPropertiesFromSlackPayload($payload['user']['team_id'], $payload['user']['id']);
 
@@ -138,7 +144,7 @@ class Handler
         }
     }
 
-    private function help(string $responseUrl, string $triggerId)
+    private function help(string $responseUrl, string $triggerId): void
     {
         $message = sprintf(<<<'EOT'
 The `%s` command helps check and fill your Harvest timesheets, based on the Forecast schedule:
@@ -154,6 +160,9 @@ EOT,
         $this->slackSender->sendMessage($responseUrl, $triggerId, $message);
     }
 
+    /**
+     * @return array<string, HarvestAccount|HarvestUser>|null
+     */
     private function retrieveHarvestPropertiesFromSlackPayload(string $teamId, string $userId): ?array
     {
         $slackTeam = $this->slackTeamRepository->findOneBy([
@@ -182,7 +191,7 @@ EOT,
         return null;
     }
 
-    private function updateReminder(HarvestAccount $harvestAccount, HarvestUser $harvestUser, string $triggerId, string $responseUrl, $currentMonth = false)
+    private function updateReminder(HarvestAccount $harvestAccount, HarvestUser $harvestUser, string $triggerId, string $responseUrl, ?bool $currentMonth = false): void
     {
         $issues = $this->harvestTimesheetReminder->buildForHarvestAccountAndUser($harvestAccount, $harvestUser, $currentMonth);
 

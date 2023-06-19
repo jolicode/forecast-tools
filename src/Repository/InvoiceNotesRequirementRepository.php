@@ -16,6 +16,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * @extends ServiceEntityRepository<InvoiceNotesRequirement>
+ *
  * @method InvoiceNotesRequirement|null find($id, $lockMode = null, $lockVersion = null)
  * @method InvoiceNotesRequirement|null findOneBy(array $criteria, array $orderBy = null)
  * @method InvoiceNotesRequirement[]    findAll()

@@ -24,7 +24,7 @@ class ForecastAccount implements \Stringable
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private $id;
+    private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
     private string $name;
@@ -48,7 +48,7 @@ class ForecastAccount implements \Stringable
     private \DateTimeInterface $createdAt;
 
     /**
-     * @var Collection<PublicForecast>
+     * @var Collection<int, PublicForecast>
      */
     #[ORM\OneToMany(targetEntity: PublicForecast::class, mappedBy: 'forecastAccount', orphanRemoval: true)]
     private Collection $publicForecasts;
@@ -60,7 +60,7 @@ class ForecastAccount implements \Stringable
     private string $slug;
 
     /**
-     * @var Collection<UserForecastAccount>
+     * @var Collection<int, UserForecastAccount>
      */
     #[ORM\OneToMany(targetEntity: UserForecastAccount::class, mappedBy: 'forecastAccount', orphanRemoval: true)]
     private Collection $userForecastAccounts;
@@ -72,13 +72,13 @@ class ForecastAccount implements \Stringable
     private ?HarvestAccount $harvestAccount = null;
 
     /**
-     * @var Collection<InvoicingProcess>
+     * @var Collection<int, InvoicingProcess>
      */
     #[ORM\OneToMany(targetEntity: InvoicingProcess::class, mappedBy: 'forecastAccount', orphanRemoval: true)]
     private Collection $invoicingProcesses;
 
     /**
-     * @var Collection<ForecastAccountSlackTeam>
+     * @var Collection<int, ForecastAccountSlackTeam>
      */
     #[ORM\OneToMany(targetEntity: ForecastAccountSlackTeam::class, mappedBy: 'forecastAccount', orphanRemoval: true)]
     private Collection $forecastAccountSlackTeams;
@@ -177,7 +177,7 @@ class ForecastAccount implements \Stringable
     }
 
     /**
-     * @return Collection|PublicForecast[]
+     * @return Collection<int, PublicForecast>|PublicForecast[]
      */
     public function getPublicForecasts(): Collection
     {
@@ -220,7 +220,7 @@ class ForecastAccount implements \Stringable
     }
 
     /**
-     * @return Collection|UserForecastAccount[]
+     * @return Collection<int, UserForecastAccount>|UserForecastAccount[]
      */
     public function getUserForecastAccounts(): Collection
     {
@@ -286,7 +286,7 @@ class ForecastAccount implements \Stringable
     }
 
     /**
-     * @return Collection|InvoicingProcess[]
+     * @return Collection<int, InvoicingProcess>|InvoicingProcess[]
      */
     public function getInvoicingProcesses(): Collection
     {
@@ -317,7 +317,7 @@ class ForecastAccount implements \Stringable
     }
 
     /**
-     * @return Collection|ForecastAccountSlackTeam[]
+     * @return Collection<int, ForecastAccountSlackTeam>|ForecastAccountSlackTeam[]
      */
     public function getForecastAccountSlackTeams(): Collection
     {

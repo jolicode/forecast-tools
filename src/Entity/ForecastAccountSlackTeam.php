@@ -22,7 +22,7 @@ class ForecastAccountSlackTeam implements \Stringable
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private $id;
+    private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: SlackTeam::class, inversedBy: 'forecastAccountSlackTeams')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]

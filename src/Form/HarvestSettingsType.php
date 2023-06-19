@@ -26,7 +26,7 @@ class HarvestSettingsType extends AbstractType
     {
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $enabledClients = $this->harvestDataSelector->getClientsForChoice(true);
         $allClients = $this->harvestDataSelector->getClientsForChoice(null);
@@ -74,7 +74,7 @@ class HarvestSettingsType extends AbstractType
         ;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => HarvestAccount::class,

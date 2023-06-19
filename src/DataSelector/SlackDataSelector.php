@@ -46,6 +46,9 @@ class SlackDataSelector
         return null !== $conversationsList ? $conversationsList->getChannels() : [];
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function getConversationsForChoice(SlackTeam $slackTeam): array
     {
         $conversations = $this->getConversations($slackTeam);

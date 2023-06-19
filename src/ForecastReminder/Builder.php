@@ -12,7 +12,10 @@
 namespace App\ForecastReminder;
 
 use App\Converter\PersonToWorkingDaysConverter;
+use App\Entity\ClientOverride;
 use App\Entity\ForecastReminder;
+use App\Entity\ProjectOverride;
+use Doctrine\Common\Collections\Collection;
 use JoliCode\Forecast\Api\Model\Assignment;
 use JoliCode\Forecast\Api\Model\Client;
 use JoliCode\Forecast\Api\Model\Error;
@@ -24,7 +27,15 @@ class Builder
 {
     private ForecastReminder $forecastReminder;
     private ?\JoliCode\Forecast\Client $client = null;
+
+    /**
+     * @var array<int, ClientOverride>
+     */
     private array $clientOverrides = [];
+
+    /**
+     * @var array<int, ProjectOverride>
+     */
     private array $projectOverrides = [];
 
     /** @var Assignment[] */
@@ -49,6 +60,9 @@ class Builder
     ) {
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function buildBlocks(ForecastReminder $forecastReminder, \DateTime $start = null): array
     {
         $this->setForecastReminder($forecastReminder);
@@ -174,6 +188,9 @@ class Builder
         );
     }
 
+    /**
+     * @param array<string, mixed> $options
+     */
     private function fetchData($options): bool
     {
         $users = $this->client->listPeople();
@@ -200,13 +217,16 @@ class Builder
         return true;
     }
 
-    private function getActivitiesAsText($activities, Person $user)
+    /**
+     * @param Assignment[] $activities
+     */
+    private function getActivitiesAsText(array $activities, Person $user): string
     {
-        if (0 === (is_countable($activities) ? \count($activities) : 0)) {
+        if (0 === \count($activities)) {
             return $this->forecastReminder->getDefaultActivityName() ?? 'not set';
         }
 
-        if (1 === (is_countable($activities) ? \count($activities) : 0) && $this->isTimeOffActivity($activities[0])) {
+        if (1 === \count($activities) && $this->isTimeOffActivity($activities[0])) {
             $endDate = $this->getTimeOffEndDate($user);
             $timeOffActivityName = $this->forecastReminder->getTimeOffActivityName() ?? 'holidays (until %s)';
 
@@ -221,7 +241,7 @@ class Builder
             if (isset($this->projectOverrides[$activity->getProjectId()])) {
                 $this->oneLineWithOverride = true;
 
-                return $this->projectOverrides[$activity->getProjectId()];
+                return $this->projectOverrides[$activity->getProjectId()]->getName();
             }
 
             $project = $this->projects[$activity->getProjectId()];
@@ -229,7 +249,7 @@ class Builder
             if (isset($this->clientOverrides[$project->getClientId()])) {
                 $this->oneLineWithOverride = true;
 
-                return $this->clientOverrides[$project->getClientId()];
+                return $this->clientOverrides[$project->getClientId()]->getName();
             }
 
             $this->oneLineWithoutOverride = true;
@@ -254,7 +274,10 @@ class Builder
         return $activities[0];
     }
 
-    private function getActivity($user, \DateTime $date)
+    /**
+     * @return Assignment[]
+     */
+    private function getActivity(Person $user, \DateTime $date): array
     {
         $workingDays = $this->personToWorkingDaysConverter->convert($user);
 
@@ -270,16 +293,16 @@ class Builder
     /**
      * @return Assignment[]
      */
-    private function getPersonActivities(mixed $user)
+    private function getPersonActivities(mixed $user): array
     {
         return array_values(array_filter($this->assignments, fn ($activity): bool => $activity->getPersonId() === $user->getId()));
     }
 
-    private function getTimeOffEndDate(Person $user)
+    private function getTimeOffEndDate(Person $user): ?\DateTime
     {
         $activities = $this->getPersonActivities($user);
         $activities = array_values(array_filter($activities, fn ($activity): bool => $this->isTimeOffActivity($activity)));
-        $activities = array_map(function ($activity): Assignment {
+        $activities = array_map(function (Assignment $activity): Assignment {
             $endDate = clone $activity->getEndDate();
 
             if ($endDate->format('N') >= 5) {
@@ -307,12 +330,17 @@ class Builder
         return $activity->getEndDate();
     }
 
-    private function isTimeOffActivity($activity)
+    private function isTimeOffActivity(Assignment $activity): bool
     {
         return \in_array($activity->getProjectId(), $this->forecastReminder->getTimeOffProjects(), true);
     }
 
-    private static function makeLookup($struct, $methodName = 'getId')
+    /**
+     * @param Collection<int, ClientOverride>|Collection<int, ProjectOverride>|Project[]|Client[] $struct
+     *
+     * @return array<int, object>
+     */
+    private static function makeLookup(array|Collection $struct, ?string $methodName = 'getId'): array
     {
         $lookup = [];
 
@@ -328,7 +356,7 @@ class Builder
         return $this->oneLineWithOverride && $this->oneLineWithoutOverride;
     }
 
-    private function setForecastReminder(ForecastReminder $forecastReminder)
+    private function setForecastReminder(ForecastReminder $forecastReminder): void
     {
         $this->forecastReminder = $forecastReminder;
         $this->clientOverrides = self::makeLookup($forecastReminder->getClientOverrides(), 'getClientId');

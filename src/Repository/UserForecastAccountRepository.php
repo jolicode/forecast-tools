@@ -18,6 +18,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * @extends ServiceEntityRepository<UserForecastAccount>
+ *
  * @method UserForecastAccount|null find($id, $lockMode = null, $lockVersion = null)
  * @method UserForecastAccount|null findOneBy(array $criteria, array $orderBy = null)
  * @method UserForecastAccount[]    findAll()
@@ -30,7 +32,10 @@ class UserForecastAccountRepository extends ServiceEntityRepository
         parent::__construct($registry, UserForecastAccount::class);
     }
 
-    public function findForecastAccountsWithoutOtherAdmin(User $user)
+    /**
+     * @return ForecastAccount[]
+     */
+    public function findForecastAccountsWithoutOtherAdmin(User $user): array
     {
         $qb = $this->createQueryBuilder('uf');
 

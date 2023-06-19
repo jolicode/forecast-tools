@@ -16,6 +16,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * @extends ServiceEntityRepository<HarvestAccount>
+ *
  * @method HarvestAccount|null find($id, $lockMode = null, $lockVersion = null)
  * @method HarvestAccount|null findOneBy(array $criteria, array $orderBy = null)
  * @method HarvestAccount[]    findAll()

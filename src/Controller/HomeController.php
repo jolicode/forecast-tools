@@ -147,7 +147,7 @@ class HomeController extends AbstractController
         ]);
     }
 
-    public function loginInfo(ForecastAccountRepository $forecastAccountRepository, RequestStack $requestStack)
+    public function loginInfo(ForecastAccountRepository $forecastAccountRepository, RequestStack $requestStack): Response
     {
         $forecastAccounts = $forecastAccountRepository->findForecastAccountsForEmail($this->getUser()->getUserIdentifier());
         $request = $requestStack->getMainRequest();

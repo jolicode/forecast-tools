@@ -269,7 +269,7 @@ class SettingsController extends AbstractController
         return new RedirectResponse($authUrl);
     }
 
-    private function getSlackProvider(ForecastAccount $forecastAccount)
+    private function getSlackProvider(ForecastAccount $forecastAccount): Slack
     {
         return new Slack([
             'clientId' => $this->slackClientId,

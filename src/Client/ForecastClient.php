@@ -17,7 +17,7 @@ use JoliCode\Forecast\Api\Model\Error;
 use JoliCode\Forecast\Client;
 use JoliCode\Forecast\ClientFactory;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Symfony\Component\Cache\Adapter\TraceableAdapter;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authorization\Voter\AuthenticatedVoter;
 use Symfony\Contracts\Cache\ItemInterface;
@@ -36,11 +36,11 @@ class ForecastClient extends AbstractClient
     /**
      * @var mixed|\App\Entity\ForecastAccount
      */
-    private $forecastAccount = null;
+    private $forecastAccount;
     private bool $cacheEnabled = true;
     private ?bool $cacheStatusForNextRequestOnly = null;
 
-    public function __construct(private readonly RequestStack $requestStack, AdapterInterface $pool, private readonly Security $security, private readonly UserRepository $userRepository)
+    public function __construct(private readonly RequestStack $requestStack, TraceableAdapter $pool, private readonly Security $security, private readonly UserRepository $userRepository)
     {
         $this->pool = $pool;
     }
@@ -98,7 +98,10 @@ class ForecastClient extends AbstractClient
         return 'forecast-' . $this->getForecastAccount()->getId();
     }
 
-    public function __call(string $name, array $arguments)
+    /**
+     * @param array<string, mixed> $arguments
+     */
+    public function __call(string $name, array $arguments): mixed
     {
         $nodeName = array_pop($arguments);
 
@@ -134,7 +137,10 @@ class ForecastClient extends AbstractClient
         $this->forecastAccount = $forecastAccount;
     }
 
-    public function call(string $name, array $arguments, string $nodeName, $responseToUpdate = null)
+    /**
+     * @param array<string, mixed> $arguments
+     */
+    public function call(string $name, array $arguments, string $nodeName, mixed $responseToUpdate = null): mixed
     {
         $response = \call_user_func_array([
             $this->__client(),

@@ -19,7 +19,7 @@ class HarvestIdentityProviderException extends IdentityProviderException
     /**
      * Creates client exception from response.
      *
-     * @param array|string $data Parsed response data
+     * @param array<string, mixed>|string $data Parsed response data
      */
     public static function clientException(ResponseInterface $response, array|string $data): self
     {
@@ -32,7 +32,7 @@ class HarvestIdentityProviderException extends IdentityProviderException
     /**
      * Creates oauth exception from response.
      *
-     * @param array|string $data Parsed response data
+     * @param array<string, mixed>|string $data Parsed response data
      */
     public static function oauthException(ResponseInterface $response, array|string $data): self
     {
@@ -47,7 +47,7 @@ class HarvestIdentityProviderException extends IdentityProviderException
      *
      * @param string $message
      */
-    protected static function fromResponse(ResponseInterface $response, $message = null): self
+    protected static function fromResponse(ResponseInterface $response, string $message = null): self
     {
         return new self($message, $response->getStatusCode(), (string) $response->getBody());
     }

@@ -22,11 +22,10 @@ class HarvestResourceOwner implements ResourceOwnerInterface
 
     /**
      * Creates new resource owner.
+     *
+     * @param array<string, mixed> $response
      */
     public function __construct(
-        /**
-         * Raw response.
-         */
         protected array $response = []
     ) {
     }
@@ -91,6 +90,8 @@ class HarvestResourceOwner implements ResourceOwnerInterface
 
     /**
      * Return all of the owner details available as an array.
+     *
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {

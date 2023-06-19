@@ -17,7 +17,7 @@ use JoliCode\Harvest\Api\Client;
 use JoliCode\Harvest\Api\Model\Error;
 use JoliCode\Harvest\ClientFactory;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Symfony\Component\Cache\Adapter\TraceableAdapter;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authorization\Voter\AuthenticatedVoter;
 use Symfony\Contracts\Cache\ItemInterface;
@@ -41,7 +41,7 @@ class HarvestClient extends AbstractClient
     private bool $cacheEnabled = true;
     private ?bool $cacheStatusForNextRequestOnly = null;
 
-    public function __construct(private readonly RequestStack $requestStack, AdapterInterface $pool, private readonly Security $security, private readonly UserRepository $userRepository)
+    public function __construct(private readonly RequestStack $requestStack, TraceableAdapter $pool, private readonly Security $security, private readonly UserRepository $userRepository)
     {
         $this->pool = $pool;
     }
@@ -117,7 +117,10 @@ class HarvestClient extends AbstractClient
         return $this->namespace;
     }
 
-    public function __call(string $name, array $arguments)
+    /**
+     * @param array<string, mixed> $arguments
+     */
+    public function __call(string $name, array $arguments): mixed
     {
         $nodeName = array_pop($arguments);
 
@@ -183,7 +186,10 @@ class HarvestClient extends AbstractClient
         return $response;
     }
 
-    public function call(string $name, array $arguments, string $nodeName, $responseToUpdate = null)
+    /**
+     * @param array<string, mixed> $arguments
+     */
+    public function call(string $name, array $arguments, string $nodeName, mixed $responseToUpdate = null): mixed
     {
         $getter = sprintf('get%s', ucfirst($nodeName));
         $setter = sprintf('set%s', ucfirst($nodeName));

@@ -16,9 +16,6 @@ use Twig\TwigFilter;
 
 class SlackMrkdwnExtension extends AbstractExtension
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getFilters(): array
     {
         return [
