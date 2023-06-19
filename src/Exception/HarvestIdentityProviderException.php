@@ -44,8 +44,6 @@ class HarvestIdentityProviderException extends IdentityProviderException
 
     /**
      * Creates identity exception from response.
-     *
-     * @param string $message
      */
     protected static function fromResponse(ResponseInterface $response, string $message = null): self
     {

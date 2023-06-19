@@ -186,9 +186,7 @@ class Manager
                     $totalViolations += $violations['violations']->count();
                 }
 
-                $entries[] = array_merge([
-                    'date' => $date,
-                ], $violations);
+                $entries[] = ['date' => $date, ...$violations];
             }
 
             $diff[$user->getId()] = [

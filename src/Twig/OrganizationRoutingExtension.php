@@ -70,8 +70,6 @@ class OrganizationRoutingExtension extends AbstractExtension
     {
         $request = $this->requestStack->getMainRequest();
 
-        return array_merge($parameters, [
-            'slug' => $request->attributes->get('forecastAccount')->getSlug(),
-        ]);
+        return [...$parameters, 'slug' => $request->attributes->get('forecastAccount')->getSlug()];
     }
 }
