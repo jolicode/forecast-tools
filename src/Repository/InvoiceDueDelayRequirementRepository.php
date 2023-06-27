@@ -16,6 +16,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * @extends ServiceEntityRepository<InvoiceDueDelayRequirement>
+ *
  * @method InvoiceDueDelayRequirement|null find($id, $lockMode = null, $lockVersion = null)
  * @method InvoiceDueDelayRequirement|null findOneBy(array $criteria, array $orderBy = null)
  * @method InvoiceDueDelayRequirement[]    findAll()

@@ -21,13 +21,16 @@ class Harvest extends AbstractProvider
 {
     use BearerAuthorizationTrait;
 
-    public $domain = 'https://id.getharvest.com';
+    public string $domain = 'https://id.getharvest.com';
 
     public function getBaseAuthorizationUrl()
     {
         return $this->domain . '/oauth2/authorize';
     }
 
+    /**
+     * @param array<string, mixed> $params
+     */
     public function getBaseAccessTokenUrl(array $params)
     {
         return $this->domain . '/api/v2/oauth2/token';
@@ -38,6 +41,9 @@ class Harvest extends AbstractProvider
         return $this->domain . '/api/v2/accounts';
     }
 
+    /**
+     * @param array<string, mixed> $options
+     */
     public function getAuthenticatedRequest($method, $url, $token, array $options = [])
     {
         $options['headers'] = ['Content-Type' => 'application/json', 'Accept' => 'application/json'];
@@ -45,11 +51,17 @@ class Harvest extends AbstractProvider
         return $this->createRequest($method, $url, $token, $options);
     }
 
+    /**
+     * @return array<array-key, string>
+     */
     protected function getDefaultScopes()
     {
         return [];
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     protected function checkResponse(ResponseInterface $response, $data)
     {
         if ($response->getStatusCode() >= 400) {
@@ -59,6 +71,9 @@ class Harvest extends AbstractProvider
         }
     }
 
+    /**
+     * @param array<string, mixed> $response
+     */
     protected function createResourceOwner(array $response, AccessToken $token)
     {
         $user = new HarvestResourceOwner($response);

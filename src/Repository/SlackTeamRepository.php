@@ -16,6 +16,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * @extends ServiceEntityRepository<SlackTeam>
+ *
  * @method SlackTeam|null find($id, $lockMode = null, $lockVersion = null)
  * @method SlackTeam|null findOneBy(array $criteria, array $orderBy = null)
  * @method SlackTeam|null findOneByTeamId($value)

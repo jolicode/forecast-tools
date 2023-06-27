@@ -26,7 +26,7 @@ class User implements \Stringable
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private $id;
+    private ?int $id = null;
 
     #[ORM\Column(type: 'integer', unique: true)]
     private int $forecastId;
@@ -51,7 +51,7 @@ class User implements \Stringable
     private bool $isEnabled = false;
 
     /**
-     * @var Collection<ForecastReminder>
+     * @var Collection<int, ForecastReminder>
      */
     #[ORM\OneToMany(targetEntity: ForecastReminder::class, mappedBy: 'updatedBy')]
     private Collection $forecastReminders;
@@ -63,19 +63,19 @@ class User implements \Stringable
     private \DateTimeInterface $createdAt;
 
     /**
-     * @var Collection<PublicForecast>
+     * @var Collection<int, PublicForecast>
      */
     #[ORM\OneToMany(targetEntity: PublicForecast::class, mappedBy: 'createdBy')]
     private Collection $publicForecasts;
 
     /**
-     * @var Collection<UserForecastAccount>
+     * @var Collection<int, UserForecastAccount>
      */
     #[ORM\OneToMany(targetEntity: UserForecastAccount::class, mappedBy: 'user', orphanRemoval: true)]
     private Collection $userForecastAccounts;
 
     /**
-     * @var Collection<UserHarvestAccount>
+     * @var Collection<int, UserHarvestAccount>
      */
     #[ORM\OneToMany(targetEntity: UserHarvestAccount::class, mappedBy: 'user', orphanRemoval: true)]
     private Collection $userHarvestAccounts;
@@ -190,7 +190,7 @@ class User implements \Stringable
     }
 
     /**
-     * @return Collection|ForecastReminder[]
+     * @return Collection<int, ForecastReminder>|ForecastReminder[]
      */
     public function getForecastReminders(): Collection
     {
@@ -233,7 +233,7 @@ class User implements \Stringable
     }
 
     /**
-     * @return Collection|PublicForecast[]
+     * @return Collection<int, PublicForecast>|PublicForecast[]
      */
     public function getPublicForecasts(): Collection
     {
@@ -264,7 +264,7 @@ class User implements \Stringable
     }
 
     /**
-     * @return Collection|UserForecastAccount[]
+     * @return Collection<int, UserForecastAccount>|UserForecastAccount[]
      */
     public function getUserForecastAccounts(): Collection
     {
@@ -295,7 +295,7 @@ class User implements \Stringable
     }
 
     /**
-     * @return Collection|UserHarvestAccount[]
+     * @return Collection<int, UserHarvestAccount>|UserHarvestAccount[]
      */
     public function getUserHarvestAccounts(): Collection
     {

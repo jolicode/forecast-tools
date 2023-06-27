@@ -94,6 +94,9 @@ class HarvestDataSelector
         return array_filter($this->getClientsById(), fn (Client $client): ?bool => $client->getIsActive());
     }
 
+    /**
+     * @return array<string, int>
+     */
     public function getClientsForChoice(?bool $enabled): array
     {
         $choices = [];
@@ -163,6 +166,9 @@ class HarvestDataSelector
         return $timeEntryUsers;
     }
 
+    /**
+     * @return array<string, int>
+     */
     public function getEnabledUsersForChoice(): array
     {
         $choices = [];
@@ -244,9 +250,11 @@ class HarvestDataSelector
     }
 
     /**
+     * @param array<string, mixed> $options
+     *
      * @return TimeEntry[]
      */
-    public function getTimeEntries(\DateTimeInterface $from, \DateTimeInterface $to, array $options = []): array
+    public function getTimeEntries(\DateTimeInterface $from, \DateTimeInterface $to, ?array $options = []): array
     {
         $options = array_merge([
             'from' => $from->format('Y-m-d'),
@@ -270,7 +278,12 @@ class HarvestDataSelector
         return $uninvoiced;
     }
 
-    public function getUserAssignments(array $options = []): array
+    /**
+     * @param array<string, mixed> $options
+     *
+     * @return array<int|string, array<int|string, \JoliCode\Harvest\Api\Model\UserAssignment>>
+     */
+    public function getUserAssignments(?array $options = []): array
     {
         $result = [];
         $assignments = $this->client->listUserAssignments($options, 'userAssignments')->getUserAssignments();
@@ -289,7 +302,12 @@ class HarvestDataSelector
         return $result;
     }
 
-    public function getUserTimeEntries(\DateTimeInterface $from, \DateTimeInterface $to, array $options = []): array
+    /**
+     * @param array<string, mixed> $options
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getUserTimeEntries(\DateTimeInterface $from, \DateTimeInterface $to, ?array $options = []): array
     {
         $result = [];
         $timeEntries = $this->getTimeEntries($from, $to, $options);

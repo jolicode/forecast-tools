@@ -16,6 +16,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * @extends ServiceEntityRepository<ForecastReminder>
+ *
  * @method ForecastReminder|null find($id, $lockMode = null, $lockVersion = null)
  * @method ForecastReminder|null findOneBy(array $criteria, array $orderBy = null)
  * @method ForecastReminder[]    findAll()
@@ -28,7 +30,7 @@ class ForecastReminderRepository extends ServiceEntityRepository
         parent::__construct($registry, ForecastReminder::class);
     }
 
-    public function findByIdAndTeamId(string $id, string $teamId)
+    public function findByIdAndTeamId(string $id, string $teamId): ?ForecastReminder
     {
         return $this->createQueryBuilder('fr')
             ->select('fr')
@@ -43,7 +45,10 @@ class ForecastReminderRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-    public function findByTeamId(string $teamId)
+    /**
+     * @return ForecastReminder[]
+     */
+    public function findByTeamId(string $teamId): array
     {
         return $this->createQueryBuilder('fr')
             ->select('fr')

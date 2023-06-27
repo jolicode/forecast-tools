@@ -20,7 +20,7 @@ class ClientOverride implements \Stringable
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private $id;
+    private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: ForecastReminder::class, inversedBy: 'clientOverrides', cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]

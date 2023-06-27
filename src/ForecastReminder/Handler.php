@@ -30,7 +30,7 @@ class Handler
     ) {
     }
 
-    public function handleRequest(Request $request)
+    public function handleRequest(Request $request): void
     {
         $option = $request->request->get('text', '');
 
@@ -49,6 +49,9 @@ class Handler
         }
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function buildReminder(ForecastReminder $forecastReminder, ?string $text = ''): array
     {
         $startDate = $this->extractStartDateFromtext($text);
@@ -87,7 +90,7 @@ class Handler
         return new \DateTime('+1 day');
     }
 
-    private function help(string $responseUrl, string $triggerId)
+    private function help(string $responseUrl, string $triggerId): void
     {
         $message = sprintf(<<<'EOT'
 The `%s` command displays the team's Forecast schedule for a given day. Use _time parameters_ to choose a specific date:
@@ -112,11 +115,11 @@ EOT,
         $this->slackSender->sendMessage($responseUrl, $triggerId, $message);
     }
 
-    private function sendForecastReminders(Request $request)
+    private function sendForecastReminders(Request $request): void
     {
         $forecastReminders = $this->forecastReminderRepository->findByTeamId($request->request->get('team_id'));
 
-        if (0 === (is_countable($forecastReminders) ? \count($forecastReminders) : 0)) {
+        if (0 === \count($forecastReminders)) {
             $this->slackSender->sendMessage(
                 $request->request->get('response_url'),
                 $request->request->get('trigger_id'),

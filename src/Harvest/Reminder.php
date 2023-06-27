@@ -19,6 +19,7 @@ use App\Entity\HarvestAccount;
 use App\Repository\HarvestAccountRepository;
 use Bugsnag\Client;
 use JoliCode\Forecast\Api\Model\Assignment;
+use JoliCode\Forecast\Api\Model\Project;
 use JoliCode\Harvest\Api\Model\TimeEntriesPostBody;
 use JoliCode\Harvest\Api\Model\TimeEntry;
 use JoliCode\Harvest\Api\Model\User as HarvestUser;
@@ -36,7 +37,7 @@ class Reminder
     {
     }
 
-    public function send()
+    public function send(): int
     {
         $timesheetRemindersCount = 0;
 
@@ -137,12 +138,18 @@ class Reminder
         return $timesheetRemindersCount;
     }
 
-    public function buildForHarvestAccount(HarvestAccount $harvestAccount, $currentMonth = false): array
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function buildForHarvestAccount(HarvestAccount $harvestAccount, bool $currentMonth = false): array
     {
         return $this->buildForHarvestAccountAndUser($harvestAccount, null, $currentMonth);
     }
 
-    public function buildForHarvestAccountAndUser(HarvestAccount $harvestAccount, HarvestUser $harvestUser = null, $currentMonth = false): array
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function buildForHarvestAccountAndUser(HarvestAccount $harvestAccount, HarvestUser $harvestUser = null, bool $currentMonth = false): array
     {
         if ($currentMonth) {
             $firstDayOfLastMonth = new \DateTime('first day of this month');
@@ -158,7 +165,7 @@ class Reminder
         );
     }
 
-    public function copy(HarvestAccount $harvestAccount, HarvestUser $harvestUser, string $week)
+    public function copy(HarvestAccount $harvestAccount, HarvestUser $harvestUser, string $week): void
     {
         $firstDayOfWeek = new \DateTime($week);
         $lastDayOfWeek = (new \DateTime($week))->modify('next sunday');
@@ -190,15 +197,18 @@ class Reminder
         }
     }
 
-    private function buildHoursDiffSuffix($hoursDiff, $addRedCross = false)
+    private function buildHoursDiffSuffix(float $hoursDiff, bool $addRedCross = false): string
     {
-        if (0.0 !== (float) $hoursDiff) {
+        if (0.0 !== $hoursDiff) {
             return sprintf(', %sh %s%s', abs($hoursDiff), $hoursDiff < 0 ? 'too many' : 'missing', $addRedCross ? ' ❌' : '');
         }
 
         return '';
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
     private function buildIssues(HarvestAccount $harvestAccount, \DateTime $firstDayOfLastMonth, \DateTime $lastDayOfLastMonth, HarvestUser $harvestUser = null): array
     {
         $issues = [];
@@ -261,7 +271,7 @@ class Reminder
             $dailyHoursCapacity = $issue['user']->getWeeklyCapacity() / 5 / 3600;
 
             foreach ($days as $day => $dayProperties) {
-                if ($dayProperties['isWeekend']) {
+                if (true === $dayProperties['isWeekend']) {
                     continue;
                 }
 
@@ -315,6 +325,9 @@ class Reminder
         return $issues;
     }
 
+    /**
+     * @return array<string, array<int, mixed>>
+     */
     private function buildMissingProjectAssignmentsIssues(HarvestAccount $harvestAccount, \DateTime $firstDayOfLastMonth, \DateTime $lastDayOfLastMonth, HarvestUser $harvestUser = null): array
     {
         $issues = [
@@ -363,11 +376,16 @@ class Reminder
         return $issues;
     }
 
+    /**
+     * @param array<string, array<int, mixed>> $issues
+     *
+     * @return array<array-key, array<string, mixed>>
+     */
     private function buildMissingItemsSlackBlocks(array $issues, HarvestAccount $harvestAccount): array
     {
         $blocks = [];
 
-        if ((is_countable($issues['no_harvest_project']) ? \count($issues['no_harvest_project']) : 0) + (is_countable($issues['missing_harvest_user_assignment']) ? \count($issues['missing_harvest_user_assignment']) : 0) > 0) {
+        if (\count($issues['no_harvest_project']) + \count($issues['missing_harvest_user_assignment']) > 0) {
             $blocks = [
                 [
                     'type' => 'section',
@@ -381,7 +399,7 @@ class Reminder
             ];
         }
 
-        if ((is_countable($issues['no_harvest_project']) ? \count($issues['no_harvest_project']) : 0) > 0) {
+        if (\count($issues['no_harvest_project']) > 0) {
             $blocks[] = [
                 'type' => 'section',
                 'text' => [
@@ -405,7 +423,7 @@ class Reminder
             ];
         }
 
-        if ((is_countable($issues['missing_harvest_user_assignment']) ? \count($issues['missing_harvest_user_assignment']) : 0) > 0) {
+        if (\count($issues['missing_harvest_user_assignment']) > 0) {
             $blocks[] = [
                 'type' => 'section',
                 'text' => [
@@ -460,12 +478,17 @@ class Reminder
         return $blocks;
     }
 
-    private function buildSlackBlocks(array $issues, $currentMonth = false): array
+    /**
+     * @param array<int, array<string, mixed>> $issues
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildSlackBlocks(array $issues, bool $currentMonth = false): array
     {
         $forecastProjects = $this->forecastDataSelector->getProjectsById();
 
         foreach ($issues as $userId => $issue) {
-            if ($issue['isValid']) {
+            if (true === $issue['isValid']) {
                 unset($issues[$userId]);
                 continue;
             }
@@ -603,6 +626,9 @@ class Reminder
         return $issues;
     }
 
+    /**
+     * @return array<string, array<string, mixed>>
+     */
     private function buildDays(\DateTime $start, \DateTime $end): array
     {
         if ($start >= $end) {
@@ -628,6 +654,11 @@ class Reminder
         return $days;
     }
 
+    /**
+     * @param TimeEntry[] $timeEntries
+     *
+     * @return TimeEntry[]
+     */
     private function findDuplicateTimeEntries(array $timeEntries): array
     {
         if (\count($timeEntries) < 2) {
@@ -653,6 +684,13 @@ class Reminder
         return array_diff_key($duplicates, $timeEntries);
     }
 
+    /**
+     * @param Assignment[] $assignments
+     * @param TimeEntry[]  $timeEntries
+     * @param Project[]    $forecastProjects
+     *
+     * @return TimeEntry[]
+     */
     private function findInBoth(array $assignments, array $timeEntries, array $forecastProjects): array
     {
         return array_filter($timeEntries, function (TimeEntry $timeEntry) use ($assignments, $forecastProjects): bool {
@@ -662,6 +700,13 @@ class Reminder
         });
     }
 
+    /**
+     * @param Assignment[] $assignments
+     * @param TimeEntry[]  $timeEntries
+     * @param Project[]    $forecastProjects
+     *
+     * @return Assignment[]
+     */
     private function findOnlyInForecast(array $assignments, array $timeEntries, array $forecastProjects): array
     {
         return array_filter($assignments, function (Assignment $assignment) use ($timeEntries, $forecastProjects): bool {
@@ -671,6 +716,13 @@ class Reminder
         });
     }
 
+    /**
+     * @param Assignment[] $assignments
+     * @param TimeEntry[]  $timeEntries
+     * @param Project[]    $forecastProjects
+     *
+     * @return TimeEntry[]
+     */
     private function findOnlyInHarvest(array $assignments, array $timeEntries, array $forecastProjects): array
     {
         return array_filter($timeEntries, function (TimeEntry $timeEntry) use ($assignments, $forecastProjects): bool {
@@ -680,7 +732,10 @@ class Reminder
         });
     }
 
-    private function getHarvestAdminSlackIds(HarvestAccount $harvestAccount)
+    /**
+     * @return array<array-key, string>
+     */
+    private function getHarvestAdminSlackIds(HarvestAccount $harvestAccount): array
     {
         $ids = [];
         $slackTeam = $harvestAccount->getTimesheetReminderSlackTeam();
@@ -702,7 +757,7 @@ class Reminder
         return $ids;
     }
 
-    private function getClockEmoji($value)
+    private function getClockEmoji(float $value): string
     {
         if ($value < 1 || $value > 12) {
             $value = 12;
@@ -723,7 +778,7 @@ class Reminder
     }
 
     /**
-     * @param \JoliCode\Forecast\Api\Model\Project[] $forecastProjects
+     * @param Project[] $forecastProjects
      *
      * @return bool Whether or not the assignment and the entries are related
      */
@@ -743,7 +798,7 @@ class Reminder
         return $timeEntry->getProject()->getId() === $forecastProjects[$assignment->getProjectId()]->getHarvestId();
     }
 
-    private function mustSend()
+    private function mustSend(): bool
     {
         $today = new \DateTime();
         $dayOfMonth = (int) $today->format('j');

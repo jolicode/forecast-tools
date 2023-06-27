@@ -37,7 +37,7 @@ class Handler
     {
     }
 
-    public function handleRequest(Request $request)
+    public function handleRequest(Request $request): void
     {
         $option = $request->request->get('text', '');
 
@@ -62,7 +62,10 @@ class Handler
         }
     }
 
-    public function handleBlockAction(array $payload)
+    /**
+     * @param array<string, mixed> $payload
+     */
+    public function handleBlockAction(array $payload): void
     {
         $slackTeam = $this->slackTeamRepository->findOneBy([
             'teamId' => $payload['team']['id'],
@@ -107,7 +110,7 @@ class Handler
                 );
             }
         } elseif (self::ACTION_PREFIX . '.' . self::ACTION_CREATE === $action['action_id']) {
-            return $this->displayModalForm(
+            $this->displayModalForm(
                 $payload['team']['id'],
                 $payload['channel']['id'],
                 $payload['trigger_id'],
@@ -122,7 +125,10 @@ class Handler
         );
     }
 
-    public function handleSubmission(array $payload)
+    /**
+     * @param array<string, mixed> $payload
+     */
+    public function handleSubmission(array $payload): JsonResponse
     {
         $selectedProjectsForDisplay = [];
         $selectedProjectIds = [];
@@ -208,7 +214,12 @@ class Handler
         return new JsonResponse(['response_action' => 'clear']);
     }
 
-    public function listProjects(array $payload)
+    /**
+     * @param array<string, mixed> $payload
+     *
+     * @return array<string, array<array-key, array<string, array<int|string, mixed>>>>
+     */
+    public function listProjects(array $payload): array
     {
         $availableProjects = [];
         $searched = mb_strtolower((string) $payload['value']);
@@ -266,7 +277,10 @@ class Handler
         ];
     }
 
-    public function loadProjects(string $teamId)
+    /**
+     * @return array<array-key, array<string, mixed>>
+     */
+    public function loadProjects(string $teamId): array
     {
         $forecastAccounts = $this->forecastAccountRepository->findBySlackTeamId($teamId);
         $projectsByAccount = [];
@@ -285,7 +299,7 @@ class Handler
         return $projectsByAccount;
     }
 
-    private function help(string $responseUrl, string $triggerId)
+    private function help(string $responseUrl, string $triggerId): void
     {
         $message = sprintf(<<<'EOT'
 Use `%s` to create or edit a stand-up reminder.
@@ -298,7 +312,7 @@ EOT,
         $this->slackSender->sendMessage($responseUrl, $triggerId, $message);
     }
 
-    private function listReminders(Request $request)
+    private function listReminders(Request $request): void
     {
         $this->sendRemindersList(
             $request->request->get('team_id'),
@@ -307,7 +321,7 @@ EOT,
         );
     }
 
-    private function openModal(Request $request)
+    private function openModal(Request $request): void
     {
         $slackTeam = $this->slackTeamRepository->findOneByTeamId($request->request->get('team_id'));
         $channelId = $request->request->get('channel_id');
@@ -319,14 +333,14 @@ EOT,
             $channelId = null;
         }
 
-        return $this->displayModalForm(
+        $this->displayModalForm(
             $request->request->get('team_id'),
             $channelId,
             $request->request->get('trigger_id')
         );
     }
 
-    private function displayModalForm(string $teamId, ?string $channelId, string $triggerId, string $responseUrl = null)
+    private function displayModalForm(string $teamId, ?string $channelId, string $triggerId, string $responseUrl = null): void
     {
         // get the forecast accounts which have a SlackTeam in this organization
         $forecastAccounts = $this->forecastAccountRepository->findBySlackTeamId($teamId);
@@ -485,7 +499,7 @@ EOT,
         ]);
     }
 
-    private function sendRemindersList(string $teamId, string $triggerId, string $responseUrl)
+    private function sendRemindersList(string $teamId, string $triggerId, string $responseUrl): void
     {
         $slackTeam = $this->slackTeamRepository->findOneBy([
             'teamId' => $teamId,

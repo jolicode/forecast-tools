@@ -23,7 +23,7 @@ jobs:
       - name: Setup
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.1
+          php-version: 8.2
           extensions: mbstring, fileinfo, json, intl, dom
 
       - name: Run composer install

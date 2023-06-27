@@ -23,7 +23,7 @@ class HarvestAccount implements \Stringable
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private $id;
+    private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
     private string $name;
@@ -44,7 +44,7 @@ class HarvestAccount implements \Stringable
     private ?ForecastAccount $forecastAccount = null;
 
     /**
-     * @var Collection<UserHarvestAccount>
+     * @var Collection<int, UserHarvestAccount>
      */
     #[ORM\OneToMany(targetEntity: UserHarvestAccount::class, mappedBy: 'harvestAccount', orphanRemoval: true)]
     private Collection $userHarvestAccounts;
@@ -52,6 +52,9 @@ class HarvestAccount implements \Stringable
     #[ORM\Column(type: 'string', length: 255)]
     private string $baseUri;
 
+    /**
+     * @var array<array-key, int>
+     */
     #[ORM\Column(type: 'array', nullable: true)]
     private ?array $doNotCheckTimesheetsFor = [];
 
@@ -59,7 +62,7 @@ class HarvestAccount implements \Stringable
     private ?bool $hideSkippedUsers = null;
 
     /**
-     * @var Collection<InvoiceDueDelayRequirement>
+     * @var Collection<int, InvoiceDueDelayRequirement>
      *
      * @AppAssert\UniqueClient(message="There is already a due delay requirement for the client ""{{ value }}"".")
      */
@@ -68,7 +71,7 @@ class HarvestAccount implements \Stringable
     private Collection $invoiceDueDelayRequirements;
 
     /**
-     * @var Collection<InvoiceNotesRequirement>
+     * @var Collection<int, InvoiceNotesRequirement>
      */
     #[ORM\OneToMany(targetEntity: InvoiceNotesRequirement::class, mappedBy: 'harvestAccount', orphanRemoval: true, cascade: ['persist'])]
     #[Assert\Valid]
@@ -78,6 +81,9 @@ class HarvestAccount implements \Stringable
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?ForecastAccountSlackTeam $timesheetReminderSlackTeam = null;
 
+    /**
+     * @var array<array-key, int>
+     */
     #[ORM\Column(type: 'array', nullable: true)]
     private ?array $doNotSendTimesheetReminderFor = [];
 
@@ -171,7 +177,7 @@ class HarvestAccount implements \Stringable
     }
 
     /**
-     * @return Collection|UserHarvestAccount[]
+     * @return Collection<int, UserHarvestAccount>|UserHarvestAccount[]
      */
     public function getUserHarvestAccounts(): Collection
     {
@@ -213,11 +219,17 @@ class HarvestAccount implements \Stringable
         return $this;
     }
 
+    /**
+     * @return array<array-key, int>
+     */
     public function getDoNotCheckTimesheetsFor(): ?array
     {
         return $this->doNotCheckTimesheetsFor;
     }
 
+    /**
+     * @param array<array-key, int> $doNotCheckTimesheetsFor
+     */
     public function setDoNotCheckTimesheetsFor(?array $doNotCheckTimesheetsFor): self
     {
         $this->doNotCheckTimesheetsFor = $doNotCheckTimesheetsFor;
@@ -238,7 +250,7 @@ class HarvestAccount implements \Stringable
     }
 
     /**
-     * @return Collection|InvoiceDueDelayRequirement[]
+     * @return Collection<int, InvoiceDueDelayRequirement>|InvoiceDueDelayRequirement[]
      */
     public function getInvoiceDueDelayRequirements(): Collection
     {
@@ -269,7 +281,7 @@ class HarvestAccount implements \Stringable
     }
 
     /**
-     * @return Collection|InvoiceNotesRequirement[]
+     * @return Collection<int, InvoiceNotesRequirement>|InvoiceNotesRequirement[]
      */
     public function getInvoiceNotesRequirements(): Collection
     {
@@ -311,11 +323,17 @@ class HarvestAccount implements \Stringable
         return $this;
     }
 
+    /**
+     * @return array<array-key, int>
+     */
     public function getDoNotSendTimesheetReminderFor(): ?array
     {
         return $this->doNotSendTimesheetReminderFor;
     }
 
+    /**
+     * @param array<array-key, int> $doNotSendTimesheetReminderFor
+     */
     public function setDoNotSendTimesheetReminderFor(array $doNotSendTimesheetReminderFor): self
     {
         $this->doNotSendTimesheetReminderFor = $doNotSendTimesheetReminderFor;

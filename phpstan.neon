@@ -1,7 +1,17 @@
 parameters:
     tmpDir: 'var/phpstan/tmp'
-    level: 5
+    level: 6
     paths:
         - src
     doctrine:
         objectManagerLoader: tests/object-manager.php
+
+    ignoreErrors:
+        -
+            message: '#Property App\Entity\[a-zA-Z0-9\\_]+::$[a-zA-Z0-9\\_]+ type mapping mismatch: database can contain array|null but property expects array<int>|null.#'
+            path: src/Entity/*
+        -
+            message: '#Parameter \#[0-9]+ \$[a-zA-Z]+ \([a-zA-Z<>\s,]+\) of method App\\Security\\[a-zA-Z]+\\[a-zA-Z]+::[a-zA-Z]+\(\) should be contravariant with parameter \$[a-zA-Z]+ \([a-zA-Z\|]+\) of method [a-zA-Z0-9\\]+::[a-zA-Z]+\(\)#'
+            paths:
+                - src/Security/Provider/*
+                - src/Security/UserProvider/OAuthUserProvider.php

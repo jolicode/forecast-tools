@@ -18,9 +18,6 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 class CronExpressionValidator extends ConstraintValidator
 {
-    /**
-     * {@inheritdoc}
-     */
     public function validate(mixed $value, Constraint $constraint): void
     {
         if (!$constraint instanceof CronExpression) {

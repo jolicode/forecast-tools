@@ -23,7 +23,7 @@ class InvoicingProcess
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private $id;
+    private ?int $id = null;
 
     /**
      * @Gedmo\Timestampable(on="create")
@@ -55,7 +55,7 @@ class InvoicingProcess
     private string $currentPlace;
 
     /**
-     * @var Collection<InvoiceExplanation>
+     * @var Collection<int, InvoiceExplanation>
      */
     #[ORM\OneToMany(targetEntity: InvoiceExplanation::class, mappedBy: 'invoicingProcess', orphanRemoval: true)]
     private Collection $invoiceExplanations;
@@ -155,7 +155,7 @@ class InvoicingProcess
     }
 
     /**
-     * @return Collection|InvoiceExplanation[]
+     * @return Collection<int, InvoiceExplanation>|InvoiceExplanation[]
      */
     public function getInvoiceExplanations(): Collection
     {

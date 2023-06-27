@@ -16,6 +16,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * @extends ServiceEntityRepository<ClientOverride>
+ *
  * @method ClientOverride|null find($id, $lockMode = null, $lockVersion = null)
  * @method ClientOverride|null findOneBy(array $criteria, array $orderBy = null)
  * @method ClientOverride[]    findAll()

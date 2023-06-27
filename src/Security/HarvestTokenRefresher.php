@@ -27,7 +27,10 @@ class HarvestTokenRefresher
     {
     }
 
-    public function refresh()
+    /**
+     * @return array<array-key, int>
+     */
+    public function refresh(): array
     {
         $forecastAccounts = $this->forecastAccountRepository->findExpiringTokens(self::DELAY);
         $updated = 0;
@@ -40,7 +43,7 @@ class HarvestTokenRefresher
                     ++$updated;
                 }
             } catch (HarvestIdentityProviderException $e) {
-                $response = json_decode($e->getResponseBody(), true, 512, \JSON_THROW_ON_ERROR);
+                $response = json_decode((string) $e->getResponseBody(), true, 512, \JSON_THROW_ON_ERROR);
                 $response['account_id'] = $forecastAccount->getId();
                 $this->logger->error(sprintf('Could not refresh token: "%s"', $e->getMessage()), $response);
                 ++$failed;
@@ -64,7 +67,7 @@ class HarvestTokenRefresher
         return [$updated, $failed];
     }
 
-    private function refreshToken(ForecastAccount $forecastAccount)
+    private function refreshToken(ForecastAccount $forecastAccount): void
     {
         $token = $this->getHarvestClient()->getOAuth2Provider()->getAccessToken(
             'refresh_token', [

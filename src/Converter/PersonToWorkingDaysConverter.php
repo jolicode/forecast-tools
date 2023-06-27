@@ -18,7 +18,7 @@ class PersonToWorkingDaysConverter
     /**
      * @return array<string>
      */
-    public function convert(?Person $person = null): array
+    public function convert(Person $person = null): array
     {
         if (null === $person || null === $person->getWorkingDays()) {
             $workingDays = ['1', '2', '3', '4', '5'];

@@ -22,7 +22,7 @@ class ForecastReminder implements \Stringable
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private $id;
+    private ?int $id = null;
 
     /**
      * @AppAssert\CronExpression(message="The value ""{{ value }}"" is not a valid cron expression.")
@@ -47,23 +47,32 @@ class ForecastReminder implements \Stringable
     private string $timeOffActivityName = 'holidays (until %s)';
 
     /**
-     * @var Collection<ProjectOverride>
+     * @var Collection<int, ProjectOverride>
      */
     #[ORM\OneToMany(targetEntity: ProjectOverride::class, mappedBy: 'forecastReminder', orphanRemoval: true, cascade: ['persist'])]
     private Collection $projectOverrides;
 
     /**
-     * @var Collection<ClientOverride>
+     * @var Collection<int, ClientOverride>
      */
     #[ORM\OneToMany(targetEntity: ClientOverride::class, mappedBy: 'forecastReminder', orphanRemoval: true, cascade: ['persist'])]
     private Collection $clientOverrides;
 
+    /**
+     * @var array<array-key, int>
+     */
     #[ORM\Column(type: 'array', nullable: true)]
     private ?array $timeOffProjects = [];
 
+    /**
+     * @var array<array-key, int>
+     */
     #[ORM\Column(type: 'array', nullable: true)]
     private ?array $onlyUsers = [];
 
+    /**
+     * @var array<array-key, int>
+     */
     #[ORM\Column(type: 'array', nullable: true)]
     private ?array $exceptUsers = [];
 
@@ -160,7 +169,7 @@ class ForecastReminder implements \Stringable
     }
 
     /**
-     * @return Collection|ProjectOverride[]
+     * @return Collection<int, ProjectOverride>|ProjectOverride[]
      */
     public function getProjectOverrides(): Collection
     {
@@ -191,7 +200,7 @@ class ForecastReminder implements \Stringable
     }
 
     /**
-     * @return Collection|ClientOverride[]
+     * @return Collection<int, ClientOverride>|ClientOverride[]
      */
     public function getClientOverrides(): Collection
     {
@@ -217,11 +226,17 @@ class ForecastReminder implements \Stringable
         return $this;
     }
 
+    /**
+     * @return array<array-key, int>
+     */
     public function getTimeOffProjects(): ?array
     {
         return $this->timeOffProjects;
     }
 
+    /**
+     * @param array<array-key, int> $timeOffProjects
+     */
     public function setTimeOffProjects(?array $timeOffProjects): self
     {
         $this->timeOffProjects = $timeOffProjects;
@@ -229,11 +244,17 @@ class ForecastReminder implements \Stringable
         return $this;
     }
 
+    /**
+     * @return array<array-key, int>
+     */
     public function getOnlyUsers(): ?array
     {
         return $this->onlyUsers;
     }
 
+    /**
+     * @param array<array-key, int> $onlyUsers
+     */
     public function setOnlyUsers(?array $onlyUsers): self
     {
         $this->onlyUsers = $onlyUsers;
@@ -241,11 +262,17 @@ class ForecastReminder implements \Stringable
         return $this;
     }
 
+    /**
+     * @return array<array-key, int>
+     */
     public function getExceptUsers(): ?array
     {
         return $this->exceptUsers;
     }
 
+    /**
+     * @param array<array-key, int> $exceptUsers
+     */
     public function setExceptUsers(?array $exceptUsers): self
     {
         $this->exceptUsers = $exceptUsers;

@@ -16,6 +16,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * @extends ServiceEntityRepository<InvoicingProcess>
+ *
  * @method InvoicingProcess|null find($id, $lockMode = null, $lockVersion = null)
  * @method InvoicingProcess|null findOneBy(array $criteria, array $orderBy = null)
  * @method InvoicingProcess[]    findAll()
@@ -28,7 +30,10 @@ class InvoicingProcessRepository extends ServiceEntityRepository
         parent::__construct($registry, InvoicingProcess::class);
     }
 
-    public function findOverlapping(InvoicingProcess $invoicingProcess)
+    /**
+     * @return InvoicingProcess[]
+     */
+    public function findOverlapping(InvoicingProcess $invoicingProcess): array
     {
         return $this->createQueryBuilder('ip')
             ->andWhere('ip.billingPeriodStart < :endDate AND ip.billingPeriodEnd > :startDate')

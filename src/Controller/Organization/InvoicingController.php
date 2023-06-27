@@ -26,6 +26,7 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -166,7 +167,7 @@ class InvoicingController extends AbstractController
     #[Route(path: '/{invoicingId}/resume', name: 'resume')]
     public function resume(
         ForecastAccount $forecastAccount,
-        #[MapEntity(id: 'invoicingId')] InvoicingProcess $invoicingProcess): \Symfony\Component\HttpFoundation\RedirectResponse
+        #[MapEntity(id: 'invoicingId')] InvoicingProcess $invoicingProcess): RedirectResponse
     {
         return $this->redirectToRoute('organization_invoicing_transition', [
             'invoicingId' => $invoicingProcess->getId(),
@@ -200,7 +201,7 @@ class InvoicingController extends AbstractController
         return $this->render('organization/invoicing/transition/' . $transition . '.html.twig', $parameters);
     }
 
-    private function getNextNaturalTransitionName(InvoicingProcess $invoicingProcess)
+    private function getNextNaturalTransitionName(InvoicingProcess $invoicingProcess): string
     {
         $transitionNames = [
             'created' => 'collect',
@@ -214,7 +215,7 @@ class InvoicingController extends AbstractController
         return $transitionNames[$invoicingProcess->getCurrentPlace()];
     }
 
-    private function progress(ForecastAccount $forecastAccount, InvoicingProcess $invoicingProcess, string $transition)
+    private function progress(ForecastAccount $forecastAccount, InvoicingProcess $invoicingProcess, string $transition): RedirectResponse
     {
         if ($this->invoicingStateMachine->can($invoicingProcess, $transition)) {
             $this->invoicingStateMachine->apply($invoicingProcess, $transition);

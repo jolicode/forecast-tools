@@ -25,7 +25,7 @@ class ForecastReminderType extends AbstractType
     {
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         if (true === $options['hasSlackTeams']) {
             $enabledClients = $this->forecastDataSelector->getClientsForChoice(true);
@@ -100,7 +100,7 @@ class ForecastReminderType extends AbstractType
         }
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => ForecastReminder::class,

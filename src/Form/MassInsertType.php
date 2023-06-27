@@ -37,7 +37,7 @@ class MassInsertType extends AbstractType
     ) {
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $people = $this->forecastDataSelector->getPeopleForChoice(true);
         $projects = $this->forecastDataSelector->getProjectsForChoice(true);
@@ -119,7 +119,7 @@ class MassInsertType extends AbstractType
         ;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'constraints' => [
@@ -129,9 +129,12 @@ class MassInsertType extends AbstractType
         ]);
     }
 
-    public function validateForecastOrHarvest($object, ExecutionContextInterface $context, $payload)
+    /**
+     * @param array<string, mixed> $object
+     */
+    public function validateForecastOrHarvest(array $object, ExecutionContextInterface $context, mixed $payload): void
     {
-        if (!$object['forecast'] && !$object['harvest']) {
+        if (true !== $object['forecast'] && true !== $object['harvest']) {
             $context->buildViolation('Please choose at least one platform')
                 ->atPath('[forecast]')
                 ->addViolation()
@@ -139,9 +142,12 @@ class MassInsertType extends AbstractType
         }
     }
 
-    public function validatePreexisting($object, ExecutionContextInterface $context, $payload)
+    /**
+     * @param array<string, mixed> $object
+     */
+    public function validatePreexisting(array $object, ExecutionContextInterface $context, mixed $payload): void
     {
-        if ($object['forecast']) {
+        if (true === $object['forecast']) {
             $assignements = $this->forecastDataSelector->disableCacheForNextRequestOnly()->getAssignments(
                 $object['date'],
                 $object['date'],
@@ -157,7 +163,7 @@ class MassInsertType extends AbstractType
             }
         }
 
-        if ($object['harvest']) {
+        if (true === $object['harvest']) {
             $projects = $this->forecastDataSelector->getProjectsById(null, true);
 
             if (!isset($projects[$object['project']])) {

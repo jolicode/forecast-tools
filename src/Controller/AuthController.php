@@ -26,7 +26,7 @@ class AuthController extends AbstractController
     }
 
     #[Route(path: '/connect/check', name: 'connect_harvest_check')]
-    public function connectCheckAction()
+    public function connectCheckAction(): void
     {
     }
 }

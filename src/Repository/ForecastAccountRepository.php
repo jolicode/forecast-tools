@@ -16,6 +16,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * @extends ServiceEntityRepository<ForecastAccount>
+ *
  * @method ForecastAccount|null find($id, $lockMode = null, $lockVersion = null)
  * @method ForecastAccount|null findOneBy(array $criteria, array $orderBy = null)
  * @method ForecastAccount[]    findAll()

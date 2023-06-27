@@ -16,7 +16,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use JoliCode\Slack\Client;
 use JoliCode\Slack\ClientFactory;
 use JoliCode\Slack\Exception\SlackErrorResponse;
-use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Symfony\Component\Cache\Adapter\TraceableAdapter;
 use Symfony\Contracts\Cache\ItemInterface;
 
 /**
@@ -32,7 +32,7 @@ class SlackClient extends AbstractClient
 
     private ?SlackTeam $slackTeam = null;
 
-    public function __construct(AdapterInterface $pool, private readonly EntityManagerInterface $em)
+    public function __construct(TraceableAdapter $pool, private readonly EntityManagerInterface $em)
     {
         $this->pool = $pool;
     }
@@ -55,7 +55,10 @@ class SlackClient extends AbstractClient
         return 'slack-' . $this->getSlackTeam()->getId();
     }
 
-    public function __call(string $name, array $arguments)
+    /**
+     * @param array<string, mixed> $arguments
+     */
+    public function __call(string $name, array $arguments): mixed
     {
         $cacheKey = sprintf('%s-%s-%s', $this->__namespace(), $name, md5(serialize($arguments)));
         $this->__addKey($cacheKey);
@@ -77,7 +80,10 @@ class SlackClient extends AbstractClient
         $this->slackTeam = $slackTeam;
     }
 
-    public function call(string $name, array $arguments)
+    /**
+     * @param array<string, mixed> $arguments
+     */
+    public function call(string $name, array $arguments): mixed
     {
         if ('' !== $this->getSlackTeam()->getAccessToken()) {
             try {

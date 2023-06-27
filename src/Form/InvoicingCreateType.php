@@ -26,7 +26,7 @@ class InvoicingCreateType extends AbstractType
     {
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('billingPeriodStart', null, [
@@ -44,7 +44,7 @@ class InvoicingCreateType extends AbstractType
         ;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => InvoicingProcess::class,
@@ -54,11 +54,11 @@ class InvoicingCreateType extends AbstractType
         ]);
     }
 
-    public function validateOverlappingDates(InvoicingProcess $invoicingProcess, ExecutionContextInterface $context)
+    public function validateOverlappingDates(InvoicingProcess $invoicingProcess, ExecutionContextInterface $context): void
     {
         $conflicts = $this->invoicingProcessRepository->findOverlapping($invoicingProcess);
 
-        if ((is_countable($conflicts) ? \count($conflicts) : 0) > 0) {
+        if (\count($conflicts) > 0) {
             $context->buildViolation('There is already an invoicing process for this period')
                 ->atPath('startDate')
                 ->addViolation();

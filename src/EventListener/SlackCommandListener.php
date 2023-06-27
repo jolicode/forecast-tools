@@ -32,7 +32,7 @@ class SlackCommandListener implements EventSubscriberInterface
     {
     }
 
-    public function onRequest(RequestEvent $event)
+    public function onRequest(RequestEvent $event): void
     {
         $request = $event->getRequest();
 
@@ -57,7 +57,7 @@ class SlackCommandListener implements EventSubscriberInterface
         }
     }
 
-    public function onTerminate(TerminateEvent $event)
+    public function onTerminate(TerminateEvent $event): void
     {
         $request = $event->getRequest();
 

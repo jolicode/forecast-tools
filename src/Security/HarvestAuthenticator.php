@@ -41,13 +41,24 @@ use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPasspor
 
 class HarvestAuthenticator extends OAuth2Authenticator
 {
+    /**
+     * @var array<int, ForecastAccount>
+     */
     private array $harvestIdToForecastAccountRelationships = [];
 
-    public function __construct(private readonly EntityManagerInterface $em, private readonly ClientRegistry $clientRegistry, private readonly UrlGeneratorInterface $urlGenerator, private readonly UserRepository $userRepository, private readonly ForecastAccountRepository $forecastAccountRepository, private readonly UserForecastAccountRepository $userForecastAccountRepository, private readonly HarvestAccountRepository $harvestAccountRepository, private readonly UserHarvestAccountRepository $userHarvestAccountRepository)
-    {
+    public function __construct(
+        private readonly EntityManagerInterface $em,
+        private readonly ClientRegistry $clientRegistry,
+        private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly UserRepository $userRepository,
+        private readonly ForecastAccountRepository $forecastAccountRepository,
+        private readonly UserForecastAccountRepository $userForecastAccountRepository,
+        private readonly HarvestAccountRepository $harvestAccountRepository,
+        private readonly UserHarvestAccountRepository $userHarvestAccountRepository
+    ) {
     }
 
-    public function start(Request $request, AuthenticationException $authException = null)
+    public function start(Request $request, AuthenticationException $authException = null): RedirectResponse
     {
         return new RedirectResponse(
             $this->urlGenerator->generate('connect_harvest'),
@@ -62,9 +73,9 @@ class HarvestAuthenticator extends OAuth2Authenticator
         return new Response($message, Response::HTTP_FORBIDDEN);
     }
 
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey): ?Response
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-        $targetUrl = $this->getPreviousUrl($request, $providerKey);
+        $targetUrl = $this->getPreviousUrl($request, $firewallName);
 
         /* @phpstan-ignore-next-line */
         if ('' === $targetUrl || null === $targetUrl) {
@@ -79,6 +90,9 @@ class HarvestAuthenticator extends OAuth2Authenticator
         return 'connect_harvest_check' === $request->attributes->get('_route');
     }
 
+    /**
+     * @return \League\OAuth2\Client\Token\AccessToken
+     */
     public function getCredentials(Request $request)
     {
         return $this->fetchAccessToken($this->getHarvestClient());
@@ -136,6 +150,9 @@ class HarvestAuthenticator extends OAuth2Authenticator
         );
     }
 
+    /**
+     * @param array<string, mixed> $account
+     */
     private function addForecastAccount(User $user, array $account): ForecastAccount
     {
         $forecastAccount = $this->forecastAccountRepository->findOneBy(['forecastId' => $account['id']]);
@@ -181,6 +198,9 @@ class HarvestAuthenticator extends OAuth2Authenticator
         return $forecastAccount;
     }
 
+    /**
+     * @param array<string, mixed> $account
+     */
     private function addHarvestAccount(User $user, array $account): HarvestAccount
     {
         $client = HarvestClientFactory::create(

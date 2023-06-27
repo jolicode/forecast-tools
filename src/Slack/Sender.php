@@ -22,7 +22,7 @@ class Sender
     {
     }
 
-    public function sendMessage(string $responseUrl, string $triggerId, string $message, $ephemeral = false): ResponseInterface
+    public function sendMessage(string $responseUrl, string $triggerId, string $message, ?bool $ephemeral = false): ResponseInterface
     {
         $body = [
             'replace_original' => 'true',
@@ -44,6 +44,10 @@ class Sender
         return $this->send($responseUrl, $body);
     }
 
+    /**
+     * @param array<string, mixed>       $body
+     * @param array<string, string>|null $headers
+     */
     public function send(string $url, array $body, ?array $headers = []): ResponseInterface
     {
         $headers = array_merge($headers, [
