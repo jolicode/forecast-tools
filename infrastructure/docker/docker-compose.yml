@@ -1,0 +1,53 @@
+version: '3.7'
+
+volumes:
+    mysql-data: {}
+    redis-data: {}
+
+services:
+    router:
+        build: services/router
+        volumes:
+            - "/var/run/docker.sock:/var/run/docker.sock"
+        network_mode: host
+
+    frontend:
+        build:
+            context: services/php
+            target: frontend
+        depends_on:
+            - mysql
+        volumes:
+            - "../../${PROJECT_DIRECTORY}:/home/app/application:cached"
+        environment:
+            - "PHP_VERSION=${PHP_VERSION}"
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.${PROJECT_NAME}-frontend.rule=Host(${PROJECT_DOMAINS})"
+            - "traefik.http.routers.${PROJECT_NAME}-frontend.tls=true"
+            - "traefik.http.routers.${PROJECT_NAME}-frontend-unsecure.rule=Host(${PROJECT_DOMAINS})"
+            # Comment the next line to be able to access frontend via HTTP instead of HTTPS
+            - "traefik.http.routers.${PROJECT_NAME}-frontend-unsecure.middlewares=redirect-to-https@file"
+
+    mysql:
+        build: services/mysql
+        volumes:
+            - mysql-data:/var/lib/mysql
+
+    encore:
+        build:
+            context: services/php
+            target: builder
+        volumes:
+            - "../../${PROJECT_DIRECTORY}:/home/app/application:cached"
+        command: "yarn run dev-server --hot --host 0.0.0.0 --allowed-hosts encore.${PROJECT_ROOT_DOMAIN} --allowed-hosts ${PROJECT_ROOT_DOMAIN} --client-web-socket-url-hostname encore.${PROJECT_ROOT_DOMAIN} --client-web-socket-url-port 443 --client-web-socket-url-protocol wss"
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.${PROJECT_NAME}-encore.rule=Host(`encore.${PROJECT_ROOT_DOMAIN}`)"
+            - "traefik.http.routers.${PROJECT_NAME}-encore.tls=true"
+            - "traefik.http.services.encore.loadbalancer.server.port=8080"
+
+    redis:
+        image: redis:5
+        volumes:
+            - "redis-data:/data"

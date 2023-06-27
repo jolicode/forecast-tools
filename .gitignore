@@ -12,6 +12,7 @@
 .phpunit
 /phpunit.xml
 ###< symfony/phpunit-bridge ###
+
 ###> symfony/webpack-encore-bundle ###
 /node_modules/
 /public/build/
@@ -24,10 +25,13 @@ yarn-error.log
 /.php-cs-fixer.cache
 ###< friendsofphp/php-cs-fixer ###
 
-*.pyc
-docker/services/router/etc/ssl/certs/*.pem
-
 ###> phpunit/phpunit ###
 /phpunit.xml
 .phpunit.result.cache
 ###< phpunit/phpunit ###
+
+###> jolicode/docker-starter ###
+/.castor.stub.php
+/infrastructure/docker/docker-compose.override.yml
+/infrastructure/docker/services/router/etc/ssl/certs/*.pem
+###< jolicode/docker-starter ###

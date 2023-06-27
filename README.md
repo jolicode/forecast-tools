@@ -17,20 +17,24 @@ Forecast tools improves the overall experience with Harvest & Harvest Forecast, 
 A Docker environment is provided and requires you to have these tools available:
 
  * Docker
- * pipenv (see [these instructions](https://pipenv.readthedocs.io/en/latest/install/) for how to install)
+ * 🐘 PHP
+ * 🦫 [Castor](https://github.com/jolicode/castor#installation)
 
-Install and run `pipenv` to install the required tools:
+### Castor
+
+Once Castor is installed, in order to improve your usage of Castor scripts, you
+can install the console autocompletion script.
+
+If you are using bash:
 
 ```bash
-pipenv --three install
+castor completion | sudo tee /etc/bash_completion.d/castor
 ```
 
-You can configure your current shell to be able to use Invoke commands directly
-(without having to prefix everything by `pipenv run`)
+If you are using something else, please refer to your shell documentation. You
+may need to use `castor completion > /to/somewhere`.
 
-```bash
-pipenv shell
-```
+Castor supports completion for `bash`, `zsh` & `fish` shells.
 
 ## Starting up
 
@@ -69,7 +73,7 @@ This IP is probably `127.0.0.1` unless you run Docker in a special VM (docker-ma
 Note: The router binds port 80 and 443, that's why it will work with `127.0.0.1`
 
 ```sh
-$ echo '127.0.0.1 local.forecast.jolicode.com' | sudo tee -a /etc/hosts
+$ echo '127.0.0.1 local.forecast.jolicode.com encore.local.forecast.jolicode.com' | sudo tee -a /etc/hosts
 ```
 
 Using dinghy? Run `dinghy ip` to get the IP of the VM.
@@ -79,53 +83,68 @@ Using dinghy? Run `dinghy ip` to get the IP of the VM.
 Launch the stack by running this command:
 
 ```sh
-$ inv start
+$ castor start
 ```
 
 > Note: the first start of the stack should take a few minutes.
 
 The site is now accessible at the hostnames your have configured over HTTPS
-(you may need to accept self-signed SSL certificate).
+(you may need to accept self-signed SSL certificate if you do not have mkcert
+installed on your computer - see below).
 
-### Assets watcher
+### SSL certificates
 
-Watch for changes:
+This stack does not embed self-signed SSL certificates. Instead, they will be
+generated the first time you start the infrastructure (`castor start`) or if you
+run `castor infra:generate-certificates`. So *HTTPS will work out of the box*.
 
-```sh
-$ inv watch
-```
+If you have `mkcert` installed on your computer, it will be used to generate
+locally trusted certificates. See [`mkcert` documentation](https://github.com/FiloSottile/mkcert#installation)
+to understand how to install it. Do not forget to install CA root from mkcert
+by running `mkcert -install`.
 
-### CS fix
+If you don't have `mkcert`, then self-signed certificates will instead be
+generated with openssl. You can configure [infrastructure/docker/services/router/openssl.cnf](infrastructure/docker/services/router/openssl.cnf)
+to tweak certificates.
 
-```sh
-$ inv cs
-```
+You can run `castor infra:generate-certificates --force` to recreate new certificates
+if some were already generated. Remember to restart the infrastructure to make
+use of the new certificates with `castor up` or `castor start`.
 
 ### Builder
 
-Having some composer, yarn or another modifications to make on the project?
+Having some composer, yarn or other modifications to make on the project?
 Start the builder which will give you access to a container with all these
 tools available:
 
-```sh
-$ inv builder
-```
-
-Note: You can add as many Invoke commands as you want. If a command should be
-ran by the builder, don't forget to use `with Builder(c):`:
-```
-@task
-def mycommand(c):
-    """
-    My documentation
-    """
-    with Builder(c):
-        docker_compose_run(c, 'echo "HelloWorld")
+```bash
+castor builder
 ```
 
 ### Other tasks
 
-Checkout `inv -l` to have the list of available Invoke tasks.
+Type `castor` in the shell to have the list of available tasks.
+
+#### Assets watcher
+
+Watch for changes:
+
+```sh
+$ castor app:watch
+```
+
+#### CS fix
+
+```sh
+$ castor qa:cs
+```
+
+#### Quality tools
+
+```bash
+$ castor qa:phpstan
+$ castor qa:rector
+```
 
 ## Commands and cron jobs
 
