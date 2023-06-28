@@ -20,6 +20,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: \App\Repository\HarvestAccountRepository::class)]
 class HarvestAccount implements \Stringable
 {
+    /**
+     * @var array<array-key, int>
+     */
+    #[ORM\Column(type: 'array', nullable: true)]
+    public ?array $doNotCleanupClientIds = [];
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]

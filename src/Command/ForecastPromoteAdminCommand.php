@@ -13,6 +13,7 @@ namespace App\Command;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,19 +21,20 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+#[AsCommand(
+    name: 'forecast:promote-admin',
+    description: 'Promote or demotes a user to the super admin role.',
+)]
 class ForecastPromoteAdminCommand extends Command
 {
-    protected static $defaultName = 'forecast:promote-admin';
-
     public function __construct(private readonly EntityManagerInterface $em, private readonly UserRepository $userRepository)
     {
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
-            ->setDescription('Promote or demotes a user to the super admin role')
             ->addArgument('email', InputArgument::REQUIRED, 'User\'s email')
             ->addOption('demote', null, InputOption::VALUE_NONE, 'Remove the super admin role from this user')
         ;
@@ -59,6 +61,6 @@ class ForecastPromoteAdminCommand extends Command
             ));
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

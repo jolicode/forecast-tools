@@ -13,6 +13,8 @@ namespace App\DataSelector;
 
 use App\Client\HarvestClient;
 use App\Entity\HarvestAccount;
+use JoliCode\Forecast\Api\Model\Client as ForecastClient;
+use JoliCode\Forecast\Api\Model\Project as ForecastProject;
 use JoliCode\Harvest\Api\Model\Client;
 use JoliCode\Harvest\Api\Model\Invoice;
 use JoliCode\Harvest\Api\Model\Project;
@@ -24,8 +26,10 @@ use JoliCode\Harvest\Api\Model\User;
 
 class HarvestDataSelector
 {
-    public function __construct(private readonly HarvestClient $client)
-    {
+    public function __construct(
+        private readonly HarvestClient $client,
+        private readonly ForecastDataSelector $forecastDataSelector,
+    ) {
     }
 
     public function disableCache(): self
@@ -66,9 +70,15 @@ class HarvestDataSelector
     /**
      * @return Client[]
      */
-    public function getClients(): array
+    public function getClients(bool $isActive = null): array
     {
-        return $this->client->listClients([], 'clients')->getClients();
+        $params = [];
+
+        if (null !== $isActive) {
+            $params['is_active'] = $isActive;
+        }
+
+        return $this->client->listClients($params, 'clients')->getClients();
     }
 
     /**
@@ -91,13 +101,13 @@ class HarvestDataSelector
      */
     public function getEnabledClients(): array
     {
-        return array_filter($this->getClientsById(), fn (Client $client): ?bool => $client->getIsActive());
+        return $this->getClients(true);
     }
 
     /**
      * @return array<string, int>
      */
-    public function getClientsForChoice(?bool $enabled): array
+    public function getClientsForChoice(bool $enabled = null): array
     {
         $choices = [];
         $clients = $this->getClients();
@@ -188,12 +198,23 @@ class HarvestDataSelector
     /**
      * @return Invoice[]
      */
-    public function getInvoices(\DateTimeInterface $from, \DateTimeInterface $to): array
+    public function getInvoices(\DateTimeInterface $from = null, \DateTimeInterface $to = null, string $state = null): array
     {
-        return $this->client->listInvoices([
-            'from' => $from->format('Y-m-d'),
-            'to' => $to->format('Y-m-d'),
-        ], 'invoices')->getInvoices();
+        $params = [];
+
+        if ($from instanceof \DateTimeInterface) {
+            $params['from'] = $from->format('Y-m-d');
+        }
+
+        if ($to instanceof \DateTimeInterface) {
+            $params['to'] = $to->format('Y-m-d');
+        }
+
+        if (null !== $state) {
+            $params['state'] = $state;
+        }
+
+        return $this->client->listInvoices($params, 'invoices')->getInvoices();
     }
 
     /**
@@ -212,11 +233,129 @@ class HarvestDataSelector
     }
 
     /**
+     * @return array<string, Client>
+     */
+    public function getOutdatedClients(): array
+    {
+        $this->client->__disableCacheForNextRequestOnly();
+        $activeProjects = $this->getProjects(true);
+
+        $this->client->__disableCacheForNextRequestOnly();
+        $clients = self::makeLookup($this->getClients(true), 'getName');
+        ksort($clients);
+
+        return array_filter($clients, function (Client $client) use ($activeProjects): bool {
+            foreach ($activeProjects as $project) {
+                if (null !== $project->getClient() && $project->getClient()->getId() === $client->getId()) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+    }
+
+    /**
+     * @param array<array-key, int> $doNotCleanupClientIds
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function getOutdatedProjects(array $doNotCleanupClientIds): array
+    {
+        $forecastClients = $this->forecastDataSelector->getClients(true);
+        $forecastProjects = $this->forecastDataSelector->getProjects(true);
+        $outdatedProjects = [];
+        $invoices = $this->getInvoices((new \DateTime())->modify('-3 years'));
+        $createdAtLimit = (new \DateTime())->modify('-5 months');
+        $lastInvoiceIssueDateLimit = (new \DateTime())->modify('-2 months');
+
+        $this->client->__disableCacheForNextRequestOnly();
+
+        foreach ($this->getProjects(true) as $project) {
+            if (!\in_array($project->getClient()->getId(), $doNotCleanupClientIds, true) && $project->getCreatedAt() < $createdAtLimit) {
+                // search if there were time entries during the last 6 months on this project
+                $timeEntries = $this->getTimeEntries(
+                    (new \DateTime())->modify('-4 months'),
+                    (new \DateTime())->modify('+6 months'),
+                    [
+                        'project_id' => $project->getId(),
+                    ],
+                );
+
+                if (\count($timeEntries) > 0) {
+                    // there were time entries during the last 4 months, so we don't delete this project
+                    continue;
+                }
+
+                $label = sprintf('%s - %s',
+                    $project->getClient()->getName(),
+                    $project->getName(),
+                );
+
+                if (null !== $project->getCode() && '' !== $project->getCode()) {
+                    $label = sprintf('[%s] %s', $project->getCode(), $label);
+                }
+
+                $lastProjectInvoices = array_filter($invoices, function (Invoice $invoice) use ($project) {
+                    foreach ($invoice->getLineItems() as $lineItem) {
+                        if ($lineItem->getProject() && $lineItem->getProject()->getId() === $project->getId()) {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                });
+                usort($lastProjectInvoices, fn (Invoice $a, Invoice $b) => $b->getIssueDate()->getTimestamp() <=> $a->getIssueDate()->getTimestamp());
+                $projectOpenInvoices = array_filter($lastProjectInvoices, fn (Invoice $invoice) => \in_array($invoice->getState(), ['draft', 'open'], true));
+
+                if (\count($projectOpenInvoices) > 0) {
+                    // if there are open invoices, we don't consider the project as outdated
+                    continue;
+                }
+
+                if (\count($lastProjectInvoices) > 0 && $lastProjectInvoices[0]->getIssueDate() > $lastInvoiceIssueDateLimit) {
+                    // if the last invoice was issued less than 2 months ago, we don't consider the project as outdated
+                    continue;
+                }
+
+                $startDate = \count($lastProjectInvoices) > 0 ? clone $lastProjectInvoices[0]->getIssueDate() : new \DateTime();
+                $forecastSearch = false;
+                $forecastProject = array_filter($forecastProjects, fn (ForecastProject $forecastProject) => $forecastProject->getHarvestId() === $project->getId());
+
+                if (\count($forecastProject) > 0) {
+                    $forecastProject = array_pop($forecastProject);
+                    $forecastSearch = $forecastProject->getName();
+                    $forecastClient = array_filter($forecastClients, fn (ForecastClient $forecastClient) => $forecastClient->getId() === $forecastProject->getClientId());
+
+                    if (\count($forecastClient) > 0) {
+                        $forecastSearch = sprintf('%s %s', array_pop($forecastClient)->getName(), $forecastSearch);
+                    }
+                }
+
+                $outdatedProjects[$label] = [
+                    'project' => $project,
+                    'invoices' => $lastProjectInvoices,
+                    'forecastSearch' => $forecastSearch,
+                    'startDate' => $startDate->modify('-75 days')->format('Y-m-d'),
+                ];
+            }
+        }
+
+        return $outdatedProjects;
+    }
+
+    /**
      * @return Project[]
      */
-    public function getProjects(): array
+    public function getProjects(bool $isActive = null): array
     {
-        return $this->client->listProjects([], 'projects')->getProjects();
+        $params = [];
+
+        if (null !== $isActive) {
+            $params['is_active'] = $isActive;
+        }
+
+        return $this->client->listProjects($params, 'projects')->getProjects();
     }
 
     /**
@@ -332,5 +471,25 @@ class HarvestDataSelector
         }
 
         return $result;
+    }
+
+    /**
+     * @param array<string, mixed> $struct
+     *
+     * @return array<mixed, mixed>
+     */
+    private static function makeLookup(array $struct, string $methodName = null): array
+    {
+        if (null === $methodName) {
+            $methodName = 'getId';
+        }
+
+        $lookup = [];
+
+        foreach ($struct as $data) {
+            $lookup[\call_user_func([$data, $methodName])] = $data;
+        }
+
+        return $lookup;
     }
 }

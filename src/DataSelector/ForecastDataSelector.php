@@ -209,7 +209,11 @@ class ForecastDataSelector
     {
         $projects = $this->client->listProjects('projects')->getProjects();
 
-        return array_filter($projects, fn (Project $project) => null === $enabled || $enabled !== $project->getArchived());
+        if (null === $enabled) {
+            return $projects;
+        }
+
+        return array_filter($projects, fn (Project $project) => $enabled !== $project->getArchived());
     }
 
     /**

@@ -31,6 +31,12 @@ class HarvestSettingsType extends AbstractType
         $enabledClients = $this->harvestDataSelector->getClientsForChoice(true);
         $allClients = $this->harvestDataSelector->getClientsForChoice(null);
         $builder
+            ->add('doNotCleanupClientIds', ChoiceType::class, [
+                'choices' => $this->harvestDataSelector->getClientsForChoice(true),
+                'required' => false,
+                'multiple' => true,
+                'help' => 'Please select clients for which you do not want to perform the cleanup & archive operations.',
+            ])
             ->add('doNotCheckTimesheetsFor', ChoiceType::class, [
                 'choices' => $this->harvestDataSelector->getEnabledUsersForChoice(),
                 'required' => false,
