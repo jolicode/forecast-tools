@@ -17,9 +17,10 @@ use JoliCode\Forecast\Api\Model\Error;
 use JoliCode\Forecast\Client;
 use JoliCode\Forecast\ClientFactory;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\Cache\Adapter\TraceableAdapter;
+use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authorization\Voter\AuthenticatedVoter;
+use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
 /**
@@ -40,7 +41,7 @@ class ForecastClient extends AbstractClient
     private bool $cacheEnabled = true;
     private ?bool $cacheStatusForNextRequestOnly = null;
 
-    public function __construct(private readonly RequestStack $requestStack, TraceableAdapter $pool, private readonly Security $security, private readonly UserRepository $userRepository)
+    public function __construct(private readonly RequestStack $requestStack, AdapterInterface|CacheInterface $pool, private readonly Security $security, private readonly UserRepository $userRepository)
     {
         $this->pool = $pool;
     }
