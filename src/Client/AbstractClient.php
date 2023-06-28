@@ -14,11 +14,12 @@ namespace App\Client;
 use JoliCode\Forecast\Client as ForecastClient;
 use JoliCode\Harvest\Api\Client as HarvestClient;
 use JoliCode\Slack\Client as SlackClient;
-use Symfony\Component\Cache\Adapter\TraceableAdapter;
+use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Symfony\Contracts\Cache\CacheInterface;
 
 abstract class AbstractClient
 {
-    protected TraceableAdapter $pool;
+    protected AdapterInterface|CacheInterface $pool;
 
     abstract protected function __client(): ForecastClient|HarvestClient|SlackClient;
 

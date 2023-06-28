@@ -16,7 +16,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use JoliCode\Slack\Client;
 use JoliCode\Slack\ClientFactory;
 use JoliCode\Slack\Exception\SlackErrorResponse;
-use Symfony\Component\Cache\Adapter\TraceableAdapter;
+use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
 /**
@@ -32,7 +33,7 @@ class SlackClient extends AbstractClient
 
     private ?SlackTeam $slackTeam = null;
 
-    public function __construct(TraceableAdapter $pool, private readonly EntityManagerInterface $em)
+    public function __construct(AdapterInterface|CacheInterface $pool, private readonly EntityManagerInterface $em)
     {
         $this->pool = $pool;
     }
