@@ -1,0 +1,122 @@
+{% extends 'organization/base.html.twig' %}
+
+{% form_theme form _self %}
+
+{% block title %}Cleanup outdated data |
+	{{ parent() }}
+{% endblock %}
+
+{% block attributes -%}
+    {%- for attrname, attrvalue in attr -%}
+        {{- " " -}}
+        {%- if attrname in ['placeholder', 'title'] -%}
+            {{- attrname }}="{{ translation_domain is same as(false) or attrvalue is null ? attrvalue : attrvalue|trans(attr_translation_parameters, translation_domain) }}"
+        {%- elseif attrvalue is same as(true) -%}
+            {{- attrname }}="{{ attrname }}"
+        {%- elseif attrvalue is not same as(false) and attrname not in ['project', 'forecastProject', 'startDate', 'invoices'] -%}
+            {{- attrname }}="{{ attrvalue }}"
+        {%- endif -%}
+    {%- endfor -%}
+{%- endblock attributes -%}
+
+{% block _cleanup_client_widget %}
+    <div {{ block('widget_container_attributes') }}>
+        {%- for child in form %}
+            {{- form_widget(child, {
+                parent_label_class: label_attr.class|default(''),
+                translation_domain: choice_translation_domain,
+                valid: valid,
+                harvestAccount
+            }) -}}
+        {% endfor -%}
+    </div>
+{% endblock _cleanup_client_widget %}
+
+{% block _cleanup_project_widget %}
+    <div {{ block('widget_container_attributes') }}>
+        {%- for child in form %}
+            {{- form_widget(child, {
+                parent_label_class: label_attr.class|default(''),
+                translation_domain: choice_translation_domain,
+                valid: valid,
+                harvestAccount
+            }) -}}
+        {% endfor -%}
+    </div>
+{% endblock _cleanup_project_widget %}
+
+{% block _cleanup_project_entry_widget %}
+    {% set project = form.vars.attr.project %}
+    <div class="mb-4">
+        {{ form_widget(form) }}
+        <div class="text-sm ps-5 text-secondary">
+            <div class="row border-bottom">
+                <div class="col-2">see on</div>
+                <div class="col-10">
+                    <a href="{{ harvestAccount.baseUri }}/projects/{{ project.id }}">Harvest</a>
+                    {% if form.vars.attr.forecastSearch | default(false) %}
+                        • <a href="https://forecastapp.com/{{ harvestAccount.forecastAccount.forecastId }}/schedule/projects?filter={{ form.vars.attr.forecastSearch }}&showDrawer=true&startDate={{ form.vars.attr.startDate }}&zoomedOut=true">Forecast</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row border-bottom">
+                <div class="col-2">updated</div>
+                <div class="col-10">{{ project.updatedAt | date('Y-m-d') }}</div>
+            </div>
+            {% if form.vars.attr.invoices | length > 0 %}
+                <div class="row border-bottom">
+                    <div class="col-2">last invoices</div>
+                    <div class="col-10">
+                        <ul class="d-inline list-unstyled">
+                            {% for invoice in form.vars.attr.invoices %}
+                                <li>#{{ invoice.number }} ({{ invoice.issueDate | date('Y-m-d') }}) - {{ invoice.state }}</i></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-danger my-1 p-1" role="alert">
+                    No invoice was attached to this project. This might be the sign that we forgot to create it. Please check the project before archiving it
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    {{ form_start(form) }}
+        <div class="card mb-3">
+            <div class="card-header">
+                <h2 class="mb-0">Cleanup outdated clients and projects</h2>
+            </div>
+            <div class="card-body">
+                <p>
+                    This screen allows to mass-archive clients and projects that have not been updated for a long time.
+                </p>
+
+                <ul>
+                    <li>Projects are listed below when no activity has been tracked during the last 4 months, when there is no open invoice and the last invoice was issued more than 2 months ago.</li>
+                    <li>Clients are listed when no active project is attached to them.</li>
+                </ul>
+
+                {{ form_errors(form) }}
+                {{- form_widget(form.project, {
+                    harvestAccount: forecastAccount.harvestAccount
+                }) -}}
+                {{- form_widget(form.client, {
+                    harvestAccount: forecastAccount.harvestAccount
+                }) -}}
+            </div>
+            <div class="card-footer text-end">
+                {{ form_widget(form.archive) }}
+            </div>
+        </div>
+    {{ form_end(form) }}
+{% endblock %}

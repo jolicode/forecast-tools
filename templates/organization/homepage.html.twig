@@ -109,6 +109,23 @@
                     </div>
                 </div>
             {% endif %}
+
+            {% if is_granted('admin', forecastAccount) and is_granted('harvest_admin', forecastAccount) %}
+                <div class="col-md-6 col-lg-4 col-xl-3 p-2">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <img src="/images/archive-outdated.svg" class="card-img-top" alt="List and archive outdated Forecast and Harvest clients and projects">
+                            <h5 class="car-title">Harvest and Forecast cleanup</h2>
+                            <p class="card-text">
+                                List and archive outdated projects and clients.
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ organization_path('cleanup_index') }}" class="btn btn-primary">☝️ Cleanup Forecast and Harvest</a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </div>
 {% endblock %}
