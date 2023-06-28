@@ -12,33 +12,29 @@
 namespace App\Command;
 
 use App\Security\HarvestTokenRefresher;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+#[AsCommand(
+    name: 'forecast:refresh-tokens',
+    description: 'Refresh Forecast tokens',
+)]
 class ForecastRefreshTokensCommand extends Command
 {
-    protected static $defaultName = 'forecast:refresh-tokens';
-
     public function __construct(private readonly HarvestTokenRefresher $refresher)
     {
         parent::__construct();
     }
 
-    protected function configure()
-    {
-        $this
-            ->setDescription('Refresh Forecast tokens')
-        ;
-    }
-
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         $refreshed = $this->refresher->refresh();
         $io->success(sprintf('Refreshed %s tokens. %s errors occurred.', $refreshed[0], $refreshed[1]));
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

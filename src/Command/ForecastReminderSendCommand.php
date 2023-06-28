@@ -12,33 +12,29 @@
 namespace App\Command;
 
 use App\ForecastReminder\Sender;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+#[AsCommand(
+    name: 'forecast:reminder-send',
+    description: 'Sends Forecast Reminders',
+)]
 class ForecastReminderSendCommand extends Command
 {
-    protected static $defaultName = 'forecast:reminder-send';
-
     public function __construct(private readonly Sender $forecastReminderSender)
     {
         parent::__construct();
     }
 
-    protected function configure()
-    {
-        $this
-            ->setDescription('Sends Forecast Reminders')
-        ;
-    }
-
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         $count = $this->forecastReminderSender->send();
         $io->success(sprintf('Sent %s reminders', $count));
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

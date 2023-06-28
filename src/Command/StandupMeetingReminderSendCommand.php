@@ -12,27 +12,24 @@
 namespace App\Command;
 
 use App\StandupMeetingReminder\Sender;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+#[AsCommand(
+    name: 'forecast:standup-meeting-reminder-send',
+    description: 'Sends standup meeting Reminders',
+)]
 class StandupMeetingReminderSendCommand extends Command
 {
-    protected static $defaultName = 'forecast:standup-meeting-reminder-send';
-
     public function __construct(private readonly Sender $standupMeetingReminderSender)
     {
         parent::__construct();
     }
 
-    protected function configure()
-    {
-        $this
-            ->setDescription('Sends standup meeting Reminders');
-    }
-
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
@@ -44,6 +41,6 @@ class StandupMeetingReminderSendCommand extends Command
             );
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 }
