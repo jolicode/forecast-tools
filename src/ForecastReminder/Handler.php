@@ -81,10 +81,15 @@ class Handler
         }
 
         $text = str_replace(' and ', ', ' . $sign, $text);
-        $datetime = new \DateTime($text);
 
-        if (false === \DateTime::getLastErrors()) {
-            return $datetime;
+        try {
+            $datetime = new \DateTime($text);
+
+            if (false === \DateTime::getLastErrors()) {
+                return $datetime;
+            }
+        } catch (\Exception) {
+            // silent the wrongly formatted date expression errors
         }
 
         return new \DateTime('+1 day');
