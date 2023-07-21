@@ -36,7 +36,7 @@ services:
         arguments:
             $invoicingStateMachine: '@state_machine.invoicing'
 
-    Http\Client\HttpClient:
+    Psr\Http\Client\ClientInterface:
         alias: Http\Client\Curl\Client
 
     Http\Client\Curl\Client: ~

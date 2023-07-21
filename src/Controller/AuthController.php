@@ -18,7 +18,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class AuthController extends AbstractController
 {
     #[Route(path: '/connect', name: 'connect_harvest')]
-    public function connectAction(ClientRegistry $clientRegistry): \Symfony\Component\HttpFoundation\Response
+    public function connect(ClientRegistry $clientRegistry): \Symfony\Component\HttpFoundation\Response
     {
         return $clientRegistry
             ->getClient('harvest')
@@ -26,7 +26,7 @@ class AuthController extends AbstractController
     }
 
     #[Route(path: '/connect/check', name: 'connect_harvest_check')]
-    public function connectCheckAction(): void
+    public function connectCheck(): void
     {
     }
 }

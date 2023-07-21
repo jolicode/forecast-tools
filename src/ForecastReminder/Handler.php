@@ -83,7 +83,7 @@ class Handler
         $text = str_replace(' and ', ', ' . $sign, $text);
         $datetime = new \DateTime($text);
 
-        if (0 === \DateTime::getLastErrors()['warning_count'] && 0 === \DateTime::getLastErrors()['error_count']) {
+        if (false === \DateTime::getLastErrors()) {
             return $datetime;
         }
 

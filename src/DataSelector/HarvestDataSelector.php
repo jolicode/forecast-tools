@@ -298,7 +298,7 @@ class HarvestDataSelector
 
                 $lastProjectInvoices = array_filter($invoices, function (Invoice $invoice) use ($project) {
                     foreach ($invoice->getLineItems() as $lineItem) {
-                        if ($lineItem->getProject() && $lineItem->getProject()->getId() === $project->getId()) {
+                        if (null !== $lineItem->getProject() && $lineItem->getProject()->getId() === $project->getId()) {
                             return true;
                         }
                     }
