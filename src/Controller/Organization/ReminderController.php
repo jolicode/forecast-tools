@@ -32,6 +32,7 @@ class ReminderController extends AbstractController
         if (null === $forecastReminder) {
             $forecastReminder = new ForecastReminder();
             $forecastReminder->setForecastAccount($forecastAccount);
+            $forecastAccount->setForecastReminder($forecastReminder);
         }
 
         $form = $this->createForm(ForecastReminderType::class, $forecastReminder, [
