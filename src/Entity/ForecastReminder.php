@@ -15,6 +15,7 @@ use App\Validator\Constraints as AppAssert;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: \App\Repository\ForecastReminderRepository::class)]
 class ForecastReminder implements \Stringable
@@ -34,8 +35,11 @@ class ForecastReminder implements \Stringable
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?User $updatedBy = null;
 
+    /**
+     * @Gedmo\Timestampable(on="update")
+     */
     #[ORM\Column(type: 'datetime')]
-    private \DateTimeInterface $updatedAt;
+    private ?\DateTimeInterface $updatedAt = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $lastTimeSentAt = null;
