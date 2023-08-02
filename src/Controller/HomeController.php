@@ -109,16 +109,27 @@ class HomeController extends AbstractController
     #[Route(path: '/forecast/{token}/{start}/{end}', name: 'public_forecast_start_end')]
     public function forecast(Builder $forecastBuilder, PublicForecast $publicForecast, $start = null, $end = null): Response
     {
-        if (null === $start) {
-            $start = new \DateTime('first day of last month');
-        } else {
-            $start = new \DateTime($start);
-        }
+        try {
+            if (null === $start) {
+                $start = new \DateTime('first day of last month');
+            } else {
+                $start = new \DateTime($start);
+            }
 
-        if (null === $end) {
-            $end = new \DateTime('last day of next month');
-        } else {
-            $end = new \DateTime($end);
+            if (null === $end) {
+                $end = new \DateTime('last day of next month');
+            } else {
+                $end = new \DateTime($end);
+            }
+        } catch (\Exception) {
+            return $this->render('home/public-forecast.html.twig', [
+                'assignments' => [],
+                'error' => 'The "start" and "end" data URL parameters must be of the form YYYY-MM-DD.',
+                'start' => null,
+                'end' => null,
+                'today' => (new \DateTime())->format('Y-m-d'),
+                'publicForecast' => $publicForecast,
+            ]);
         }
 
         if ($start >= $end) {
