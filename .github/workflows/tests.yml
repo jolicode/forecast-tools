@@ -5,36 +5,44 @@ on:
     branches:
       - master
   pull_request:
+    branches:
+      - master
 
 jobs:
   cs-check:
     name: Check Coding Standards
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      -
+        name: Checkout
+        uses: actions/checkout@v3
 
-      - name: Cache composer
-        uses: actions/cache@v2
-        with:
-          path: ~/.composer/cache/
-          key: composer-ubuntu-${{ github.sha }}
-
-      - name: Setup
+      -
+        name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.2
           extensions: mbstring, fileinfo, json, intl, dom
+          tools: jolicode/castor
 
-      - name: Run composer install
-        run: composer install -n --prefer-dist --no-interaction
+      -
+        name: Build and start the infrastructure
+        run: castor start
 
-      - name: Check coding standards
-        run: php vendor/bin/php-cs-fixer fix --dry-run --diff
-        env:
-          PHP_CS_FIXER_IGNORE_ENV: 1
+      -
+        name: Install quality tools
+        run: castor qa:install
 
-      - name: Lint Twig and yaml files
-        run:  |
-          php bin/console lint:yaml config
-          php bin/console lint:twig templates
+      -
+        name: Check coding standards
+        run: castor qa:cs --dry-run
+
+      - name: Lint Twig files
+        run: castor qa:twig-lint
+
+      - name: Lint YAML files
+        run: castor qa:yaml-lint
+
+      -
+        name: Run PHPStan
+        run: castor qa:phpstan

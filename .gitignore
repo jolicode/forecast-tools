@@ -1,3 +1,6 @@
+# tools dependencies
+tools/*/vendor/
+
 ###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php
@@ -7,31 +10,18 @@
 /var/
 /vendor/
 ###< symfony/framework-bundle ###
-
-###> symfony/phpunit-bridge ###
-.phpunit
-/phpunit.xml
-###< symfony/phpunit-bridge ###
-
 ###> symfony/webpack-encore-bundle ###
 /node_modules/
 /public/build/
 npm-debug.log
 yarn-error.log
 ###< symfony/webpack-encore-bundle ###
-
+###> jolicode/docker-starter ###
+/.castor.stub.php
+/infrastructure/docker/docker-compose.override.yml
+/infrastructure/docker/services/router/certs/*.pem
+###< jolicode/docker-starter ###
 ###> friendsofphp/php-cs-fixer ###
 /.php-cs-fixer.php
 /.php-cs-fixer.cache
 ###< friendsofphp/php-cs-fixer ###
-
-###> phpunit/phpunit ###
-/phpunit.xml
-.phpunit.result.cache
-###< phpunit/phpunit ###
-
-###> jolicode/docker-starter ###
-/.castor.stub.php
-/infrastructure/docker/docker-compose.override.yml
-/infrastructure/docker/services/router/etc/ssl/certs/*.pem
-###< jolicode/docker-starter ###

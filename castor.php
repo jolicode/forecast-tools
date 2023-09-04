@@ -14,7 +14,6 @@ use Castor\Attribute\AsTask;
 use function Castor\import;
 use function Castor\io;
 use function Castor\notify;
-use function Castor\variable;
 
 import(__DIR__ . '/.castor');
 
@@ -27,7 +26,7 @@ function create_default_variables(): array
         'project_name' => 'forecast-tools',
         'root_domain' => 'local.forecast.jolicode.com',
         'extra_domains' => [],
-        'project_directory' => '.',
+        'project_directory' => '',
         'php_version' => $_SERVER['DS_PHP_VERSION'] ?? '8.2',
     ];
 }
@@ -41,7 +40,7 @@ function start(): void
     infra\up();
     cache_clear();
     install();
-    build_front();
+    front_build();
     migrate();
     infra\workers_start();
 
@@ -54,34 +53,34 @@ function start(): void
 #[AsTask(description: 'Installs the application (composer, yarn, ...)', namespace: 'app')]
 function install(): void
 {
-    $basePath = sprintf('%s/%s', variable('root_dir'), variable('project_directory'));
+    docker_compose_run('composer install -n --prefer-dist --optimize-autoloader');
+    front_install();
 
-    if (is_file("{$basePath}/composer.json")) {
-        docker_compose_run('composer install -n --prefer-dist --optimize-autoloader');
-    }
-    if (is_file("{$basePath}/yarn.lock")) {
-        docker_compose_run('yarn');
-    } elseif (is_file("{$basePath}/package.json")) {
-        docker_compose_run('npm install');
-    }
+    qa\install();
 }
 
-#[AsTask(name: 'build-front', description: 'Build the frontend', namespace: 'app')]
-function build_front(): void
+#[AsTask(name: 'build', description: 'Build the frontend', namespace: 'app:front')]
+function front_build(): void
 {
     docker_compose_run('yarn run build');
+}
+
+#[AsTask(name: 'install', description: 'Install the frontend dependencies', namespace: 'app:front')]
+function front_install(): void
+{
+    docker_compose_run('yarn');
+}
+
+#[AsTask(description: 'Run Yarn watcher', namespace: 'app:front')]
+function front_watch(): void
+{
+    docker_compose_run('yarn run watch');
 }
 
 #[AsTask(description: 'Clear the application cache', namespace: 'app')]
 function cache_clear(): void
 {
     docker_compose_run('rm -rf var/cache/ && bin/console cache:warmup');
-}
-
-#[AsTask(description: 'Fix coding standards', namespace: 'qa')]
-function cs(): void
-{
-    docker_compose_run('php ./vendor/bin/php-cs-fixer fix');
 }
 
 #[AsTask(description: 'Migrates database schema', namespace: 'app:db')]
@@ -95,28 +94,4 @@ function migrate(): void
 function migration(): void
 {
     docker_compose_run('bin/console make:migration');
-}
-
-#[AsTask(description: 'Run the phpstan analysis', namespace: 'qa')]
-function phpstan(): void
-{
-    docker_compose_run('php ./vendor/bin/phpstan analyse');
-}
-
-#[AsTask(description: 'Run the rector upgrade', namespace: 'qa')]
-function rector(): void
-{
-    docker_compose_run('php ./vendor/bin/rector process');
-}
-
-#[AsTask(name: 'twig-lint', description: 'Lint twig files', namespace: 'qa')]
-function twig_lint(): void
-{
-    docker_compose_run('bin/console lint:twig --show-deprecations templates');
-}
-
-#[AsTask(description: 'Run Yarn watcher', namespace: 'app')]
-function watch(): void
-{
-    docker_compose_run('yarn run watch');
 }
