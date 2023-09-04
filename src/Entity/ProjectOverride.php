@@ -52,19 +52,19 @@ class ProjectOverride implements \Stringable
         return $this->id;
     }
 
-    public function getForecastReminder(): ?ForecastReminder
+    public function getForecastReminder(): ForecastReminder
     {
         return $this->forecastReminder;
     }
 
-    public function setForecastReminder(?ForecastReminder $forecastReminder): self
+    public function setForecastReminder(ForecastReminder $forecastReminder): self
     {
         $this->forecastReminder = $forecastReminder;
 
         return $this;
     }
 
-    public function getProjectId(): ?int
+    public function getProjectId(): int
     {
         return $this->projectId;
     }
@@ -76,7 +76,7 @@ class ProjectOverride implements \Stringable
         return $this;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -88,7 +88,7 @@ class ProjectOverride implements \Stringable
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function getCreatedAt(): \DateTimeInterface
     {
         return $this->createdAt;
     }
