@@ -1,0 +1,38 @@
+{% if field.value|length %}
+    <table class="table datagrid">
+        <thead>
+        <tr>
+            <th><span>Project</span></th>
+            <th><span>Override</span></th>
+            <th><span>Created At</span></th>
+            <th><span>Created By</span></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for projectOverride in field.value.unwrap %}
+            <tr>
+                <td>
+                    {{ projectOverride.projectId }}
+                </td>
+                <td>
+                    {{ projectOverride.name }}
+                </td>
+                <td>
+                    {{ projectOverride.createdAt|date('Y-m-d H:i:s') }}
+                </td>
+                <td>
+                    {% if projectOverride.createdBy is not null %}
+                        <a href="{{ ea_url().setController('App\\Controller\\Admin\\UserCrudController').setEntityId(projectOverride.createdBy.id).setAction('detail') }}">{{ projectOverride.createdBy.name }}</a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="text-center">
+        There is no project override.
+    </div>
+{% endif %}

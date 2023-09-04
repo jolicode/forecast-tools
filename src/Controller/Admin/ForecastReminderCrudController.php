@@ -14,6 +14,7 @@ namespace App\Controller\Admin;
 use App\Entity\ForecastReminder;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
@@ -28,20 +29,33 @@ class ForecastReminderCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
+        if (Crud::PAGE_DETAIL === $pageName) {
+            return [
+                AssociationField::new('forecastAccount'),
+                TextField::new('CronExpression'),
+                AssociationField::new('updatedBy'),
+                DateTimeField::new('updatedAt'),
+                DateTimeField::new('lastTimeSentAt'),
+                AssociationField::new('clientOverrides')->setTemplatePath('admin/foreceast-reminder/client-overrides.html.twig'),
+                AssociationField::new('projectOverrides')->setTemplatePath('admin/foreceast-reminder/project-overrides.html.twig'),
+            ];
+        }
+
         return [
-            AssociationField::new('forecastAccount')->onlyOnIndex(),
-            TextField::new('CronExpression')->onlyOnIndex(),
-            AssociationField::new('updatedBy')->onlyOnIndex(),
-            DateTimeField::new('updatedAt')->onlyOnIndex(),
-            DateTimeField::new('lastTimeSentAt')->onlyOnIndex(),
-            AssociationField::new('clientOverrides')->onlyOnIndex(),
-            AssociationField::new('projectOverrides')->onlyOnIndex(),
+            AssociationField::new('forecastAccount'),
+            TextField::new('CronExpression'),
+            AssociationField::new('updatedBy'),
+            DateTimeField::new('updatedAt'),
+            DateTimeField::new('lastTimeSentAt'),
+            AssociationField::new('clientOverrides'),
+            AssociationField::new('projectOverrides'),
         ];
     }
 
     public function configureActions(Actions $actions): Actions
     {
         return $actions
+            ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->disable(Action::NEW, Action::EDIT)
         ;
     }
