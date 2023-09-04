@@ -51,6 +51,18 @@ class ReminderController extends AbstractController
             $uow->computeChangeSets();
             $changeset = $uow->getEntityChangeSet($forecastReminder);
 
+            foreach ($forecastReminder->getProjectOverrides() as $projectOverride) {
+                if (null === $projectOverride->getCreatedBy()) {
+                    $projectOverride->setCreatedBy($user);
+                }
+            }
+
+            foreach ($forecastReminder->getClientOverrides() as $clientOverride) {
+                if (null === $clientOverride->getCreatedBy()) {
+                    $clientOverride->setCreatedBy($user);
+                }
+            }
+
             if (\count(array_diff_key($changeset, ['updatedAt' => 1, 'updatedBy' => 1])) > 0) {
                 // prevent reminder modification from non-forecast admins
                 // however, allow forecast simple users to edit the overrides
