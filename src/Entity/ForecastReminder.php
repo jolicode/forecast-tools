@@ -194,10 +194,6 @@ class ForecastReminder implements \Stringable
     {
         if ($this->projectOverrides->contains($projectOverride)) {
             $this->projectOverrides->removeElement($projectOverride);
-            // set the owning side to null (unless already changed)
-            if ($projectOverride->getForecastReminder() === $this) {
-                $projectOverride->setForecastReminder(null);
-            }
         }
 
         return $this;

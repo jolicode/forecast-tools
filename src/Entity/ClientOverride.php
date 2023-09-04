@@ -47,12 +47,12 @@ class ClientOverride implements \Stringable
         return $this->name;
     }
 
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function getForecastReminder(): ?ForecastReminder
+    public function getForecastReminder(): ForecastReminder
     {
         return $this->forecastReminder;
     }

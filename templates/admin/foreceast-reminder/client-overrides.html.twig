@@ -1,0 +1,38 @@
+{% if field.value|length %}
+    <table class="table datagrid">
+        <thead>
+        <tr>
+            <th><span>Client</span></th>
+            <th><span>Override</span></th>
+            <th><span>Created At</span></th>
+            <th><span>Created By</span></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for clientOverride in field.value.unwrap %}
+            <tr>
+                <td>
+                    {{ clientOverride.clientId }}
+                </td>
+                <td>
+                    {{ clientOverride.name }}
+                </td>
+                <td>
+                    {{ clientOverride.createdAt|date('Y-m-d H:i:s') }}
+                </td>
+                <td>
+                    {% if clientOverride.createdBy is not null %}
+                        <a href="{{ ea_url().setController('App\\Controller\\Admin\\UserCrudController').setEntityId(clientOverride.createdBy.id).setAction('detail') }}">{{ clientOverride.createdBy.name }}</a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="text-center">
+        There is no client override.
+    </div>
+{% endif %}
