@@ -1,4 +1,4 @@
-FROM debian:11.0-slim as php-base
+FROM debian:11.7-slim as php-base
 
 RUN apt-get update \
     && apt install -y --no-install-recommends \
@@ -6,7 +6,9 @@ RUN apt-get update \
         ca-certificates \
         gnupg \
     && curl -s https://packages.sury.org/php/apt.gpg | gpg --dearmor > /usr/share/keyrings/deb.sury.org-php.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php bullseye main" > /etc/apt/sources.list.d/sury.list
+    && echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php bullseye main" > /etc/apt/sources.list.d/sury.list \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -18,42 +20,47 @@ ARG PHP_VERSION
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        php${PHP_VERSION}-apcu \
-        php${PHP_VERSION}-bcmath \
-        php${PHP_VERSION}-cli \
-        php${PHP_VERSION}-common \
-        php${PHP_VERSION}-curl \
-        php${PHP_VERSION}-iconv \
-        php${PHP_VERSION}-intl \
-        php${PHP_VERSION}-mbstring \
-        php${PHP_VERSION}-mysql \
-        php${PHP_VERSION}-redis \
-        php${PHP_VERSION}-uuid \
-        php${PHP_VERSION}-xml \
-        php${PHP_VERSION}-zip \
+        "php${PHP_VERSION}-apcu" \
+        "php${PHP_VERSION}-bcmath" \
+        "php${PHP_VERSION}-cli" \
+        "php${PHP_VERSION}-common" \
+        "php${PHP_VERSION}-curl" \
+        "php${PHP_VERSION}-iconv" \
+        "php${PHP_VERSION}-intl" \
+        "php${PHP_VERSION}-mbstring" \
+        "php${PHP_VERSION}-mysql" \
+        "php${PHP_VERSION}-redis" \
+        "php${PHP_VERSION}-uuid" \
+        "php${PHP_VERSION}-xml" \
+        "php${PHP_VERSION}-zip" \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 
 # Fake user to maps with the one on the host
 ARG USER_ID
+COPY entrypoint /
 RUN addgroup --gid 1000 app && \
-    adduser --system --uid $USER_ID --home /home/app --shell /bin/bash app
+    adduser --system --uid $USER_ID --home /home/app --shell /bin/bash app && \
+    curl -Ls https://github.com/tianon/gosu/releases/download/1.16/gosu-amd64 | \
+        install /dev/stdin /usr/local/bin/gosu && \
+    sed "s/{{ application_user }}/app/g" -i /entrypoint
 
 # Configuration
 COPY base/php-configuration /etc/php/${PHP_VERSION}
 
 WORKDIR /home/app/application
+ENTRYPOINT [ "/entrypoint" ]
 
 FROM php-base as frontend
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         nginx \
-        php${PHP_VERSION}-fpm \
+        "php${PHP_VERSION}-fpm" \
         runit \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/* \
-    && rm -r /etc/php/${PHP_VERSION}/fpm/pool.d/
+    && rm -r "/etc/php/${PHP_VERSION}/fpm/pool.d/"
 
 RUN useradd -s /bin/false nginx
 
@@ -71,6 +78,8 @@ CMD ["runsvdir", "-P", "/etc/service"]
 FROM php-base as worker
 
 FROM php-base as builder
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ARG NODEJS_VERSION=18.x
 RUN curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor > /usr/share/keyrings/nodesource.gpg \
@@ -100,8 +109,9 @@ RUN adduser app sudo \
     && phpenmod app-builder
 
 # Composer
-COPY --from=composer/composer:2.5.5 /usr/bin/composer /usr/bin/composer
+COPY --from=composer/composer:2.5.8 /usr/bin/composer /usr/bin/composer
 RUN mkdir -p "/home/app/.composer/cache" \
     && chown app: /home/app/.composer -R
 
-USER app
+# Third party tools
+ENV PATH="$PATH:/home/app/application/tools/bin"

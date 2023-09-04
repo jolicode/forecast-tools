@@ -12,6 +12,7 @@ services:
             - mysql
         environment:
             - COMPOSER_MEMORY_LIMIT=-1
+            - UID=${USER_ID}
             # The following list contains the common environment variables exposed by CI platforms
             - GITHUB_ACTIONS
             - CI # Travis CI, CircleCI, Cirrus CI, Gitlab CI, Appveyor, CodeShip, dsari
@@ -19,6 +20,7 @@ services:
             - BUILD_NUMBER # Jenkins, TeamCity
             - RUN_ID # TaskCluster, dsari
         volumes:
-            - "../../${PROJECT_DIRECTORY}:/home/app/application:cached"
-            - "${COMPOSER_CACHE_DIR}:/home/app/.composer/cache"
             - "builder-data:/home/app"
+            - "${COMPOSER_CACHE_DIR}:/home/app/.composer/cache"
+            - "../../${PROJECT_DIRECTORY}:/home/app/application:cached"
+            - "../..:/home/app/root:cached"

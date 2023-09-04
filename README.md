@@ -130,12 +130,13 @@ Type `castor` in the shell to have the list of available tasks.
 Watch for changes:
 
 ```sh
-$ castor app:watch
+$ castor app:front:watch
 ```
 
 #### CS fix
 
 ```sh
+$ castor qa:install
 $ castor qa:cs
 ```
 
