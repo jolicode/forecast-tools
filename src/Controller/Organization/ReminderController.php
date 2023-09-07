@@ -47,10 +47,6 @@ class ReminderController extends AbstractController
             $user = $userRepository->findOneBy(['email' => $this->getUser()->getUserIdentifier()]);
             $forecastReminder->setUpdatedBy($user);
 
-            $uow = $em->getUnitOfWork();
-            $uow->computeChangeSets();
-            $changeset = $uow->getEntityChangeSet($forecastReminder);
-
             foreach ($forecastReminder->getProjectOverrides() as $projectOverride) {
                 if (null === $projectOverride->getCreatedBy()) {
                     $projectOverride->setCreatedBy($user);
@@ -62,6 +58,10 @@ class ReminderController extends AbstractController
                     $clientOverride->setCreatedBy($user);
                 }
             }
+
+            $uow = $em->getUnitOfWork();
+            $uow->computeChangeSets();
+            $changeset = $uow->getEntityChangeSet($forecastReminder);
 
             if (\count(array_diff_key($changeset, ['updatedAt' => 1, 'updatedBy' => 1])) > 0) {
                 // prevent reminder modification from non-forecast admins
