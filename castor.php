@@ -71,7 +71,7 @@ function front_install(): void
     docker_compose_run('yarn');
 }
 
-#[AsTask(description: 'Run Yarn watcher', namespace: 'app:front')]
+#[AsTask(name: 'watch', description: 'Run Yarn watcher', namespace: 'app:front')]
 function front_watch(): void
 {
     docker_compose_run('yarn run watch');

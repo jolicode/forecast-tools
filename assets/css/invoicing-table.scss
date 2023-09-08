@@ -28,18 +28,22 @@
         }
 
         &.ok {
+            --bs-table-bg: transparent;
             background-color: #efe;
         }
 
         &.wrong {
+            --bs-table-bg: transparent;
             background-color: #fdd;
         }
 
         &.notice {
+            --bs-table-bg: transparent;
             background-color: #ffe;
         }
 
         &.explained {
+            --bs-table-bg: transparent;
             background-color: #f8f8f8;
         }
     }
