@@ -106,8 +106,8 @@ class Sender
                 $projectId = $assignment->getProjectId();
 
                 if (
-                    (0 === \count((array) $standupMeetingReminder->getForecastClients()) || \in_array((string) $projects[$projectId]->getClientId(), $standupMeetingReminder->getForecastClients(), true))
-                    && (0 === \count((array) $standupMeetingReminder->getForecastProjects()) || \in_array((string) $projectId, $standupMeetingReminder->getForecastProjects(), true))
+                    (0 === \count($standupMeetingReminder->getForecastClients()) || \in_array((string) $projects[$projectId]->getClientId(), $standupMeetingReminder->getForecastClients(), true))
+                    && (0 === \count($standupMeetingReminder->getForecastProjects()) || \in_array((string) $projectId, $standupMeetingReminder->getForecastProjects(), true))
                 ) {
                     if (null !== $assignment->getPersonId()) {
                         $members[$people[$assignment->getPersonId()]->getEmail()] = $memberName = sprintf(
