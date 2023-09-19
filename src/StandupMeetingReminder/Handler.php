@@ -23,6 +23,8 @@ use JoliCode\Slack\Exception\SlackErrorResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
+use function Symfony\Component\String\u;
+
 class Handler
 {
     final public const ACTION_PREFIX = 'standup-reminder';
@@ -51,7 +53,7 @@ class Handler
             case self::SLACK_COMMAND_OPTION_LIST:
                 $this->listReminders($request);
 
-                // try to preload available projects so that they're in cache
+                // try to preload available clients and projects so that they're in cache
                 $this->loadProjects($request->request->get('team_id'));
                 break;
             case '':
@@ -130,8 +132,24 @@ class Handler
      */
     public function handleSubmission(array $payload): JsonResponse
     {
+        if (
+            0 === (is_countable($payload['view']['state']['values']['clients']['selected_clients']['selected_options']) ? \count($payload['view']['state']['values']['clients']['selected_clients']['selected_options']) : 0)
+            + (is_countable($payload['view']['state']['values']['projects']['selected_projects']['selected_options']) ? \count($payload['view']['state']['values']['projects']['selected_projects']['selected_options']) : 0)
+        ) {
+            return new JsonResponse([
+                'response_action' => 'errors',
+                'errors' => [
+                    'clients' => 'Please choose at least one client or project.',
+                    'projects' => 'Please choose at least one client or project.',
+                ],
+            ]);
+        }
+
+        $selectedClientsForDisplay = [];
+        $selectedClientIds = [];
         $selectedProjectsForDisplay = [];
         $selectedProjectIds = [];
+        $restrictionDescription = '';
         $slackTeam = $this->slackTeamRepository->findOneBy([
             'teamId' => $payload['team']['id'],
         ]);
@@ -143,18 +161,43 @@ class Handler
             $channelId = $privateMetadata['channel_id'];
         }
 
+        foreach ($payload['view']['state']['values']['clients']['selected_clients']['selected_options'] as $client) {
+            $selectedClientsForDisplay[] = sprintf('"%s"', $client['text']['text']);
+            $selectedClientIds[] = $client['value'];
+        }
+
         foreach ($payload['view']['state']['values']['projects']['selected_projects']['selected_options'] as $project) {
             $selectedProjectsForDisplay[] = sprintf('"%s"', $project['text']['text']);
             $selectedProjectIds[] = $project['value'];
         }
 
-        if (\count($selectedProjectsForDisplay) > 1) {
-            $lastProject = ' and ' . array_pop($selectedProjectsForDisplay);
-        } else {
-            $lastProject = '';
+        $projectsByAccount = $this->loadProjects($payload['team']['id']);
+
+        foreach ($projectsByAccount as $data) {
+            foreach ($data['projects'] as $project) {
+                if (
+                    \count($selectedClientIds) > 0
+                    && \in_array($project->getId(), $selectedProjectIds, true)
+                    && !\in_array($project->getClientId(), $selectedClientIds, true)
+                ) {
+                    return new JsonResponse([
+                        'response_action' => 'errors',
+                        'errors' => [
+                            'projects' => 'Please choose projects that match the selected client(s).',
+                        ],
+                    ]);
+                }
+            }
         }
 
-        $selectedProjectsForDisplay = implode(', ', $selectedProjectsForDisplay) . $lastProject;
+        if (\count($selectedClientsForDisplay) > 0) {
+            $restrictionDescription .= ' for the client(s) ' . u(', ')->join($selectedClientsForDisplay, ' and ');
+        }
+
+        if (\count($selectedProjectsForDisplay) > 0) {
+            $restrictionDescription .= ' on the project(s) ' . u(', ')->join($selectedProjectsForDisplay, ' and ');
+        }
+
         $selectedTime = $payload['view']['state']['values']['time']['selected_time']['selected_option']['value'];
         $standupMeetingReminder = $this->standupMeetingReminderRepository->findOneBy([
             'channelId' => $channelId,
@@ -171,6 +214,7 @@ class Handler
 
         $standupMeetingReminder->setUpdatedBy('@' . $payload['user']['username']);
         $standupMeetingReminder->setIsEnabled(true);
+        $standupMeetingReminder->setForecastClients($selectedClientIds);
         $standupMeetingReminder->setForecastProjects($selectedProjectIds);
         $standupMeetingReminder->setTime($selectedTime);
         $this->em->persist($standupMeetingReminder);
@@ -178,12 +222,11 @@ class Handler
 
         $client = \JoliCode\Slack\ClientFactory::create($slackTeam->getAccessToken());
         $message = sprintf(
-            '<@%s> %s a stand-up reminder in this channel. It will run each day at `%s` and ping people working on the project%s %s.',
+            '<@%s> %s a stand-up reminder in this channel. It will run each day at `%s` and ping people working%s.',
             $payload['user']['username'],
             $actionName,
             $selectedTime,
-            ('' !== $lastProject) ? 's' : '',
-            $selectedProjectsForDisplay
+            $restrictionDescription
         );
         $client->chatPostMessage([
             'channel' => $channelId,
@@ -212,6 +255,56 @@ class Handler
         }
 
         return new JsonResponse(['response_action' => 'clear']);
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     *
+     * @return array<string, array<array-key, array<string, array<int|string, mixed>>>>
+     */
+    public function listClients(array $payload): array
+    {
+        $availableClients = [];
+        $searched = mb_strtolower((string) $payload['value']);
+        $projectsByAccount = $this->loadProjects($payload['team']['id']);
+
+        foreach ($projectsByAccount as $data) {
+            $accountClients = [];
+
+            foreach ($data['clients'] as $client) {
+                if (false !== mb_strpos(mb_strtolower((string) $client->getName()), $searched)) {
+                    $accountClients[] = [
+                        'text' => [
+                            'type' => 'plain_text',
+                            'text' => mb_substr((string) $client->getName(), 0, 75),
+                        ],
+                        'value' => (string) $client->getId(),
+                    ];
+                }
+            }
+
+            if (\count($accountClients) > 0) {
+                usort($accountClients, fn ($a, $b) => strcmp($a['text']['text'], $b['text']['text']));
+
+                $availableClients[] = [
+                    'label' => [
+                        'type' => 'plain_text',
+                        'text' => $data['forecastAccount']->getName(),
+                    ],
+                    'options' => $accountClients,
+                ];
+            }
+        }
+
+        if (1 === \count($availableClients)) {
+            return [
+                'options' => $availableClients[0]['options'],
+            ];
+        }
+
+        return [
+            'option_groups' => $availableClients,
+        ];
     }
 
     /**
@@ -289,7 +382,7 @@ class Handler
             $this->forecastDataSelector->setForecastAccount($forecastAccount);
             $projectsByAccount[] = [
                 'forecastAccount' => $forecastAccount,
-                'clients' => $this->forecastDataSelector->getClientsById(),
+                'clients' => $this->forecastDataSelector->getClientsById(true),
                 'projects' => $this->forecastDataSelector->getProjects(true),
             ];
         }
@@ -347,6 +440,7 @@ EOT,
         $slackTeam = $this->slackTeamRepository->findOneByTeamId($teamId);
         $availableTimes = [];
         $initialProjects = [];
+        $initialClients = [];
         $initialTime = null;
         $initialHour = 10;
         $initialMinute = 0;
@@ -377,11 +471,24 @@ EOT,
 
                 foreach ($forecastAccounts as $forecastAccount) {
                     $this->forecastDataSelector->setForecastAccount($forecastAccount);
+                    $clients = $this->forecastDataSelector->getClients(true);
                     $projects = $this->forecastDataSelector->getProjects(true);
+
+                    foreach ($clients as $client) {
+                        if (\in_array((string) $client->getId(), $standupMeetingReminder->getForecastClients(), true)) {
+                            $initialClients[] = [
+                                'text' => [
+                                    'type' => 'plain_text',
+                                    'text' => mb_substr($client->getName(), 0, 75),
+                                ],
+                                'value' => (string) $client->getId(),
+                            ];
+                        }
+                    }
 
                     foreach ($projects as $project) {
                         if (\in_array((string) $project->getId(), $standupMeetingReminder->getForecastProjects(), true)) {
-                            $projectCode = (null !== $project->getCode()) ? '[' . $project->getCode() . '] ' : '';
+                            $projectCode = null !== $project->getCode() && '' !== $project->getCode() ? '[' . $project->getCode() . '] ' : '';
                             $initialProjects[] = [
                                 'text' => [
                                     'type' => 'plain_text',
@@ -433,12 +540,35 @@ EOT,
             }
         }
 
+        $clientsBlock = [
+            'type' => 'input',
+            'block_id' => 'clients',
+            'label' => [
+                'type' => 'plain_text',
+                'text' => 'Choose clients',
+            ],
+            'element' => [
+                'type' => 'multi_external_select',
+                'action_id' => 'selected_clients',
+                'placeholder' => [
+                    'type' => 'plain_text',
+                    'text' => 'Select clients',
+                ],
+                'min_query_length' => 3,
+            ],
+            'optional' => true,
+        ];
+
+        if (\count($initialClients) > 0) {
+            $clientsBlock['element']['initial_options'] = $initialClients;
+        }
+
         $projectsBlock = [
             'type' => 'input',
             'block_id' => 'projects',
             'label' => [
                 'type' => 'plain_text',
-                'text' => 'Select one or more Forecast projects',
+                'text' => 'Choose Forecast projects',
             ],
             'element' => [
                 'type' => 'multi_external_select',
@@ -449,12 +579,18 @@ EOT,
                 ],
                 'min_query_length' => 3,
             ],
+            'optional' => true,
+            'hint' => [
+                'type' => 'plain_text',
+                'text' => 'Choose one or more projects to restrict the notification to these projects only. If no specific project is choosen, all the projects attached to the selected client(s) will be used.',
+            ],
         ];
 
         if (\count($initialProjects) > 0) {
             $projectsBlock['element']['initial_options'] = $initialProjects;
         }
 
+        $blocks[] = $clientsBlock;
         $blocks[] = $projectsBlock;
         $blocks[] = [
             'type' => 'input',
