@@ -32,6 +32,7 @@ class StandupMeetingReminderCrudController extends AbstractCrudController
         return [
             AssociationField::new('slackTeam')->onlyOnIndex(),
             TextField::new('channelId')->onlyOnIndex(),
+            ArrayField::new('forecastClients')->onlyOnIndex(),
             ArrayField::new('forecastProjects')->onlyOnIndex(),
             TextField::new('updatedBy')->onlyOnIndex(),
             TextField::new('time'),

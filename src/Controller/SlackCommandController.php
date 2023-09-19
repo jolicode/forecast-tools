@@ -37,6 +37,10 @@ class SlackCommandController extends AbstractController
             return new JsonResponse($standupMeetingReminderHandler->listProjects($payload));
         }
 
+        if ('selected_clients' === $payload['action_id']) {
+            return new JsonResponse($standupMeetingReminderHandler->listClients($payload));
+        }
+
         return new JsonResponse('<3 you, Slack');
     }
 

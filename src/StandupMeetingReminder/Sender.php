@@ -100,9 +100,15 @@ class Sender
             $today = new \DateTime('today');
             $assignments = $this->forecastDataSelector->getAssignments($today, new \DateTime('tomorrow'));
             $assignments = array_values(array_filter($assignments, fn ($assignment): bool => $assignment->getStartDate()->format('Y-m-d') <= $today->format('Y-m-d') && $assignment->getEndDate()->format('Y-m-d') >= $today->format('Y-m-d')));
+            $projects = $this->forecastDataSelector->getProjectsById(enabled: true);
 
             foreach ($assignments as $assignment) {
-                if (\in_array((string) $assignment->getProjectId(), $standupMeetingReminder->getForecastProjects(), true)) {
+                $projectId = $assignment->getProjectId();
+
+                if (
+                    (0 === \count($standupMeetingReminder->getForecastClients()) || \in_array((string) $projects[$projectId]->getClientId(), $standupMeetingReminder->getForecastClients(), true))
+                    && (0 === \count($standupMeetingReminder->getForecastProjects()) || \in_array((string) $projectId, $standupMeetingReminder->getForecastProjects(), true))
+                ) {
                     if (null !== $assignment->getPersonId()) {
                         $members[$people[$assignment->getPersonId()]->getEmail()] = $memberName = sprintf(
                             '%s %s',

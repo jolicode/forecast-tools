@@ -35,7 +35,13 @@ class StandupMeetingReminder
     private string $channelId;
 
     /**
-     * @var array<array-key, int>
+     * @var array<array-key, string>
+     */
+    #[ORM\Column(type: 'array')]
+    private array $forecastClients = [];
+
+    /**
+     * @var array<array-key, string>
      */
     #[ORM\Column(type: 'array')]
     private array $forecastProjects = [];
@@ -92,15 +98,33 @@ class StandupMeetingReminder
     }
 
     /**
-     * @return array<array-key, int>
+     * @return array<array-key, string>
      */
-    public function getForecastProjects(): ?array
+    public function getForecastClients(): array
+    {
+        return $this->forecastClients;
+    }
+
+    /**
+     * @param array<array-key, string> $forecastClients
+     */
+    public function setForecastClients(array $forecastClients): self
+    {
+        $this->forecastClients = $forecastClients;
+
+        return $this;
+    }
+
+    /**
+     * @return array<array-key, string>
+     */
+    public function getForecastProjects(): array
     {
         return $this->forecastProjects;
     }
 
     /**
-     * @param array<array-key, int> $forecastProjects
+     * @param array<array-key, string> $forecastProjects
      */
     public function setForecastProjects(array $forecastProjects): self
     {
