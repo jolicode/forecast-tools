@@ -217,12 +217,16 @@ class Manager
     public function approve(InvoicingProcess $invoicingProcess): array
     {
         $period = $this->buildDatesRange($invoicingProcess);
+        $rawUsers = $this->harvestDataSelector->getEnabledUsersAsTimeEntryUsers();
         $rawTimeEntries = $this->harvestDataSelector->getUserTimeEntries(
             $invoicingProcess->getBillingPeriodStart(),
             $invoicingProcess->getBillingPeriodEnd()
         );
         $timeEntries = [];
         $errorsCount = 0;
+
+        // filter out disabled users
+        $rawTimeEntries = array_filter($rawTimeEntries, fn ($userTimeEntries, $userId) => \count(array_filter($rawUsers, fn ($user) => $user->getId() === $userId)) > 0, \ARRAY_FILTER_USE_BOTH);
 
         foreach ($rawTimeEntries as $userTimeEntries) {
             $skipErrors = $this->skipErrorsForUser($invoicingProcess, $userTimeEntries['user']->getId());
