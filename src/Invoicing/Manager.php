@@ -217,12 +217,16 @@ class Manager
     public function approve(InvoicingProcess $invoicingProcess): array
     {
         $period = $this->buildDatesRange($invoicingProcess);
+        $rawUsers = $this->harvestDataSelector->getEnabledUsersAsTimeEntryUsers();
         $rawTimeEntries = $this->harvestDataSelector->getUserTimeEntries(
             $invoicingProcess->getBillingPeriodStart(),
             $invoicingProcess->getBillingPeriodEnd()
         );
         $timeEntries = [];
         $errorsCount = 0;
+
+        // filter out disabled users
+        $rawTimeEntries = array_filter($rawTimeEntries, fn ($userTimeEntries, $userId) => \count(array_filter($rawUsers, fn ($user) => $user->getId() === $userId)) > 0, \ARRAY_FILTER_USE_BOTH);
 
         foreach ($rawTimeEntries as $userTimeEntries) {
             $skipErrors = $this->skipErrorsForUser($invoicingProcess, $userTimeEntries['user']->getId());
@@ -335,6 +339,7 @@ class Manager
                         $orphanTimeEntries[$project->getId()] = [
                             'project' => $project,
                             'timeEntries' => [],
+                            'timeEntriesPerUser' => [],
                             'hours' => 0,
                             'expectedTotal' => 0,
                         ];
@@ -350,10 +355,32 @@ class Manager
                         }
                     }
 
+                    if (!isset($orphanTimeEntries[$project->getId()]['timeEntriesPerUser'][$rawTimeEntry->getUser()->getId()])) {
+                        $orphanTimeEntries[$project->getId()]['timeEntriesPerUser'][$rawTimeEntry->getUser()->getId()] = [
+                            'user' => $rawTimeEntry->getUser(),
+                            'timeEntries' => [],
+                            'hours' => 0,
+                            'expectedTotal' => 0,
+                        ];
+                    }
+
+                    $day = $rawTimeEntry->getSpentDate()->format('Y-m-d');
+
+                    if (!isset($orphanTimeEntries[$project->getId()]['timeEntriesPerUser'][$rawTimeEntry->getUser()->getId()]['timeEntries'][$day])) {
+                        $orphanTimeEntries[$project->getId()]['timeEntriesPerUser'][$rawTimeEntry->getUser()->getId()]['timeEntries'][$day] = [
+                            'date' => $rawTimeEntry->getSpentDate(),
+                            'hours' => 0,
+                        ];
+                    }
+
+                    $timeEntryExpectedAmount = $rawTimeEntry->getHours() * $rawTimeEntry->getBillableRate();
                     $orphanTimeEntries[$project->getId()]['timeEntries'][] = $rawTimeEntry;
                     $orphanTimeEntries[$project->getId()]['hours'] += $rawTimeEntry->getHours();
-                    $orphanTimeEntries[$project->getId()]['expectedTotal'] += $rawTimeEntry->getHours() * $rawTimeEntry->getBillableRate();
-                    $orphanExpectedTotal += $rawTimeEntry->getHours() * $rawTimeEntry->getBillableRate();
+                    $orphanTimeEntries[$project->getId()]['expectedTotal'] += $timeEntryExpectedAmount;
+                    $orphanTimeEntries[$project->getId()]['timeEntriesPerUser'][$rawTimeEntry->getUser()->getId()]['hours'] += $rawTimeEntry->getHours();
+                    $orphanTimeEntries[$project->getId()]['timeEntriesPerUser'][$rawTimeEntry->getUser()->getId()]['expectedTotal'] += $timeEntryExpectedAmount;
+                    $orphanTimeEntries[$project->getId()]['timeEntriesPerUser'][$rawTimeEntry->getUser()->getId()]['timeEntries'][$day]['hours'] += $rawTimeEntry->getHours();
+                    $orphanExpectedTotal += $timeEntryExpectedAmount;
                 } else {
                     // remove non-billable projects
                     continue;
@@ -423,6 +450,37 @@ class Manager
         }
 
         usort($clientInvoices, fn ($a, $b): int => -strcmp((string) $a['invoice']->getNumber(), (string) $b['invoice']->getNumber()));
+
+        foreach ($orphanTimeEntries as $projectId => $orphanTimeEntry) {
+            foreach ($orphanTimeEntry['timeEntriesPerUser'] as $userId => $orphanTimeEntryPerUser) {
+                $orphanTimeEntries[$projectId]['timeEntriesPerUser'][$userId]['daysCount'] = $orphanTimeEntries[$projectId]['timeEntriesPerUser'][$userId]['hours'] / 8;
+
+                $timeEntries = array_filter($orphanTimeEntryPerUser['timeEntries'], fn ($item) => $item['hours'] > 0);
+                ksort($timeEntries);
+
+                $days = array_map(function ($item) {
+                    $result = $item['date']->format('j');
+
+                    if (4 === (int) $item['hours']) {
+                        $result .= ' (1/2 day)';
+                    } elseif (8 !== (int) $item['hours']) {
+                        $result .= ' (' . $item['hours'] . ' h)';
+                    }
+
+                    return $result;
+                }, $timeEntries);
+
+                if (\count($days) > 1) {
+                    $lastDay = array_pop($days);
+                    $days = sprintf('%s and %s', implode(', ', $days), $lastDay);
+                } else {
+                    $days = current($days);
+                }
+
+                $days .= ' ' . current($timeEntries)['date']->format('F');
+                $orphanTimeEntries[$projectId]['timeEntriesPerUser'][$userId]['days'] = $days;
+            }
+        }
 
         usort($orphanTimeEntries, function ($a, $b): int {
             if ($a['project']->getClient()->getName() === $b['project']->getClient()->getName()) {

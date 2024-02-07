@@ -70,7 +70,7 @@ class HarvestDataSelector
     /**
      * @return Client[]
      */
-    public function getClients(bool $isActive = null): array
+    public function getClients(?bool $isActive = null): array
     {
         $params = [];
 
@@ -107,7 +107,7 @@ class HarvestDataSelector
     /**
      * @return array<string, int>
      */
-    public function getClientsForChoice(bool $enabled = null): array
+    public function getClientsForChoice(?bool $enabled = null): array
     {
         $choices = [];
         $clients = $this->getClients();
@@ -198,7 +198,7 @@ class HarvestDataSelector
     /**
      * @return Invoice[]
      */
-    public function getInvoices(\DateTimeInterface $from = null, \DateTimeInterface $to = null, string $state = null): array
+    public function getInvoices(?\DateTimeInterface $from = null, ?\DateTimeInterface $to = null, ?string $state = null): array
     {
         $params = [];
 
@@ -347,7 +347,7 @@ class HarvestDataSelector
     /**
      * @return Project[]
      */
-    public function getProjects(bool $isActive = null): array
+    public function getProjects(?bool $isActive = null): array
     {
         $params = [];
 
@@ -478,7 +478,7 @@ class HarvestDataSelector
      *
      * @return array<mixed, mixed>
      */
-    private static function makeLookup(array $struct, string $methodName = null): array
+    private static function makeLookup(array $struct, ?string $methodName = null): array
     {
         if (null === $methodName) {
             $methodName = 'getId';

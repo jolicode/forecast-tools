@@ -28,7 +28,7 @@ class HarvestAccountVoter extends Voter
     protected function supports(string $attribute, mixed $subject): bool
     {
         return \in_array($attribute, [self::ADMIN], true)
-            && $subject instanceof \App\Entity\HarvestAccount;
+            && $subject instanceof HarvestAccount;
     }
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool

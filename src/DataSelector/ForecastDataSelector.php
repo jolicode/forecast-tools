@@ -72,7 +72,7 @@ class ForecastDataSelector
     /**
      * @return Client[]
      */
-    public function getClients(bool $enabled = null): array
+    public function getClients(?bool $enabled = null): array
     {
         $clients = $this->client->listClients('clients')->getClients();
 
@@ -82,7 +82,7 @@ class ForecastDataSelector
     /**
      * @return array<int|string, Client>
      */
-    public function getClientsById(bool $enabled = null): array
+    public function getClientsById(?bool $enabled = null): array
     {
         return self::makeLookup($this->getClients($enabled));
     }
@@ -90,7 +90,7 @@ class ForecastDataSelector
     /**
      * @return array<string, int>
      */
-    public function getClientsForChoice(bool $enabled = null): array
+    public function getClientsForChoice(?bool $enabled = null): array
     {
         $choices = [];
         $clients = $this->getClients($enabled);
@@ -107,7 +107,7 @@ class ForecastDataSelector
     /**
      * @return array<string, int>
      */
-    public function getPeopleForChoice(bool $enabled = null): array
+    public function getPeopleForChoice(?bool $enabled = null): array
     {
         $choices = [];
         $people = $this->getPeople($enabled);
@@ -124,7 +124,7 @@ class ForecastDataSelector
     /**
      * @return array<string, int>
      */
-    public function getPlaceholderForChoice(bool $enabled = null): array
+    public function getPlaceholderForChoice(?bool $enabled = null): array
     {
         $choices = [];
         $placeholders = $this->getPlaceholders($enabled);
@@ -141,7 +141,7 @@ class ForecastDataSelector
     /**
      * @return array<string, int>
      */
-    public function getProjectsForChoice(bool $enabled = null): array
+    public function getProjectsForChoice(?bool $enabled = null): array
     {
         $choices = [];
         $clients = $this->getClientsById();
@@ -169,7 +169,7 @@ class ForecastDataSelector
     /**
      * @return Person[]
      */
-    public function getPeople(bool $enabled = null): array
+    public function getPeople(?bool $enabled = null): array
     {
         $people = $this->client->listPeople('people')->getPeople();
 
@@ -179,7 +179,7 @@ class ForecastDataSelector
     /**
      * @return array<int|string, Person>
      */
-    public function getPeopleById(string $methodName = null, bool $enabled = null): array
+    public function getPeopleById(?string $methodName = null, ?bool $enabled = null): array
     {
         return self::makeLookup($this->getPeople($enabled), $methodName);
     }
@@ -187,7 +187,7 @@ class ForecastDataSelector
     /**
      * @return Placeholder[]
      */
-    public function getPlaceholders(bool $enabled = null): array
+    public function getPlaceholders(?bool $enabled = null): array
     {
         $placeholders = $this->client->listPlaceholders('placeholders')->getPlaceholders();
 
@@ -197,7 +197,7 @@ class ForecastDataSelector
     /**
      * @return array<int|string, Placeholder>
      */
-    public function getPlaceholdersById(string $methodName = null, bool $enabled = null): array
+    public function getPlaceholdersById(?string $methodName = null, ?bool $enabled = null): array
     {
         return self::makeLookup($this->getPlaceholders($enabled), $methodName);
     }
@@ -205,7 +205,7 @@ class ForecastDataSelector
     /**
      * @return Project[]
      */
-    public function getProjects(bool $enabled = null): array
+    public function getProjects(?bool $enabled = null): array
     {
         $projects = $this->client->listProjects('projects')->getProjects();
 
@@ -219,7 +219,7 @@ class ForecastDataSelector
     /**
      * @return array<int|string, Project>
      */
-    public function getProjectsById(string $methodName = null, bool $enabled = null): array
+    public function getProjectsById(?string $methodName = null, ?bool $enabled = null): array
     {
         return self::makeLookup($this->getProjects($enabled), $methodName);
     }
@@ -236,7 +236,7 @@ class ForecastDataSelector
      *
      * @return array<mixed, mixed>
      */
-    private static function makeLookup(array $struct, string $methodName = null): array
+    private static function makeLookup(array $struct, ?string $methodName = null): array
     {
         if (null === $methodName) {
             $methodName = 'getId';

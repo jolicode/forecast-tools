@@ -27,6 +27,14 @@ function install(): void
     docker_compose_run('composer install -o', workDir: '/home/app/root/tools/rector');
 }
 
+#[AsTask(description: 'Updates the tooling')]
+function update(): void
+{
+    docker_compose_run('composer update -o', workDir: '/home/app/root/tools/php-cs-fixer');
+    docker_compose_run('composer update -o', workDir: '/home/app/root/tools/phpstan');
+    docker_compose_run('composer update -o', workDir: '/home/app/root/tools/rector');
+}
+
 #[AsTask(description: 'Fix coding standards')]
 function cs(
     #[AsOption(name: 'dry-run', description: 'Do not make changes and outputs diff', mode: InputOption::VALUE_NONE)]

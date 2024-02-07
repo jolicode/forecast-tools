@@ -35,6 +35,14 @@
         &.wrong {
             --bs-table-bg: transparent;
             background-color: #fdd;
+
+            td.bordered-bottom {
+                border-bottom-color: #faa;
+            }
+
+            td.bordered-right {
+                border-right-color: #faa;
+            }
         }
 
         &.notice {
@@ -46,10 +54,29 @@
             --bs-table-bg: transparent;
             background-color: #f8f8f8;
         }
+
+        td.bordered-bottom {
+            border-bottom: 1px #aaa solid;
+        }
+
+        td.bordered-right {
+            border-right: 1px #aaa solid;
+        }
     }
 
-    &.invoices tr:hover {
-        filter: brightness(0.9);
+    &.invoices {
+        a {
+            color: initial;
+            text-decoration: none;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+
+        tr:hover {
+            filter: brightness(0.9);
+        }
     }
 
     td, th {

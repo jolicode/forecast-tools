@@ -137,29 +137,57 @@
         <table class="table border-bottom invoices">
             <thead>
                 <tr>
-                    <th scope="col" class="text-start">Client</th>
-                    <th scope="col" class="text-start">Project</th>
-                    <th scope="col" class="text-end">Hours</th>
-                    <th scope="col" class="text-end">Expected amount</th>
-                    <th scope="col" class="text-start">Actions</th>
+                    <th scope="col" class="text-start" rowspan="2">Client</th>
+                    <th scope="col" class="text-start" rowspan="2">Project code</th>
+                    <th scope="col" class="text-start" rowspan="2">Project name</th>
+                    <th scope="col" class="text-start" colspan="4">People</th>
+                    <th scope="col" class="text-end" rowspan="2">Hours</th>
+                    <th scope="col" class="text-end" rowspan="2">Expected amount</th>
+                    <th scope="col" class="text-start" rowspan="2">Actions</th>
+                </tr>
+                <tr>
+                    <th scope="col" class="text-start">Name</th>
+                    <th scope="col" class="text-start">Dates</th>
+                    <th scope="col" class="text-end">Days</th>
+                    <th scope="col" class="text-end">Amount</th>
                 </tr>
             </thead>
             <tbody>
                 {% for orphanTimeEntry in orphanTimeEntries %}
+                    {% set timeEntriesPerUserCount = orphanTimeEntry.timeEntriesPerUser | length %}
+                    {% set verticalAlign = timeEntriesPerUserCount > 1 ? ' align-top' : '' %}
                     <tr class="{{ orphanTimeEntry.explanation is defined ? 'explained' : 'wrong' }}">
-                        <td class="text-start p-1 ps-3">
+                        <td class="text-start{{ verticalAlign }} p-1 ps-3 bordered-bottom"{% if timeEntriesPerUserCount > 1 %} rowspan="{{ timeEntriesPerUserCount }}"{% endif %}>
                             {{ orphanTimeEntry.project.client.name }}
                         </td>
-                        <td class="text-start p-1">
-                            {{ orphanTimeEntry.project.name }}
+                        <td class="text-start{{ verticalAlign }} p-1 bordered-bottom"{% if timeEntriesPerUserCount > 1 %} rowspan="{{ timeEntriesPerUserCount }}"{% endif %}>
+                            <a href="{{ forecastAccount.harvestAccount.baseUri }}/projects/{{ orphanTimeEntry.project.id }}">
+                                {% if orphanTimeEntry.project.code %}
+                                    <code>[{{ orphanTimeEntry.project.code }}]</code>
+                                {% else %}
+                                    <code>-</code>
+                                {% endif %}
+                            </a>
                         </td>
-                        <td class="text-end p-1">
-                            {{ orphanTimeEntry.hours }}
+                        <td class="text-start{{ verticalAlign }} p-1 bordered-right bordered-bottom"{% if timeEntriesPerUserCount > 1 %} rowspan="{{ timeEntriesPerUserCount }}"{% endif %}>
+                            <a href="{{ forecastAccount.harvestAccount.baseUri }}/projects/{{ orphanTimeEntry.project.id }}">
+                                {{ orphanTimeEntry.project.name }}
+                            </a>
                         </td>
-                        <td class="text-end p-1">
+                        {% set timeEntryPerUser = orphanTimeEntry.timeEntriesPerUser | first %}
+                        <td class="text-start p-1{% if timeEntriesPerUserCount == 1 %} bordered-bottom{% endif %}">{{ timeEntryPerUser.user.name }}</td>
+                        <td class="text-start p-1{% if timeEntriesPerUserCount == 1 %} bordered-bottom{% endif %}">{{ timeEntryPerUser.days }}</td>
+                        <td class="text-end p-1{% if timeEntriesPerUserCount == 1 %} bordered-bottom{% endif %}">{{ timeEntryPerUser.daysCount }} days</td>
+                        <td class="text-end p-1 bordered-right{% if timeEntriesPerUserCount == 1 %} bordered-bottom{% endif %}">{{ timeEntryPerUser.expectedTotal|number_format(2) }}</td>
+                        <td class="text-end{{ verticalAlign }} p-1 bordered-bottom"{% if timeEntriesPerUserCount > 1 %} rowspan="{{ timeEntriesPerUserCount }}"{% endif %}>
+                            <a href="{{ forecastAccount.harvestAccount.baseUri }}/reports/detailed?billable=yes&amp;end_date={{ invoicingProcess.billingPeriodEnd|date("Y-m-d") }}&amp;group=dates&amp;only_unbilled=yes&amp;projects%5B%5D={{ orphanTimeEntry.project.id }}&amp;start_date={{ invoicingProcess.billingPeriodStart|date("Y-m-d") }}">
+                                {{ orphanTimeEntry.hours }}
+                            </a>
+                        </td>
+                        <td class="text-end p-1 bordered-bottom"{% if timeEntriesPerUserCount > 1 %} rowspan="{{ timeEntriesPerUserCount }}"{% endif %}>
                             {{ orphanTimeEntry.expectedTotal|number_format(2) }}
                         </td>
-                        <td class="actions text-end p-1">
+                        <td class="actions{{ verticalAlign }} text-end p-1 bordered-bottom""{% if timeEntriesPerUserCount > 1 %} rowspan="{{ timeEntriesPerUserCount }}"{% endif %}>
                             <button type="button" class="btn btn-primary btn-sm position-relative" data-bs-toggle="modal" data-bs-target="#explanationModal" data-explanation-key="orphan-{{ orphanTimeEntry.project.id }}">
                                 {{ orphanTimeEntry.explanation is defined ? 'Explanation' : 'Explain' }}
                                 {% if orphanTimeEntry.explanation is defined %}
@@ -170,6 +198,14 @@
                             </button>
                         </td>
                     </tr>
+                    {% for timeEntryPerUser in orphanTimeEntry.timeEntriesPerUser[1:] %}
+                        <tr class="{{ orphanTimeEntry.explanation is defined ? 'explained' : 'wrong' }}">
+                            <td class="text-start p-1{% if loop.last%} bordered-bottom{% endif %}">{{ timeEntryPerUser.user.name }}</td>
+                            <td class="text-start p-1{% if loop.last%} bordered-bottom{% endif %}">{{ timeEntryPerUser.days }}</td>
+                            <td class="text-end p-1{% if loop.last%} bordered-bottom{% endif %}">{{ timeEntryPerUser.daysCount }} days</td>
+                            <td class="text-end p-1 bordered-right{% if loop.last%} bordered-bottom{% endif %}">{{ timeEntryPerUser.expectedTotal|number_format(2) }}</td>
+                        </tr>
+                    {% endfor %}
                 {% endfor %}
             </tbody>
             <tfoot>
@@ -191,7 +227,7 @@
     <div class="card-body">
         <h2>Uninvoiced report</h2>
 
-        <p>This section displays information from Harvest's "uninvoiced report".</p>
+        <p>This section displays information from <a href="{{ forecastAccount.harvestAccount.baseUri }}/reports/uninvoiced?kind=month&amp;from={{ invoicingProcess.billingPeriodStart|date("Y-m-d") }}&amp;till={{ invoicingProcess.billingPeriodEnd|date("Y-m-d") }}&amp;hide_zero_balanced=true">Harvest's "uninvoiced report"</a>.</p>
 
         <table class="table border-bottom invoices">
             <thead>
@@ -211,7 +247,7 @@
                             {{ uninvoicedItem.uninvoiced.clientName }}
                         </td>
                         <td class="text-start p-1">
-                            {{ uninvoicedItem.uninvoiced.projectName }}
+                            <a href="{{ forecastAccount.harvestAccount.baseUri }}/projects/{{ uninvoicedItem.uninvoiced.projectId }}">{{ uninvoicedItem.uninvoiced.projectName }}</a>
                         </td>
                         <td class="text-end p-1">
                             {{ uninvoicedItem.uninvoiced.uninvoicedHours }}

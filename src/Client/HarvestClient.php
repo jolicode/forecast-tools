@@ -37,7 +37,7 @@ class HarvestClient extends AbstractClient
 {
     /** @var Client[] */
     private array $clients = [];
-    private ?\JoliCode\Harvest\Api\Client $defaultClient = null;
+    private ?Client $defaultClient = null;
     private string $namespace = '';
     private bool $cacheEnabled = true;
     private ?bool $cacheStatusForNextRequestOnly = null;
@@ -67,7 +67,7 @@ class HarvestClient extends AbstractClient
         $this->cacheStatusForNextRequestOnly = true;
     }
 
-    public function __client(HarvestAccount $harvestAccount = null): Client
+    public function __client(?HarvestAccount $harvestAccount = null): Client
     {
         if (null !== $harvestAccount) {
             if (!isset($this->clients[$harvestAccount->getHarvestId()])) {

@@ -267,7 +267,7 @@ class Builder
     /**
      * @return array<array-key, \DateTime>
      */
-    private function buildAssignmentInterval(Assignment $assignment, Person $user = null): array
+    private function buildAssignmentInterval(Assignment $assignment, ?Person $user = null): array
     {
         $current = $assignment->getStartDate();
         $end = $assignment->getEndDate();

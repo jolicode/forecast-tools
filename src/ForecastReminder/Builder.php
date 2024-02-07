@@ -63,7 +63,7 @@ class Builder
     /**
      * @return array<string, mixed>
      */
-    public function buildBlocks(ForecastReminder $forecastReminder, \DateTime $start = null): array
+    public function buildBlocks(ForecastReminder $forecastReminder, ?\DateTime $start = null): array
     {
         $this->setForecastReminder($forecastReminder);
         $title = $this->buildTitle($start);
@@ -116,7 +116,7 @@ class Builder
         return $payload;
     }
 
-    private function buildMessage(\DateTime $start = null): ?string
+    private function buildMessage(?\DateTime $start = null): ?string
     {
         $report = [];
         $result = [];
@@ -161,7 +161,7 @@ class Builder
 
         foreach ($report as $name => $activities) {
             if (mb_strlen($name) < $longuestNameLength) {
-                $name = $name . str_repeat(' ', $longuestNameLength - mb_strlen($name));
+                $name .= str_repeat(' ', $longuestNameLength - mb_strlen($name));
             }
 
             $result[] = sprintf('` %s ` %s', $name, $activities);
@@ -174,7 +174,7 @@ class Builder
         return implode("\n", $result);
     }
 
-    private function buildTitle(\DateTime $startDate = null): string
+    private function buildTitle(?\DateTime $startDate = null): string
     {
         if (null === $startDate) {
             $startDate = new \DateTime('+1 day');

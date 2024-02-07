@@ -26,7 +26,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 class SlackCommandListener implements EventSubscriberInterface
 {
-    private ?\App\Entity\SlackRequest $slackRequest = null;
+    private ?SlackRequest $slackRequest = null;
 
     public function __construct(private readonly EntityManagerInterface $em, private readonly ForecastReminderHandler $forecastReminderHandler, private readonly HarvestTimesheetReminderHandler $harvestTimesheetReminderHandler, private readonly SignatureComputer $signatureComputer, private readonly SlackSender $slackSender, private readonly StandupMeetingReminderHandler $standupMeetingReminderHandler)
     {
@@ -52,7 +52,7 @@ class SlackCommandListener implements EventSubscriberInterface
             $this->em->flush();
 
             if (!$signatureValid) {
-                $event->setResponse(new Response('D\'oh!', \Symfony\Component\HttpFoundation\Response::HTTP_I_AM_A_TEAPOT));
+                $event->setResponse(new Response('D\'oh!', Response::HTTP_I_AM_A_TEAPOT));
             }
         }
     }

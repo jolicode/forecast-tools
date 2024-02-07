@@ -21,7 +21,7 @@ class RedirectException extends HttpException
      * @param int                   $code     The internal exception code
      * @param array<string, string> $headers  The internal exception code
      */
-    public function __construct(string $location, ?string $message = '', \Throwable $previous = null, int $code = 0, array $headers = [])
+    public function __construct(string $location, ?string $message = '', ?\Throwable $previous = null, int $code = 0, array $headers = [])
     {
         $headers['Location'] = $location;
         parent::__construct(302, $message, $previous, $headers, $code);
