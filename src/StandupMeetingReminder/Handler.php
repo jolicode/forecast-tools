@@ -433,7 +433,7 @@ EOT,
         );
     }
 
-    private function displayModalForm(string $teamId, ?string $channelId, string $triggerId, string $responseUrl = null): void
+    private function displayModalForm(string $teamId, ?string $channelId, string $triggerId, ?string $responseUrl = null): void
     {
         // get the forecast accounts which have a SlackTeam in this organization
         $forecastAccounts = $this->forecastAccountRepository->findBySlackTeamId($teamId);

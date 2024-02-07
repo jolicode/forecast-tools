@@ -149,7 +149,7 @@ class Reminder
     /**
      * @return array<int, array<string, mixed>>
      */
-    public function buildForHarvestAccountAndUser(HarvestAccount $harvestAccount, HarvestUser $harvestUser = null, bool $currentMonth = false): array
+    public function buildForHarvestAccountAndUser(HarvestAccount $harvestAccount, ?HarvestUser $harvestUser = null, bool $currentMonth = false): array
     {
         if ($currentMonth) {
             $firstDayOfLastMonth = new \DateTime('first day of this month');
@@ -209,7 +209,7 @@ class Reminder
     /**
      * @return array<int, array<string, mixed>>
      */
-    private function buildIssues(HarvestAccount $harvestAccount, \DateTime $firstDayOfLastMonth, \DateTime $lastDayOfLastMonth, HarvestUser $harvestUser = null): array
+    private function buildIssues(HarvestAccount $harvestAccount, \DateTime $firstDayOfLastMonth, \DateTime $lastDayOfLastMonth, ?HarvestUser $harvestUser = null): array
     {
         $issues = [];
         $slackTeam = $harvestAccount->getTimesheetReminderSlackTeam();
@@ -328,7 +328,7 @@ class Reminder
     /**
      * @return array<string, array<int, mixed>>
      */
-    private function buildMissingProjectAssignmentsIssues(HarvestAccount $harvestAccount, \DateTime $firstDayOfLastMonth, \DateTime $lastDayOfLastMonth, HarvestUser $harvestUser = null): array
+    private function buildMissingProjectAssignmentsIssues(HarvestAccount $harvestAccount, \DateTime $firstDayOfLastMonth, \DateTime $lastDayOfLastMonth, ?HarvestUser $harvestUser = null): array
     {
         $issues = [
             'no_harvest_project' => [],

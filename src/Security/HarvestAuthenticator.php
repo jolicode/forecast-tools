@@ -58,7 +58,7 @@ class HarvestAuthenticator extends OAuth2Authenticator
     ) {
     }
 
-    public function start(Request $request, AuthenticationException $authException = null): RedirectResponse
+    public function start(Request $request, ?AuthenticationException $authException = null): RedirectResponse
     {
         return new RedirectResponse(
             $this->urlGenerator->generate('connect_harvest'),
@@ -105,7 +105,7 @@ class HarvestAuthenticator extends OAuth2Authenticator
 
         return new SelfValidatingPassport(
             new UserBadge($accessToken->getToken(), function () use ($accessToken, $client): OAuthUser {
-                /** @var \App\Security\Provider\HarvestResourceOwner $harvestUser */
+                /** @var Provider\HarvestResourceOwner $harvestUser */
                 $harvestUser = $client->fetchUserFromToken($accessToken);
 
                 $userData = $harvestUser->toArray();

@@ -23,7 +23,7 @@ class AuthenticationEntryPoint implements AuthenticationEntryPointInterface
     {
     }
 
-    public function start(Request $request, AuthenticationException $authException = null): RedirectResponse
+    public function start(Request $request, ?AuthenticationException $authException = null): RedirectResponse
     {
         return new RedirectResponse($this->urlGenerator->generate('connect_harvest'));
     }

@@ -23,7 +23,7 @@ class ViolationContainer
      */
     private array $descViolationContainers = [];
 
-    public function __construct(self $parentViolationContainer = null)
+    public function __construct(?self $parentViolationContainer = null)
     {
         if ($parentViolationContainer instanceof self) {
             $parentViolationContainer->addDesc($this);

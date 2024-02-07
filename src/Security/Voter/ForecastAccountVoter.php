@@ -30,7 +30,7 @@ class ForecastAccountVoter extends Voter
     protected function supports(string $attribute, mixed $subject): bool
     {
         return \in_array($attribute, [self::ADMIN, self::HARVEST_ADMIN], true)
-            && $subject instanceof \App\Entity\ForecastAccount;
+            && $subject instanceof ForecastAccount;
     }
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
