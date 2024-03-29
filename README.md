@@ -1,3 +1,7 @@
+> [!IMPORTANT]
+> This project is now archived. Some recent additions to Forecast tools are only useful in the context of JoliCode, and are far too specific to be shared in an open product.
+> For this reason, we will continue the development of Forecast tools, but as a closed source product. This repository remains online but archived.
+
 # Forecast tools
 
 ![Tests badge](https://github.com/jolicode/forecast-tools/actions/workflows/tests.yml/badge.svg)
